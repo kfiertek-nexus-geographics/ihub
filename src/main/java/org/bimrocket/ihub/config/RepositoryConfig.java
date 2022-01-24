@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.bimrocket.ihub.repo.ConnectorSetupRepository;
 import org.bimrocket.ihub.repo.IdPairRepository;
+import org.bimrocket.ihub.repo.filesystem.FileSystemIdPairRepository;
 import org.bimrocket.ihub.repo.mongo.MongoConnectorSetupRepository;
 import org.bimrocket.ihub.repo.mongo.MongoIdPairRepository;
 
@@ -59,7 +60,6 @@ public class RepositoryConfig
   @Primary
   ConnectorSetupRepository getConnectorSetupRepository()
   {
-    System.out.println("store:" + store);
     if ("mongo".equals(store))
     {
       return context.getBean(MongoConnectorSetupRepository.class);
@@ -74,6 +74,13 @@ public class RepositoryConfig
   @Primary
   IdPairRepository getIdPairRepository()
   {
-    return context.getBean(MongoIdPairRepository.class);
+    if ("mongo".equals(store))
+    {
+      return context.getBean(MongoIdPairRepository.class);
+    }
+    else
+    {
+      return context.getBean(FileSystemIdPairRepository.class);
+    }
   }
 }

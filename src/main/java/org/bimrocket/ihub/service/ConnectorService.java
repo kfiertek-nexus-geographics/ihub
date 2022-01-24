@@ -143,6 +143,9 @@ public class ConnectorService
 	public void onApplicationEvent(ApplicationReadyEvent event)
   {
     System.out.println("INIT");
+    System.out.println("idPairRepository: " + idPairRepository);
+    System.out.println("ConnectorSetupRepository: " + connectorSetupRepository);
+
     try
     {
       restoreConnectors();
