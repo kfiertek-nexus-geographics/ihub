@@ -129,7 +129,8 @@ public class ConnectorService
       try
       {
         System.out.println("Restoring " + connSetup.getName());
-        createConnector(connSetup.getName()).restore();
+        Connector connector = createConnector(connSetup.getName()).restore();
+        if (connector.isAutoStart()) connector.start();
       }
       catch (Exception ex)
       {
