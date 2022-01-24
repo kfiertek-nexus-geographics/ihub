@@ -49,6 +49,7 @@ import static org.bimrocket.ihub.connector.ConnectorObject.UPDATE;
  */
 public abstract class FullScanLoader extends Loader
 {
+  private static final String IDLE = "IDLE";
   private Iterator<JsonNode> updateIterator;
   private Iterator<IdPair> deleteIterator;
   private String phase = UPDATE;
@@ -68,54 +69,52 @@ public abstract class FullScanLoader extends Loader
   @Override
   public void init()
   {
-    updateStartTime = System.currentTimeMillis();
-    updateIterator = fullScan();
-    phase = UPDATE;
+    phase = IDLE;
   }
 
   @Override
   public boolean loadObject(ConnectorObject cObject)
   {
-    if (UPDATE.equals(phase)) // update phase
+    switch (phase)
     {
-      if (loadUpdate(cObject))
-      {
-        return true;
-      }
-      else
-      {
-        deleteIterator = purge();
-        if (loadDelete(cObject))
-        {
-          phase = DELETE;
-          return true;
-        }
-        return false;
-      }
-    }
-    else // DELETE phase
-    {
-      if (loadDelete(cObject))
-      {
-        return true;
-      }
-      else
-      {
-        if (isTimeToRescan())
+      case IDLE:
+        if (isTimeToScan())
         {
           phase = UPDATE;
           updateStartTime = System.currentTimeMillis();
           updateIterator = fullScan();
-          return loadUpdate(cObject);
         }
-        return false;
-      }
+        else return false;
+
+      case UPDATE:
+        if (loadUpdate(cObject))
+        {
+          return true;
+        }
+        else
+        {
+          phase = DELETE;
+          deleteIterator = purge();
+        }
+
+      case DELETE:
+        if (loadDelete(cObject))
+        {
+          return true;
+        }
+        else
+        {
+          phase = IDLE;
+        }
+        break;
     }
+    return false;
   }
 
   @Override
   public void end()
   {
+    phase = IDLE;
     updateIterator = null;
     deleteIterator = null;
   }
@@ -140,12 +139,12 @@ public abstract class FullScanLoader extends Loader
       cObject.setLocalId(idPair.getLocalId());
       cObject.setObjectType(objectType);
       cObject.setOperation(DELETE);
-      return false;
+      return true;
     }
     return false;
   }
 
-  protected boolean isTimeToRescan()
+  protected boolean isTimeToScan()
   {
     return (System.currentTimeMillis() - updateStartTime) > scanPeriod * 1000;
   }
