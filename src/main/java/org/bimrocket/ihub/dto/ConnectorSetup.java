@@ -43,6 +43,7 @@ public class ConnectorSetup
   private String description;
   private String inventory;
   private Boolean autoStart;
+  private Boolean singleRun;
   private Long waitMillis;
 
   private ComponentSetup loader;
@@ -87,6 +88,16 @@ public class ConnectorSetup
   public void setAutoStart(Boolean autoStart)
   {
     this.autoStart = autoStart;
+  }
+
+  public Boolean getSingleRun()
+  {
+    return singleRun;
+  }
+
+  public void setSingleRun(Boolean singleRun)
+  {
+    this.singleRun = singleRun;
   }
 
   public Long getWaitMillis()
