@@ -1,0 +1,24 @@
+{
+  "connectors":
+          [
+            {
+              "name": "con1",
+              "description" : "Connector de prova",
+              "autoStart" : true,
+              "singleRun" : true,
+              "loader": {
+                "class": "TestLoader",
+                "maxWait" : 10000,
+                "filter" : "select 1 from dual"
+              },
+              "transformer": {
+                "class": "TestLoader",
+                "scriptCode": "sdASfdgfdg\nsfdgfdg",
+                "list" : [1, 2, 3]
+              },
+              "sender": {
+                "class": "TestLoader"
+              }
+            }
+          ]
+}
