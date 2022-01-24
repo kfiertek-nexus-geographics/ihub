@@ -30,6 +30,8 @@
  */
 package org.bimrocket.ihub.repo;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import org.bimrocket.ihub.dto.IdPair;
 
@@ -45,6 +47,8 @@ public interface IdPairRepository
     String inventory, String objectType, String localId);
   public Optional<IdPair> findByInventoryAndGlobalId(
     String inventory, String globalId);
+  public List<IdPair> findByInventoryAndObjectTypeAndLastUpdateLessThan(
+    String inventory, String objectType, Date date);
 
   public void deleteByInventoryAndObjectTypeAndLocalId(
     String inventory, String objectType, String localId);

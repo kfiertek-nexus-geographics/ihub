@@ -44,7 +44,6 @@ public class ConnectorSetup
   private String inventory;
   private Boolean autoStart;
   private Long waitMillis;
-  private Long sleepMillis;
 
   private ComponentSetup loader;
   private ComponentSetup transformer;
@@ -98,16 +97,6 @@ public class ConnectorSetup
   public void setWaitMillis(Long waitMillis)
   {
     this.waitMillis = waitMillis;
-  }
-
-  public Long getSleepMillis()
-  {
-    return sleepMillis;
-  }
-
-  public void setSleepMillis(Long sleepMillis)
-  {
-    this.sleepMillis = sleepMillis;
   }
 
   public ComponentSetup getLoader()

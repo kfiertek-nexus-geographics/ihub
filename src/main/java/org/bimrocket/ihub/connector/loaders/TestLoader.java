@@ -64,7 +64,7 @@ public class TestLoader extends Loader
   public List<String> objectFields = new ArrayList<>();
 
   @Override
-  public boolean loadObject(ConnectorObject cObject, long waitMillis)
+  public boolean loadObject(ConnectorObject cObject)
   {
     if (entries.isEmpty()) return false;
 

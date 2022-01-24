@@ -59,7 +59,6 @@ public class ConnectorMapperService
     connSetup.setDescription(connector.getDescription());
     connSetup.setInventory(connector.getInventory());
     connSetup.setAutoStart(connector.isAutoStart());
-    connSetup.setSleepMillis(connector.getSleepMillis());
     connSetup.setWaitMillis(connector.getWaitMillis());
 
     connSetup.setLoader(getComponentSetup(connector.getLoader()));
@@ -87,10 +86,6 @@ public class ConnectorMapperService
     if (connSetup.getWaitMillis() != null)
     {
       connector.setWaitMillis(connSetup.getWaitMillis());
-    }
-    if (connSetup.getSleepMillis() != null)
-    {
-      connector.setSleepMillis(connSetup.getSleepMillis());
     }
 
     ComponentSetup loaderSetup = connSetup.getLoader();

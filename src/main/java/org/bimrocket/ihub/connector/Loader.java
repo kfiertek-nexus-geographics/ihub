@@ -41,5 +41,5 @@ public abstract class Loader extends Component
     super(connector);
   }
 
-  public abstract boolean loadObject(ConnectorObject cObject, long waitMillis);
+  public abstract boolean loadObject(ConnectorObject cObject);
 }

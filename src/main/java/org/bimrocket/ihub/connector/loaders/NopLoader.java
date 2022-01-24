@@ -46,7 +46,7 @@ public class NopLoader extends Loader
   }
 
   @Override
-  public boolean loadObject(ConnectorObject cObject, long waitMillis)
+  public boolean loadObject(ConnectorObject cObject)
   {
     return false;
   }

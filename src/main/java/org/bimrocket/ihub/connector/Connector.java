@@ -74,8 +74,6 @@ public class Connector implements Runnable
 
   protected long waitMillis = 1000;
 
-  protected long sleepMillis = 1000;
-
   protected Thread thread;
 
   protected String status = STOPPED_STATUS;
@@ -152,17 +150,6 @@ public class Connector implements Runnable
   public Connector setWaitMillis(long waitMillis)
   {
     this.waitMillis = waitMillis;
-    return this;
-  }
-
-  public long getSleepMillis()
-  {
-    return sleepMillis;
-  }
-
-  public Connector setSleepMillis(long sleepMillis)
-  {
-    this.sleepMillis = sleepMillis;
     return this;
   }
 
@@ -346,7 +333,7 @@ public class Connector implements Runnable
       try
       {
         cObject.reset();
-        if (loader.loadObject(cObject, waitMillis))
+        if (loader.loadObject(cObject))
         {
           transformer.transformObject(cObject);
           sender.sendObject(cObject); // insert, update or delete object
@@ -359,7 +346,7 @@ public class Connector implements Runnable
         else
         {
           if (singleRun) end = true;
-          else Thread.sleep(sleepMillis);
+          else Thread.sleep(waitMillis);
         }
       }
       catch (InterruptedException ex)
