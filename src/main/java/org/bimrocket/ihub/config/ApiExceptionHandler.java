@@ -31,7 +31,7 @@
 package org.bimrocket.ihub.config;
 
 import org.bimrocket.ihub.dto.ApiError;
-import org.bimrocket.ihub.exceptions.InvalidConfigException;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -49,9 +49,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler
 {
-  @ExceptionHandler(InvalidConfigException.class)
+  @ExceptionHandler(InvalidSetupException.class)
   protected ResponseEntity<ApiError> exceptionHandle(
-    InvalidConfigException ex,WebRequest request)
+    InvalidSetupException ex,WebRequest request)
   {
     return new ResponseEntity<>(
       new ApiError(ex.getErrorCode(), BAD_REQUEST, ex.getMessage()),

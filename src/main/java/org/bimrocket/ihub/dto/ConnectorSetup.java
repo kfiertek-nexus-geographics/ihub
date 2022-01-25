@@ -30,6 +30,7 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.util.List;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -46,9 +47,7 @@ public class ConnectorSetup
   private Boolean singleRun;
   private Long waitMillis;
 
-  private ProcessorSetup loader;
-  private ProcessorSetup transformer;
-  private ProcessorSetup sender;
+  private List<ProcessorSetup> processors;
 
   public String getName()
   {
@@ -110,33 +109,13 @@ public class ConnectorSetup
     this.waitMillis = waitMillis;
   }
 
-  public ProcessorSetup getLoader()
+  public List<ProcessorSetup> getProcessors()
   {
-    return loader;
+    return processors;
   }
 
-  public void setLoader(ProcessorSetup loader)
+  public void setProcessors(List<ProcessorSetup> processors)
   {
-    this.loader = loader;
-  }
-
-  public ProcessorSetup getTransformer()
-  {
-    return transformer;
-  }
-
-  public void setTransformer(ProcessorSetup transformer)
-  {
-    this.transformer = transformer;
-  }
-
-  public ProcessorSetup getSender()
-  {
-    return sender;
-  }
-
-  public void setSender(ProcessorSetup sender)
-  {
-    this.sender = sender;
+    this.processors = processors;
   }
 }

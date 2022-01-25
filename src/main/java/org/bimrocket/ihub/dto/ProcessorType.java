@@ -39,19 +39,8 @@ import java.util.List;
  */
 public class ProcessorType
 {
-  private String type;
   private String className;
   private final List<ProcessorProperty> properties = new ArrayList<>();
-
-  public String getType()
-  {
-    return type;
-  }
-
-  public void setType(String type)
-  {
-    this.type = type;
-  }
 
   public String getClassName()
   {

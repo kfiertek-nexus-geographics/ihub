@@ -6,7 +6,6 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.bimrocket.ihub.connector.loaders.TestLoader;
 
 /**
  *
@@ -128,13 +127,5 @@ public class ConfigPropertyHandler
     }
 
     return properties;
-  }
-
-  public static void main(String[] args)
-  {
-    Map<String, ConfigPropertyHandler> props =
-      ConfigPropertyHandler.findProperties(TestLoader.class);
-
-    System.out.println(props);
   }
 }

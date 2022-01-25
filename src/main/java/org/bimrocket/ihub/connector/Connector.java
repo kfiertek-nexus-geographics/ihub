@@ -31,12 +31,12 @@
 package org.bimrocket.ihub.connector;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
-import org.bimrocket.ihub.connector.loaders.NopLoader;
-import org.bimrocket.ihub.connector.senders.NopSender;
-import org.bimrocket.ihub.connector.transformers.NopTransformer;
-import org.bimrocket.ihub.exceptions.InvalidConfigException;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.dto.ConnectorSetup;
@@ -64,11 +64,7 @@ public class Connector implements Runnable
 
   protected String inventory;
 
-  protected Loader loader;
-
-  protected Transformer transformer;
-
-  protected Sender sender;
+  protected List<Processor> processors = new ArrayList<>();
 
   protected boolean end;
 
@@ -193,63 +189,76 @@ public class Connector implements Runnable
     return lastError;
   }
 
-  public Loader getLoader()
+  public List<Processor> getProcessors()
   {
-    return loader;
+    return Collections.unmodifiableList(processors);
   }
 
-  public Loader createLoader(Class<Loader> cls)
+  public int getProcessorCount()
+  {
+    return processors.size();
+  }
+
+  public <T extends Processor> T addProcessor(String className)
     throws Exception
   {
-    this.loader = Connector.this.createProcessor(this, cls);
-    return loader;
+    T processor = createProcessor(className);
+    processors.add(processor);
+
+    return processor;
   }
 
-  public Loader createLoader(String className) throws Exception
-  {
-    className = completeClassName(className, Loader.class, "loaders");
-    this.loader = createProcessor(this, className);
-    return loader;
-  }
-
-  public Transformer getTransformer()
-  {
-    return transformer;
-  }
-
-  public Transformer createTransformer(Class<Transformer> cls)
+  public <T extends Processor> T addProcessor(Class<T> processorClass)
     throws Exception
   {
-    this.transformer = Connector.this.createProcessor(this, cls);
-    return transformer;
+    T processor = createProcessor(processorClass);
+    processors.add(processor);
+
+    return processor;
   }
 
-  public Transformer createTransformer(String className)
+  public <T extends Processor> T insertProcessor(String className, int index)
     throws Exception
   {
-    className = completeClassName(className, Transformer.class,
-      "transformers");
-    this.transformer = createProcessor(this, className);
-    return transformer;
+    T processor = createProcessor(className);
+    processors.add(index, processor);
+
+    return processor;
   }
 
-  public Sender getSender()
+  public <T extends Processor> T insertProcessor(
+    Class<T> processorClass, int index) throws Exception
   {
-    return sender;
+    T processor = createProcessor(processorClass);
+    processors.add(index, processor);
+
+    return processor;
   }
 
-  public Sender createSender(Class<Sender> cls)
+  public <T extends Processor> T setProcessor(String className, int index)
     throws Exception
   {
-    this.sender = Connector.this.createProcessor(this, cls);
-    return sender;
+    T processor = createProcessor(className);
+    if (thread != null) processor.end();
+    processors.set(index, processor);
+
+    return processor;
   }
 
-  public Sender createSender(String className) throws Exception
+  public <T extends Processor> T setProcessor(
+    Class<T> processorClass, int index) throws Exception
   {
-    className = completeClassName(className, Sender.class, "senders");
-    this.sender = createProcessor(this, className);
-    return sender;
+    T processor = createProcessor(processorClass);
+    if (thread != null) processor.end();
+    processors.set(index, processor);
+
+    return processor;
+  }
+
+  public void removeProcessor(int index)
+  {
+    Processor processor = processors.remove(index);
+    if (thread != null) processor.end();
   }
 
   public boolean isDebugEnabled()
@@ -316,12 +325,8 @@ public class Connector implements Runnable
       .append(singleRun)
       .append(", debug: ")
       .append(debugEnabled)
-      .append(", loader: ")
-      .append(loader)
-      .append(", transformer: ")
-      .append(transformer)
-      .append(", sender: ")
-      .append(sender)
+      .append(", processors: ")
+      .append(processors)
       .append(" }").toString();
   }
 
@@ -338,18 +343,19 @@ public class Connector implements Runnable
       {
         procObject.reset();
 
-        if (loader.processObject(procObject))
+        boolean process = true;
+        Iterator<Processor> iter = processors.iterator();
+        while (iter.hasNext() && process)
         {
-          if (transformer.processObject(procObject))
-          {
-            if (sender.processObject(procObject))
-            {
-              updateIdPairRepository(procObject);
-              updateStatistics(procObject);
-              captureObject(procObject);
-              // TODO: log processing
-            }
-          }
+          Processor processor = iter.next();
+          process = processor.processObject(procObject);
+        }
+        if (process)
+        {
+          updateIdPairRepository(procObject);
+          updateStatistics(procObject);
+          captureObject(procObject);
+          // TODO: log processing
         }
         else
         {
@@ -437,20 +443,32 @@ public class Connector implements Runnable
 
     startTime = new Date();
 
-    if (loader == null) loader = new NopLoader(this);
-    if (transformer == null) transformer = new NopTransformer(this);
-    if (sender == null) sender = new NopSender(this);
-
-    loader.init();
-    transformer.init();
-    sender.init();
+    processors.forEach(processor ->
+    {
+      try
+      {
+        processor.init();
+      }
+      catch (Exception ex)
+      {
+        // log
+      }
+    });
   }
 
   public void end()
   {
-    loader.end();
-    transformer.end();
-    sender.end();
+    processors.forEach(processor ->
+    {
+      try
+      {
+        processor.end();
+      }
+      catch (Exception ex)
+      {
+        // log
+      }
+    });
 
     endTime = new Date();
   }
@@ -505,34 +523,32 @@ public class Connector implements Runnable
     }
   }
 
-  <T extends Processor> T createProcessor(Connector connector,
-    Class<T> processorClass) throws Exception
+  <T extends Processor> T createProcessor(Class<T> processorClass)
+    throws InvalidSetupException
   {
     try
     {
-      return processorClass.getConstructor(Connector.class)
-        .newInstance(connector);
+      return processorClass.getConstructor(Connector.class).newInstance(this);
     }
     catch (Exception ex)
     {
-      throw new InvalidConfigException(300,
+      throw new InvalidSetupException(320,
         "Can not create processor class {%s}", processorClass);
     }
   }
 
-  <T extends Processor> T createProcessor(Connector connector,
-    String className) throws InvalidConfigException
+  <T extends Processor> T createProcessor(String className)
+    throws Exception
   {
     try
     {
       Class<T> processorClass = (Class<T>)Class.forName(className);
-      return processorClass.getConstructor(Connector.class)
-        .newInstance(connector);
+      return createProcessor(processorClass);
     }
-    catch (Exception ex)
+    catch (ClassNotFoundException ex)
     {
-      throw new InvalidConfigException(300,
-        "Can not create processor class {%s}", className);
+      throw new InvalidSetupException(330,
+        "Invalid processor className {%s}", className);
     }
   }
 

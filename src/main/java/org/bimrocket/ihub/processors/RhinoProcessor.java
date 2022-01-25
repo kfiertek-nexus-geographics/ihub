@@ -28,7 +28,7 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.connector.transformers;
+package org.bimrocket.ihub.processors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Transformer;
+import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.mozilla.javascript.ConsString;
@@ -52,7 +52,7 @@ import org.mozilla.javascript.ScriptableObject;
  *
  * @author realor
  */
-public class RhinoTransformer extends Transformer
+public class RhinoProcessor extends Processor
 {
   @ConfigProperty(description="The script that makes the transformation")
   public String scriptCode = "";
@@ -62,7 +62,7 @@ public class RhinoTransformer extends Transformer
   protected ScriptableObject scope;
   protected ObjectMapper mapper;
 
-  public RhinoTransformer(Connector connector)
+  public RhinoProcessor(Connector connector)
   {
     super(connector);
   }

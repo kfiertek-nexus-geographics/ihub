@@ -28,19 +28,24 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.connector;
+package org.bimrocket.ihub.exceptions;
 
 /**
  *
  * @author realor
  */
-public abstract class Sender extends Processor
+public class InvalidSetupException extends Exception
 {
-  public Sender(Connector connector)
+  private final int errorCode;
+
+  public InvalidSetupException(int errorCode, String message, Object ...args)
   {
-    super(connector);
+    super(String.format(message, args));
+    this.errorCode = errorCode;
   }
 
-  @Override
-  public abstract boolean processObject(ProcessedObject object);
+  public int getErrorCode()
+  {
+    return errorCode;
+  }
 }

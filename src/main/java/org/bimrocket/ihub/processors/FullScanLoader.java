@@ -28,7 +28,7 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.connector.loaders;
+package org.bimrocket.ihub.processors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Date;
@@ -36,18 +36,18 @@ import java.util.Iterator;
 import java.util.List;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Loader;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
+import org.bimrocket.ihub.connector.Processor;
 
 /**
  *
  * @author realor
  */
-public abstract class FullScanLoader extends Loader
+public abstract class FullScanLoader extends Processor
 {
   private static final String IDLE = "IDLE";
   private Iterator<JsonNode> updateIterator;

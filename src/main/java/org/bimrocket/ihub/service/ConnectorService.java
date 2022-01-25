@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.exceptions.InvalidConfigException;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,10 +65,10 @@ public class ConnectorService
   ConnectorMapperService connectorMapperService;
 
   public Connector createConnector(String connectorName)
-    throws InvalidConfigException
+    throws InvalidSetupException
   {
     if (connectors.containsKey(connectorName))
-      throw new InvalidConfigException(100,
+      throw new InvalidSetupException(310,
         "Connector name {%s} already exists", connectorName);
 
     Connector connector = new Connector(this, connectorName);

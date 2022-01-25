@@ -28,25 +28,25 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.connector.senders;
+package org.bimrocket.ihub.processors;
 
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Sender;
+import org.bimrocket.ihub.connector.Processor;
 
 /**
  *
  * @author realor
  */
-public class KafkaSender extends Sender
+public class KafkaLoader extends Processor
 {
-  public KafkaSender(Connector connector)
+  public KafkaLoader(Connector connector)
   {
     super(connector);
   }
 
   @Override
-  public boolean processObject(ProcessedObject object)
+  public boolean processObject(ProcessedObject procObject)
   {
     return false;
   }

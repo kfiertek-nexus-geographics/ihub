@@ -28,7 +28,7 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.connector.loaders;
+package org.bimrocket.ihub.processors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -36,18 +36,18 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.Loader;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
+import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
  * @author realor
  */
-public class TestLoader extends Loader
+public class TestLoader extends Processor
 {
   private final ObjectMapper mapper = new ObjectMapper();
   private final LinkedList<Entry> entries = new LinkedList<>();

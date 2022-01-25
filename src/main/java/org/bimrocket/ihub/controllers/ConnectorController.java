@@ -38,14 +38,11 @@ import java.util.Map;
 import java.util.Set;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.Loader;
-import org.bimrocket.ihub.connector.Sender;
-import org.bimrocket.ihub.connector.Transformer;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ConnectorExecution;
-import org.bimrocket.ihub.exceptions.InvalidConfigException;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.service.ConnectorService;
 import org.bimrocket.ihub.service.ConnectorMapperService;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
@@ -101,7 +98,7 @@ public class ConnectorController
   {
     String name = connSetup.getName();
     if (name == null)
-      throw new InvalidConfigException(50, "Connection name is null");
+      throw new InvalidSetupException(300, "Connection name is null");
 
     Connector connector = connectorService.createConnector(name);
     connectorMapperService.setConnectorSetup(connector, connSetup);
@@ -172,44 +169,25 @@ public class ConnectorController
     return Collections.EMPTY_LIST;
   }
 
-  @GetMapping(path = "/loaders",
+  @GetMapping(path = "/processors",
     produces = "application/json")
-  public List<ProcessorType> getLoaders() throws Exception
+  public List<ProcessorType> getProcessors() throws Exception
   {
-    return getProcessorTypes(Loader.class);
-  }
-
-  @GetMapping(path = "/transformers",
-    produces = "application/json")
-  public List<ProcessorType> getTransformers() throws Exception
-  {
-    return getProcessorTypes(Transformer.class);
-  }
-
-  @GetMapping(path = "/senders",
-    produces = "application/json")
-  public List<ProcessorType> getSenders() throws Exception
-  {
-    return getProcessorTypes(Sender.class);
-  }
-
-  <T extends Processor> List<ProcessorType> getProcessorTypes(Class<T> cls)
-  {
-    List<ProcessorType> compTypes = new ArrayList<>();
+    List<ProcessorType> procTypes = new ArrayList<>();
 
     Reflections reflections = new Reflections(
-      "org.bimrocket.ihub.connector");
-    Set<Class<? extends T>> classSet = reflections.getSubTypesOf(cls);
-    for (Class<? extends T> compClass : classSet)
+      "org.bimrocket.ihub.processors");
+    Set<Class<? extends Processor>> classSet =
+      reflections.getSubTypesOf(Processor.class);
+    for (Class<? extends Processor> procClass : classSet)
     {
-      if (Modifier.isAbstract(compClass.getModifiers())) continue;
+      if (Modifier.isAbstract(procClass.getModifiers())) continue;
 
       ProcessorType procType = new ProcessorType();
-      procType.setType(cls.getSimpleName());
-      procType.setClassName(compClass.getName());
+      procType.setClassName(procClass.getName());
 
       Map<String, ConfigPropertyHandler> propHandlers =
-        ConfigPropertyHandler.findProperties(compClass);
+        ConfigPropertyHandler.findProperties(procClass);
 
       for (ConfigPropertyHandler propHandler : propHandlers.values())
       {
@@ -220,8 +198,9 @@ public class ConnectorController
         property.setType(propHandler.getType());
         procType.getProperties().add(property);
       }
-      compTypes.add(procType);
+      procTypes.add(procType);
     }
-    return compTypes;
+    return procTypes;
   }
+
 }
