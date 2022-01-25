@@ -53,5 +53,5 @@ public interface IdPairRepository
   public void deleteByInventoryAndObjectTypeAndLocalId(
     String inventory, String objectType, String localId);
   public void deleteByInventoryAndGlobalId(
-    String inventory, String objectType, String localId);
+    String inventory, String objectType, String globalId);
 }

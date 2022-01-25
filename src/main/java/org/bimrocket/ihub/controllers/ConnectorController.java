@@ -204,9 +204,9 @@ public class ConnectorController
     {
       if (Modifier.isAbstract(compClass.getModifiers())) continue;
 
-      ProcessorType compType = new ProcessorType();
-      compType.setType(cls.getSimpleName());
-      compType.setClassName(compClass.getName());
+      ProcessorType procType = new ProcessorType();
+      procType.setType(cls.getSimpleName());
+      procType.setClassName(compClass.getName());
 
       Map<String, ConfigPropertyHandler> propHandlers =
         ConfigPropertyHandler.findProperties(compClass);
@@ -218,9 +218,9 @@ public class ConnectorController
         property.setDescription(propHandler.getDescription());
         property.setRequired(propHandler.isRequired());
         property.setType(propHandler.getType());
-        compType.getProperties().add(property);
+        procType.getProperties().add(property);
       }
-      compTypes.add(compType);
+      compTypes.add(procType);
     }
     return compTypes;
   }

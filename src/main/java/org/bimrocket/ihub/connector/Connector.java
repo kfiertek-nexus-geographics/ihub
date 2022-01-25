@@ -337,6 +337,7 @@ public class Connector implements Runnable
       try
       {
         procObject.reset();
+
         if (loader.processObject(procObject))
         {
           if (transformer.processObject(procObject))
@@ -457,12 +458,11 @@ public class Connector implements Runnable
   void updateIdPairRepository(ProcessedObject procObject)
   {
     IdPairRepository idPairRepository = service.getIdPairRepository();
-    if (procObject.isDelete())
-    {
-      idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(inventory,
-        procObject.getObjectType(), procObject.getLocalId());
-    }
-    else if (procObject.isInsert() || procObject.isUpdate())
+
+    idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(inventory,
+      procObject.getObjectType(), procObject.getLocalId());
+
+    if (procObject.isInsert() || procObject.isUpdate())
     {
       IdPair idPair = new IdPair();
       idPair.setInventory(inventory);
