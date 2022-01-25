@@ -34,12 +34,13 @@ package org.bimrocket.ihub.connector;
  *
  * @author realor
  */
-public abstract class Loader extends Component
+public abstract class Loader extends Processor
 {
   public Loader(Connector connector)
   {
     super(connector);
   }
 
-  public abstract boolean loadObject(ConnectorObject cObject);
+  @Override
+  public abstract boolean processObject(ProcessedObject procObject);
 }

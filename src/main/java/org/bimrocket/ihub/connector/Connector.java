@@ -41,9 +41,9 @@ import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.service.ConnectorService;
-import static org.bimrocket.ihub.connector.ConnectorObject.DELETE;
-import static org.bimrocket.ihub.connector.ConnectorObject.INSERT;
-import static org.bimrocket.ihub.connector.ConnectorObject.UPDATE;
+import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
+import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
+import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
 
 /**
  *
@@ -100,9 +100,9 @@ public class Connector implements Runnable
 
   protected Exception lastError;
 
-  protected ArrayList<ConnectorObject> processedObjects = new ArrayList<>();
+  protected ArrayList<ProcessedObject> processedObjects = new ArrayList<>();
 
-  private final ConnectorObject cObject = new ConnectorObject();
+  private final ProcessedObject procObject = new ProcessedObject();
 
   public Connector(ConnectorService service, String name)
   {
@@ -201,14 +201,14 @@ public class Connector implements Runnable
   public Loader createLoader(Class<Loader> cls)
     throws Exception
   {
-    this.loader = createComponent(this, cls);
+    this.loader = Connector.this.createProcessor(this, cls);
     return loader;
   }
 
   public Loader createLoader(String className) throws Exception
   {
     className = completeClassName(className, Loader.class, "loaders");
-    this.loader = createComponent(this, className);
+    this.loader = createProcessor(this, className);
     return loader;
   }
 
@@ -220,7 +220,7 @@ public class Connector implements Runnable
   public Transformer createTransformer(Class<Transformer> cls)
     throws Exception
   {
-    this.transformer = createComponent(this, cls);
+    this.transformer = Connector.this.createProcessor(this, cls);
     return transformer;
   }
 
@@ -229,7 +229,7 @@ public class Connector implements Runnable
   {
     className = completeClassName(className, Transformer.class,
       "transformers");
-    this.transformer = createComponent(this, className);
+    this.transformer = createProcessor(this, className);
     return transformer;
   }
 
@@ -241,14 +241,14 @@ public class Connector implements Runnable
   public Sender createSender(Class<Sender> cls)
     throws Exception
   {
-    this.sender = createComponent(this, cls);
+    this.sender = Connector.this.createProcessor(this, cls);
     return sender;
   }
 
   public Sender createSender(String className) throws Exception
   {
     className = completeClassName(className, Sender.class, "senders");
-    this.sender = createComponent(this, className);
+    this.sender = createProcessor(this, className);
     return sender;
   }
 
@@ -290,7 +290,7 @@ public class Connector implements Runnable
     return status;
   }
 
-  public ArrayList<ConnectorObject> getProcessedObjects()
+  public ArrayList<ProcessedObject> getProcessedObjects()
   {
     return processedObjects;
   }
@@ -336,16 +336,19 @@ public class Connector implements Runnable
     {
       try
       {
-        cObject.reset();
-        if (loader.loadObject(cObject))
+        procObject.reset();
+        if (loader.processObject(procObject))
         {
-          transformer.transformObject(cObject);
-          sender.sendObject(cObject); // insert, update or delete object
-
-          updateIdPairRepository(cObject);
-          updateStatistics(cObject);
-          captureObject(cObject);
-          // TODO: log processing
+          if (transformer.processObject(procObject))
+          {
+            if (sender.processObject(procObject))
+            {
+              updateIdPairRepository(procObject);
+              updateStatistics(procObject);
+              captureObject(procObject);
+              // TODO: log processing
+            }
+          }
         }
         else
         {
@@ -451,21 +454,21 @@ public class Connector implements Runnable
     endTime = new Date();
   }
 
-  void updateIdPairRepository(ConnectorObject cObject)
+  void updateIdPairRepository(ProcessedObject procObject)
   {
     IdPairRepository idPairRepository = service.getIdPairRepository();
-    if (cObject.isDelete())
+    if (procObject.isDelete())
     {
-      idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(
-        inventory, cObject.getObjectType(), cObject.getLocalId());
+      idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(inventory,
+        procObject.getObjectType(), procObject.getLocalId());
     }
-    else if (cObject.isInsert() || cObject.isUpdate())
+    else if (procObject.isInsert() || procObject.isUpdate())
     {
       IdPair idPair = new IdPair();
       idPair.setInventory(inventory);
-      idPair.setObjectType(cObject.getObjectType());
-      idPair.setLocalId(cObject.getLocalId());
-      idPair.setGlobalId(cObject.getGlobalId());
+      idPair.setObjectType(procObject.getObjectType());
+      idPair.setLocalId(procObject.getLocalId());
+      idPair.setGlobalId(procObject.getGlobalId());
       idPair.setLastUpdate(new Date());
       idPair.setConnectorName(name);
       idPairRepository.save(idPair);
@@ -481,10 +484,10 @@ public class Connector implements Runnable
     deleted = 0;
   }
 
-  void updateStatistics(ConnectorObject cObject)
+  void updateStatistics(ProcessedObject procObject)
   {
     processed++;
-    switch (cObject.getOperation())
+    switch (procObject.getOperation())
     {
       case INSERT: inserted++; break;
       case UPDATE: updated++; break;
@@ -494,42 +497,42 @@ public class Connector implements Runnable
     }
   }
 
-  void captureObject(ConnectorObject cObject)
+  void captureObject(ProcessedObject procObject)
   {
     if (debugEnabled)
     {
-      processedObjects.add(cObject.duplicate());
+      processedObjects.add(procObject.duplicate());
     }
   }
 
-  <T extends Component> T createComponent(Connector connector,
-    Class<T> componentClass) throws Exception
+  <T extends Processor> T createProcessor(Connector connector,
+    Class<T> processorClass) throws Exception
   {
     try
     {
-      return componentClass.getConstructor(Connector.class)
+      return processorClass.getConstructor(Connector.class)
         .newInstance(connector);
     }
     catch (Exception ex)
     {
       throw new InvalidConfigException(300,
-        "Can not create component class {%s}", componentClass);
+        "Can not create processor class {%s}", processorClass);
     }
   }
 
-  <T extends Component> T createComponent(Connector connector,
+  <T extends Processor> T createProcessor(Connector connector,
     String className) throws InvalidConfigException
   {
     try
     {
-      Class<T> componentClass = (Class<T>)Class.forName(className);
-      return componentClass.getConstructor(Connector.class)
+      Class<T> processorClass = (Class<T>)Class.forName(className);
+      return processorClass.getConstructor(Connector.class)
         .newInstance(connector);
     }
     catch (Exception ex)
     {
       throw new InvalidConfigException(300,
-        "Can not create component class {%s}", className);
+        "Can not create processor class {%s}", className);
     }
   }
 

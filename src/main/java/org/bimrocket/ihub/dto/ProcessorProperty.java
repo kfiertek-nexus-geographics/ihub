@@ -34,7 +34,7 @@ package org.bimrocket.ihub.dto;
  *
  * @author realor
  */
-public class ComponentProperty
+public class ProcessorProperty
 {
   private String name;
   private String description;

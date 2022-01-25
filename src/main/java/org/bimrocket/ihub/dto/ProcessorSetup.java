@@ -28,38 +28,36 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
+package org.bimrocket.ihub.dto;
 
-package org.bimrocket.ihub.connector;
+import java.util.Map;
 
 /**
  *
  * @author realor
  */
-public class Component
+public class ProcessorSetup
 {
-  protected Connector connector;
+  private String className;
+  private Map<String, Object> properties;
 
-  public Component(Connector connector)
+  public String getClassName()
   {
-    this.connector = connector;
+    return className;
   }
 
-  public void init()
+  public void setClassName(String className)
   {
+    this.className = className;
   }
 
-  public void end()
+  public Map<String, Object> getProperties()
   {
+    return properties;
   }
 
-  public Connector getConnector()
+  public void setProperties(Map<String, Object> properties)
   {
-    return connector;
-  }
-
-  @Override
-  public String toString()
-  {
-    return getClass().getSimpleName() + "{}";
+    this.properties = properties;
   }
 }

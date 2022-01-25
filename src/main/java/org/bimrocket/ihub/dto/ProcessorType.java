@@ -30,16 +30,28 @@
  */
 package org.bimrocket.ihub.dto;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author realor
  */
-public class ComponentSetup
+public class ProcessorType
 {
+  private String type;
   private String className;
-  private Map<String, Object> properties;
+  private final List<ProcessorProperty> properties = new ArrayList<>();
+
+  public String getType()
+  {
+    return type;
+  }
+
+  public void setType(String type)
+  {
+    this.type = type;
+  }
 
   public String getClassName()
   {
@@ -51,13 +63,8 @@ public class ComponentSetup
     this.className = className;
   }
 
-  public Map<String, Object> getProperties()
+  public List<ProcessorProperty> getProperties()
   {
     return properties;
-  }
-
-  public void setProperties(Map<String, Object> properties)
-  {
-    this.properties = properties;
   }
 }

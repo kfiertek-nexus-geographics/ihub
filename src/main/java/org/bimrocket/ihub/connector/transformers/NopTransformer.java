@@ -31,7 +31,7 @@
 package org.bimrocket.ihub.connector.transformers;
 
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ConnectorObject;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Transformer;
 
 /**
@@ -46,7 +46,8 @@ public class NopTransformer extends Transformer
   }
 
   @Override
-  public void transformObject(ConnectorObject object)
+  public boolean processObject(ProcessedObject object)
   {
+    return true;
   }
 }

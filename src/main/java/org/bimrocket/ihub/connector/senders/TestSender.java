@@ -33,7 +33,7 @@ package org.bimrocket.ihub.connector.senders;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ConnectorObject;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Sender;
 
 /**
@@ -50,17 +50,18 @@ public class TestSender extends Sender
   }
 
   @Override
-  public void sendObject(ConnectorObject cObject)
+  public boolean processObject(ProcessedObject procObject)
   {
     try
     {
-//      cObject.localId = localId;
-      System.out.println(mapper.writeValueAsString(cObject.getGlobalObject()));
+      System.out.println(
+        mapper.writeValueAsString(procObject.getGlobalObject()));
     }
     catch (JsonProcessingException ex)
     {
 
     }
+    return true;
   }
 
 }

@@ -46,9 +46,9 @@ public class ConnectorSetup
   private Boolean singleRun;
   private Long waitMillis;
 
-  private ComponentSetup loader;
-  private ComponentSetup transformer;
-  private ComponentSetup sender;
+  private ProcessorSetup loader;
+  private ProcessorSetup transformer;
+  private ProcessorSetup sender;
 
   public String getName()
   {
@@ -110,32 +110,32 @@ public class ConnectorSetup
     this.waitMillis = waitMillis;
   }
 
-  public ComponentSetup getLoader()
+  public ProcessorSetup getLoader()
   {
     return loader;
   }
 
-  public void setLoader(ComponentSetup loader)
+  public void setLoader(ProcessorSetup loader)
   {
     this.loader = loader;
   }
 
-  public ComponentSetup getTransformer()
+  public ProcessorSetup getTransformer()
   {
     return transformer;
   }
 
-  public void setTransformer(ComponentSetup transformer)
+  public void setTransformer(ProcessorSetup transformer)
   {
     this.transformer = transformer;
   }
 
-  public ComponentSetup getSender()
+  public ProcessorSetup getSender()
   {
     return sender;
   }
 
-  public void setSender(ComponentSetup sender)
+  public void setSender(ProcessorSetup sender)
   {
     this.sender = sender;
   }

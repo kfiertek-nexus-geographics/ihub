@@ -34,12 +34,13 @@ package org.bimrocket.ihub.connector;
  *
  * @author realor
  */
-public abstract class Sender extends Component
+public abstract class Sender extends Processor
 {
   public Sender(Connector connector)
   {
     super(connector);
   }
 
-  public abstract void sendObject(ConnectorObject object);
+  @Override
+  public abstract boolean processObject(ProcessedObject object);
 }

@@ -37,10 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.Loader;
-import org.bimrocket.ihub.connector.ConnectorObject;
-import static org.bimrocket.ihub.connector.ConnectorObject.DELETE;
-import static org.bimrocket.ihub.connector.ConnectorObject.INSERT;
-import static org.bimrocket.ihub.connector.ConnectorObject.UPDATE;
+import org.bimrocket.ihub.connector.ProcessedObject;
+import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
+import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
+import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
 import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
@@ -64,15 +64,15 @@ public class TestLoader extends Loader
   public List<String> objectFields = new ArrayList<>();
 
   @Override
-  public boolean loadObject(ConnectorObject cObject)
+  public boolean processObject(ProcessedObject procObject)
   {
     if (entries.isEmpty()) return false;
 
     Entry entry = entries.poll();
-    cObject.setOperation(entry.operation);
-    cObject.setLocalId(entry.localId);
-    cObject.setLocalObject(entry.localObject);
-    cObject.setObjectType(objectType);
+    procObject.setOperation(entry.operation);
+    procObject.setLocalId(entry.localId);
+    procObject.setLocalObject(entry.localObject);
+    procObject.setObjectType(objectType);
     return true;
   }
 

@@ -31,7 +31,7 @@
 package org.bimrocket.ihub.connector.loaders;
 
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ConnectorObject;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Loader;
 
 /**
@@ -46,7 +46,7 @@ public class KafkaLoader extends Loader
   }
 
   @Override
-  public boolean loadObject(ConnectorObject cObject)
+  public boolean processObject(ProcessedObject procObject)
   {
     return false;
   }

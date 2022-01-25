@@ -28,43 +28,40 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.dto;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.bimrocket.ihub.connector;
 
 /**
  *
  * @author realor
  */
-public class ComponentType
+public abstract class Processor
 {
-  private String type;
-  private String className;
-  private final List<ComponentProperty> properties = new ArrayList<>();
+  protected Connector connector;
 
-  public String getType()
+  public Processor(Connector connector)
   {
-    return type;
+    this.connector = connector;
   }
 
-  public void setType(String type)
+  public void init()
   {
-    this.type = type;
   }
 
-  public String getClassName()
+  public abstract boolean processObject(ProcessedObject procObject);
+
+  public void end()
   {
-    return className;
   }
 
-  public void setClassName(String className)
+  public Connector getConnector()
   {
-    this.className = className;
+    return connector;
   }
 
-  public List<ComponentProperty> getProperties()
+  @Override
+  public String toString()
   {
-    return properties;
+    return getClass().getSimpleName() + "{}";
   }
 }

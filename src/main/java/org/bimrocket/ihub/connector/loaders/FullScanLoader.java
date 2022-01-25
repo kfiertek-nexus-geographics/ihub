@@ -35,13 +35,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ConnectorObject;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Loader;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
-import static org.bimrocket.ihub.connector.ConnectorObject.DELETE;
-import static org.bimrocket.ihub.connector.ConnectorObject.UPDATE;
+import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
+import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
 
 /**
  *
@@ -73,7 +73,7 @@ public abstract class FullScanLoader extends Loader
   }
 
   @Override
-  public boolean loadObject(ConnectorObject cObject)
+  public boolean processObject(ProcessedObject procObject)
   {
     switch (phase)
     {
@@ -87,7 +87,7 @@ public abstract class FullScanLoader extends Loader
         else return false;
 
       case UPDATE:
-        if (loadUpdate(cObject))
+        if (loadUpdate(procObject))
         {
           return true;
         }
@@ -98,7 +98,7 @@ public abstract class FullScanLoader extends Loader
         }
 
       case DELETE:
-        if (loadDelete(cObject))
+        if (loadDelete(procObject))
         {
           return true;
         }
@@ -119,26 +119,26 @@ public abstract class FullScanLoader extends Loader
     deleteIterator = null;
   }
 
-  protected boolean loadUpdate(ConnectorObject cObject)
+  protected boolean loadUpdate(ProcessedObject procObject)
   {
     if (updateIterator.hasNext())
     {
-      cObject.setLocalObject(updateIterator.next());
-      cObject.setObjectType(objectType);
-      cObject.setOperation(UPDATE);
+      procObject.setLocalObject(updateIterator.next());
+      procObject.setObjectType(objectType);
+      procObject.setOperation(UPDATE);
       return true;
     }
     return false;
   }
 
-  protected boolean loadDelete(ConnectorObject cObject)
+  protected boolean loadDelete(ProcessedObject procObject)
   {
     if (deleteIterator.hasNext())
     {
       IdPair idPair = deleteIterator.next();
-      cObject.setLocalId(idPair.getLocalId());
-      cObject.setObjectType(objectType);
-      cObject.setOperation(DELETE);
+      procObject.setLocalId(idPair.getLocalId());
+      procObject.setObjectType(objectType);
+      procObject.setOperation(DELETE);
       return true;
     }
     return false;

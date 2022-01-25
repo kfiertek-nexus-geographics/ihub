@@ -36,13 +36,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.bimrocket.ihub.connector.Component;
+import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.Loader;
 import org.bimrocket.ihub.connector.Sender;
 import org.bimrocket.ihub.connector.Transformer;
-import org.bimrocket.ihub.dto.ComponentProperty;
-import org.bimrocket.ihub.dto.ComponentType;
+import org.bimrocket.ihub.dto.ProcessorProperty;
+import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.exceptions.InvalidConfigException;
@@ -174,28 +174,28 @@ public class ConnectorController
 
   @GetMapping(path = "/loaders",
     produces = "application/json")
-  public List<ComponentType> getLoaders() throws Exception
+  public List<ProcessorType> getLoaders() throws Exception
   {
-    return getComponentTypes(Loader.class);
+    return getProcessorTypes(Loader.class);
   }
 
   @GetMapping(path = "/transformers",
     produces = "application/json")
-  public List<ComponentType> getTransformers() throws Exception
+  public List<ProcessorType> getTransformers() throws Exception
   {
-    return getComponentTypes(Transformer.class);
+    return getProcessorTypes(Transformer.class);
   }
 
   @GetMapping(path = "/senders",
     produces = "application/json")
-  public List<ComponentType> getSenders() throws Exception
+  public List<ProcessorType> getSenders() throws Exception
   {
-    return getComponentTypes(Sender.class);
+    return getProcessorTypes(Sender.class);
   }
 
-  <T extends Component> List<ComponentType> getComponentTypes(Class<T> cls)
+  <T extends Processor> List<ProcessorType> getProcessorTypes(Class<T> cls)
   {
-    List<ComponentType> compTypes = new ArrayList<>();
+    List<ProcessorType> compTypes = new ArrayList<>();
 
     Reflections reflections = new Reflections(
       "org.bimrocket.ihub.connector");
@@ -204,7 +204,7 @@ public class ConnectorController
     {
       if (Modifier.isAbstract(compClass.getModifiers())) continue;
 
-      ComponentType compType = new ComponentType();
+      ProcessorType compType = new ProcessorType();
       compType.setType(cls.getSimpleName());
       compType.setClassName(compClass.getName());
 
@@ -213,7 +213,7 @@ public class ConnectorController
 
       for (ConfigPropertyHandler propHandler : propHandlers.values())
       {
-        ComponentProperty property = new ComponentProperty();
+        ProcessorProperty property = new ProcessorProperty();
         property.setName(propHandler.getName());
         property.setDescription(propHandler.getDescription());
         property.setRequired(propHandler.isRequired());

@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  *
  * @author realor
  */
-public class ConnectorObject
+public class ProcessedObject
 {
   public static final String IGNORE = "ignore";
   public static final String INSERT = "insert";
@@ -142,9 +142,9 @@ public class ConnectorObject
     operation = IGNORE;
   }
 
-  public ConnectorObject duplicate()
+  public ProcessedObject duplicate()
   {
-    ConnectorObject copy = new ConnectorObject();
+    ProcessedObject copy = new ProcessedObject();
     copy.localId = localId;
     copy.globalId = globalId;
     copy.objectType = objectType;

@@ -34,12 +34,12 @@ package org.bimrocket.ihub.connector;
  *
  * @author realor
  */
-public abstract class Transformer extends Component
+public abstract class Transformer extends Processor
 {
   public Transformer(Connector connector)
   {
     super(connector);
   }
 
-  public abstract void transformObject(ConnectorObject object);
+  public abstract boolean processObject(ProcessedObject object);
 }

@@ -31,7 +31,7 @@
 package org.bimrocket.ihub.connector.senders;
 
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ConnectorObject;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Sender;
 
 /**
@@ -46,7 +46,8 @@ public class NopSender extends Sender
   }
 
   @Override
-  public void sendObject(ConnectorObject object)
+  public boolean processObject(ProcessedObject object)
   {
+    return false;
   }
 }

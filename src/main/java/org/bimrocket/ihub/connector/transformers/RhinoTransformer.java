@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ConnectorObject;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Transformer;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
@@ -84,33 +84,35 @@ public class RhinoTransformer extends Transformer
   }
 
   @Override
-  public void transformObject(ConnectorObject cObject)
+  public boolean processObject(ProcessedObject procObject)
   {
-    scope.put("localId", scope, cObject.getLocalId());
-    scope.put("globalId", scope, cObject.getGlobalId());
-    scope.put("objectType", scope, cObject.getObjectType());
-    scope.put("operation", scope, cObject.getOperation());
+    scope.put("localId", scope, procObject.getLocalId());
+    scope.put("globalId", scope, procObject.getGlobalId());
+    scope.put("objectType", scope, procObject.getObjectType());
+    scope.put("operation", scope, procObject.getOperation());
 
-    JsonNode localObject = cObject.getLocalObject();
+    JsonNode localObject = procObject.getLocalObject();
     if (localObject != null)
     {
       scope.put("localObject", scope,
         new JsonNodeScriptable(scope, localObject));
     }
-    JsonNode globalObject = cObject.getGlobalObject();
+    JsonNode globalObject = procObject.getGlobalObject();
     if (globalObject != null)
     {
       scope.put("globalObject", scope,
         new JsonNodeScriptable(scope, globalObject));
     }
-    script.exec(context, scope);
+    boolean result = Context.toBoolean(script.exec(context, scope));
 
-    cObject.setLocalId(Context.toString(scope.get("localId")));
-    cObject.setGlobalId(Context.toString(scope.get("globalId")));
-    cObject.setObjectType(Context.toString(scope.get("objectType")));
-    cObject.setLocalObject(toJsonNode(scope.get("localObject")));
-    cObject.setGlobalObject(toJsonNode(scope.get("globalObject")));
-    cObject.setOperation(Context.toString(scope.get("operation")));
+    procObject.setLocalId(Context.toString(scope.get("localId")));
+    procObject.setGlobalId(Context.toString(scope.get("globalId")));
+    procObject.setObjectType(Context.toString(scope.get("objectType")));
+    procObject.setLocalObject(toJsonNode(scope.get("localObject")));
+    procObject.setGlobalObject(toJsonNode(scope.get("globalObject")));
+    procObject.setOperation(Context.toString(scope.get("operation")));
+
+    return result;
   }
 
   @Override

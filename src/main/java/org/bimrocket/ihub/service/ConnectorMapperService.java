@@ -34,11 +34,11 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.Component;
+import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.connector.Loader;
 import org.bimrocket.ihub.connector.Sender;
 import org.bimrocket.ihub.connector.Transformer;
-import org.bimrocket.ihub.dto.ComponentSetup;
+import org.bimrocket.ihub.dto.ProcessorSetup;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
@@ -62,9 +62,9 @@ public class ConnectorMapperService
     connSetup.setSingleRun(connector.isSingleRun());
     connSetup.setWaitMillis(connector.getWaitMillis());
 
-    connSetup.setLoader(getComponentSetup(connector.getLoader()));
-    connSetup.setTransformer(getComponentSetup(connector.getTransformer()));
-    connSetup.setSender(getComponentSetup(connector.getSender()));
+    connSetup.setLoader(getProcessorSetup(connector.getLoader()));
+    connSetup.setTransformer(getProcessorSetup(connector.getTransformer()));
+    connSetup.setSender(getProcessorSetup(connector.getSender()));
 
     return connSetup;
   }
@@ -93,69 +93,69 @@ public class ConnectorMapperService
       connector.setWaitMillis(connSetup.getWaitMillis());
     }
 
-    ComponentSetup loaderSetup = connSetup.getLoader();
+    ProcessorSetup loaderSetup = connSetup.getLoader();
     if (loaderSetup != null)
     {
       String className = loaderSetup.getClassName();
       Loader loader = className == null ?
         connector.getLoader() : connector.createLoader(className);
-      setComponentSetup(loader, loaderSetup);
+      setProcessorSetup(loader, loaderSetup);
     }
-    ComponentSetup transformerSetup = connSetup.getTransformer();
+    ProcessorSetup transformerSetup = connSetup.getTransformer();
     if (transformerSetup != null)
     {
       String className = transformerSetup.getClassName();
       Transformer transformer = className == null ?
         connector.getTransformer() : connector.createTransformer(className);
-      setComponentSetup(transformer, transformerSetup);
+      setProcessorSetup(transformer, transformerSetup);
     }
-    ComponentSetup senderSetup = connSetup.getSender();
+    ProcessorSetup senderSetup = connSetup.getSender();
     if (senderSetup != null)
     {
       String className = senderSetup.getClassName();
       Sender sender = className == null ?
         connector.getSender() : connector.createSender(className);
-      setComponentSetup(sender, senderSetup);
+      setProcessorSetup(sender, senderSetup);
     }
   }
 
-  public ComponentSetup getComponentSetup(Component component)
+  public ProcessorSetup getProcessorSetup(Processor processor)
   {
-    if (component == null) return null;
+    if (processor == null) return null;
 
-    ComponentSetup compSetup = new ComponentSetup();
-    compSetup.setClassName(component.getClass().getName());
+    ProcessorSetup procSetup = new ProcessorSetup();
+    procSetup.setClassName(processor.getClass().getName());
 
     Map<String, Object> properties = new HashMap<>();
 
     Map<String, ConfigPropertyHandler> propHandlers =
-      ConfigPropertyHandler.findProperties(component.getClass());
+      ConfigPropertyHandler.findProperties(processor.getClass());
     for (ConfigPropertyHandler propHandler : propHandlers.values())
     {
       String propertyName = propHandler.getName();
       try
       {
-        properties.put(propertyName, propHandler.getValue(component));
+        properties.put(propertyName, propHandler.getValue(processor));
       }
       catch (Exception ex)
       {
         // log
       }
     }
-    compSetup.setProperties(properties);
+    procSetup.setProperties(properties);
 
-    return compSetup;
+    return procSetup;
   }
 
-  public void setComponentSetup(Component component, ComponentSetup compSetup)
+  public void setProcessorSetup(Processor processor, ProcessorSetup procSetup)
   {
-    if (component == null) return;
+    if (processor == null) return;
 
-    Map<String, Object> properties = compSetup.getProperties();
+    Map<String, Object> properties = procSetup.getProperties();
     if (properties == null) return;
 
     Map<String, ConfigPropertyHandler> propHandlers =
-      ConfigPropertyHandler.findProperties(component.getClass());
+      ConfigPropertyHandler.findProperties(processor.getClass());
     for (Map.Entry<String, Object> entry : properties.entrySet())
     {
       String propertyName = entry.getKey();
@@ -164,7 +164,7 @@ public class ConnectorMapperService
         ConfigPropertyHandler propHandler = propHandlers.get(propertyName);
         if (propHandler != null)
         {
-          propHandler.setValue(component, properties.get(propertyName));
+          propHandler.setValue(processor, properties.get(propertyName));
         }
       }
       catch (Exception ex)
