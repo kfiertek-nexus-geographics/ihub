@@ -200,7 +200,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T addProcessor(String className)
-    throws Exception
+    throws InvalidSetupException
   {
     T processor = createProcessor(className);
     processors.add(processor);
@@ -209,7 +209,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T addProcessor(Class<T> processorClass)
-    throws Exception
+    throws InvalidSetupException
   {
     T processor = createProcessor(processorClass);
     processors.add(processor);
@@ -218,7 +218,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T insertProcessor(String className, int index)
-    throws Exception
+    throws InvalidSetupException
   {
     T processor = createProcessor(className);
     processors.add(index, processor);
@@ -227,7 +227,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T insertProcessor(
-    Class<T> processorClass, int index) throws Exception
+    Class<T> processorClass, int index) throws InvalidSetupException
   {
     T processor = createProcessor(processorClass);
     processors.add(index, processor);
@@ -236,7 +236,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T setProcessor(String className, int index)
-    throws Exception
+    throws InvalidSetupException
   {
     T processor = createProcessor(className);
     if (thread != null) processor.end();
@@ -246,7 +246,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T setProcessor(
-    Class<T> processorClass, int index) throws Exception
+    Class<T> processorClass, int index) throws InvalidSetupException
   {
     T processor = createProcessor(processorClass);
     if (thread != null) processor.end();
@@ -432,7 +432,8 @@ public class Connector implements Runnable
     if (optConnSetup.isPresent())
     {
       connSetup = optConnSetup.get();
-      service.getConnectorMapperService().setConnectorSetup(this, connSetup);
+      service.getConnectorMapperService()
+        .setConnectorSetup(this, connSetup, true);
     }
     return connSetup;
   }
@@ -538,10 +539,11 @@ public class Connector implements Runnable
   }
 
   <T extends Processor> T createProcessor(String className)
-    throws Exception
+    throws InvalidSetupException
   {
     try
     {
+      className = completeClassName(className);
       Class<T> processorClass = (Class<T>)Class.forName(className);
       return createProcessor(processorClass);
     }
@@ -552,12 +554,10 @@ public class Connector implements Runnable
     }
   }
 
-  String completeClassName(String className, Class baseClass, String pkg)
+  String completeClassName(String className)
   {
     if (className.contains(".")) return className;
 
-    String baseClassName = baseClass.getName();
-    int index = baseClassName.lastIndexOf(".");
-    return baseClassName.substring(0, index + 1) + pkg + "." + className;
+    return "org.bimrocket.ihub.processors." + className;
   }
 }
