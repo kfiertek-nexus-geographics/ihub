@@ -28,52 +28,71 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.controllers;
+package org.bimrocket.ihub.web;
 
-import org.bimrocket.ihub.service.ConnectorService;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ScriptableObject;
+import javax.faces.bean.ViewScoped;
+import org.bimrocket.ihub.service.ShellService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author realor
  */
-@RestController
-public class WebShellController
+@Component
+@ViewScoped
+public class ShellBean
 {
+  private String code;
+  private String output;
+  private boolean error;
+
   @Autowired
-  ConnectorService connectorService;
+  ShellService shellService;
 
-  @PostMapping("/webshell")
-  public ResponseEntity<String> execute(@RequestBody String command)
+  public String getCode()
   {
-    ResponseEntity<String> response;
+    return code;
+  }
 
-    Context cx = Context.enter();
+  public void setCode(String code)
+  {
+    this.code = code;
+  }
+
+  public String getOutput()
+  {
+    return output;
+  }
+
+  public void setOutput(String output)
+  {
+    this.output = output;
+  }
+
+  public boolean isError()
+  {
+    return error;
+  }
+
+  public void execute()
+  {
     try
     {
-      ScriptableObject scope = cx.initStandardObjects();
-      scope.put("connectorService", scope, connectorService);
-
-      Object result = cx.evaluateString(scope, command, "<cmd>", 1, null);
-
-      String resultString = Context.toString(result);
-      response = ResponseEntity.ok(resultString);
+      output = shellService.execute(code);
+      error = false;
     }
     catch (Exception ex)
     {
-      response = ResponseEntity.badRequest().body(ex.getMessage());
+      output = ex.toString();
+      error = true;
     }
-    finally
-    {
-      // Exit from the context.
-      Context.exit();
-    }
-    return response;
+  }
+
+  public void clear()
+  {
+    code = "";
+    output = "";
+    error = false;
   }
 }
