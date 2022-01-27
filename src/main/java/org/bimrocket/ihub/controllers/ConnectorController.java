@@ -45,6 +45,7 @@ import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.service.ConnectorService;
 import org.bimrocket.ihub.service.ConnectorMapperService;
+import org.bimrocket.ihub.service.ProcessorTypeService;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
 import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -69,6 +71,8 @@ public class ConnectorController
   @Autowired
   ConnectorMapperService connectorMapperService;
 
+  @Autowired
+  ProcessorTypeService processorTypeService;
 
   @GetMapping(path = "/connectors", produces = "application/json")
   public List<ConnectorExecution> getConnectors()
@@ -169,38 +173,12 @@ public class ConnectorController
     return Collections.EMPTY_LIST;
   }
 
-  @GetMapping(path = "/processors",
-    produces = "application/json")
-  public List<ProcessorType> getProcessors() throws Exception
+  @GetMapping(path = "/processors", produces = "application/json")
+  public List<ProcessorType> getProcessors(
+    @RequestParam(name="name", required=false) String className)
+    throws Exception
   {
-    List<ProcessorType> procTypes = new ArrayList<>();
-
-    Reflections reflections = new Reflections(
-      "org.bimrocket.ihub.processors");
-    Set<Class<? extends Processor>> classSet =
-      reflections.getSubTypesOf(Processor.class);
-    for (Class<? extends Processor> procClass : classSet)
-    {
-      if (Modifier.isAbstract(procClass.getModifiers())) continue;
-
-      ProcessorType procType = new ProcessorType();
-      procType.setClassName(procClass.getName());
-
-      Map<String, ConfigPropertyHandler> propHandlers =
-        ConfigPropertyHandler.findProperties(procClass);
-
-      for (ConfigPropertyHandler propHandler : propHandlers.values())
-      {
-        ProcessorProperty property = new ProcessorProperty();
-        property.setName(propHandler.getName());
-        property.setDescription(propHandler.getDescription());
-        property.setRequired(propHandler.isRequired());
-        property.setType(propHandler.getType());
-        procType.getProperties().add(property);
-      }
-      procTypes.add(procType);
-    }
-    return procTypes;
+    return processorTypeService.findProcessorTypes(className);
   }
 
 }
