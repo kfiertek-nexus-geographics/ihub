@@ -67,6 +67,12 @@ public class FacesConfig implements ServletContextAware
   @Override
   public void setServletContext(ServletContext servletContext)
   {
+    servletContext.setInitParameter("facelets.SKIP_COMMENTS",
+      Boolean.TRUE.toString());
+
+    servletContext.setInitParameter("javax.faces.STATE_SAVING_METHOD",
+      "client");
+
     servletContext.setInitParameter("com.sun.faces.forceLoadConfiguration",
       Boolean.TRUE.toString());
   }

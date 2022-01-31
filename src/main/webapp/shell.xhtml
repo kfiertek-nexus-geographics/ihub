@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition>
+
+    <link href="css/codemirror.css" type="text/css" rel="stylesheet" />
+    <pe:codeMirror id="editor"
+                   mode="application/javascript"
+                   theme="default"
+                   gutter="true"
+                   value="#{shellBean.code}"
+                   lineNumbers="true"
+                   matchBrackets="true" />
+    <div class="block">
+      <p:commandButton value="Execute"
+                       icon="pi pi-play"
+                       update="editor,output" action="#{shellBean.execute}" />
+      <p:commandButton value="Clear"
+                       icon="pi pi-times"
+                       update="editor,output" action="#{shellBean.clear}" />
+    </div>
+    <div class="block code">
+      <h:outputText id="output" value="#{shellBean.output}"
+                    styleClass="#{shellBean.error ? 'error' : ''}"/>
+    </div>
+
+  </ui:composition>
+
+</html>

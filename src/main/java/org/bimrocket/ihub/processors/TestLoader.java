@@ -37,11 +37,11 @@ import java.util.LinkedList;
 import java.util.List;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
+import org.bimrocket.ihub.connector.Processor;
+import org.bimrocket.ihub.util.ConfigProperty;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
-import org.bimrocket.ihub.connector.Processor;
-import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
@@ -62,6 +62,21 @@ public class TestLoader extends Processor
 
   @ConfigProperty
   public List<String> objectFields = new ArrayList<>();
+
+  @ConfigProperty
+  public int objectSize;
+
+  @ConfigProperty
+  public Double objectPrice;
+
+  @ConfigProperty
+  public float offset;
+
+  @ConfigProperty
+  public boolean active;
+
+  @ConfigProperty
+  public Boolean active2;
 
   @Override
   public boolean processObject(ProcessedObject procObject)

@@ -53,10 +53,20 @@ public class ConfigPropertyHandler
   {
     if (value != null)
     {
+      // special castings
+      Class fieldClass = field.getType();
+
+      if ((fieldClass.equals(float.class) || fieldClass.equals(Float.class))
+        && value instanceof Number)
+      {
+        value = ((Number)value).floatValue();
+      }
+
       field.set(bean, value);
     }
     else if (Collection.class.isAssignableFrom(field.getType()))
     {
+      // clear collection if value is null
       ((Collection)field.get(bean)).clear();
     }
   }

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition>
+
+    <p:dialog id="processor_dialog"
+              header="Processor" widgetVar="processor"
+              resizable="true" width="600"
+              modal="true" height="180"
+              style="max-width:80%; max-height: 80%"
+              class="modal-dialog">
+
+      <p:messages>
+         <p:autoUpdate />
+      </p:messages>
+
+      <p:panel id="processor_panel" class="ui-fluid">
+
+        <h:panelGroup class="p-field" style="display:block"
+                      rendered="#{processorBean.creation}">
+          <p:outputLabel for="processor_type"
+                         value="Processor class:"/>
+          <p:selectOneMenu id="processor_type"
+                           value="#{processorBean.processorSetup.className}">
+            <f:selectItems value="#{processorBean.processorTypeSelectItems}" />
+          </p:selectOneMenu>
+        </h:panelGroup>
+
+        <h:panelGroup class="p-field" style="display:block"
+                      rendered="#{not processorBean.creation}">
+          <h:outputText value="Processor class: " />
+          <h:outputText value="#{processorBean.processorSetup.className}" />
+        </h:panelGroup>
+
+        <div class="p-field">
+          <p:outputLabel for="processor_description"
+                         value="Description:"/>
+          <p:inputText id="processor_description"
+                       value="#{processorBean.processorSetup.description}"/>
+        </div>
+
+        <div class="p-field">
+          <p:outputLabel for="processor_enabled"
+                         value="Enabled:"/>
+          <p:toggleSwitch id="processor_enabled"
+                          value="#{processorBean.processorSetup.enabled}" />
+        </div>
+      </p:panel>
+
+      <f:facet name="footer">
+        <p:commandButton value="Accept"
+                         id="accept_processor"
+                         style="margin-top:4px"
+                         icon="pi pi-check"
+                         update="connectors"
+                         action="#{processorBean.accept}" />
+        <p:commandButton value="Cancel"
+                         immediate="true"
+                         icon="pi pi-times"
+                         oncomplete="PF('processor').hide()">
+          <p:ajax update="processor_panel" resetValues="true" />
+        </p:commandButton>
+      </f:facet>
+
+      <p:defaultCommand target="accept_processor" scope="processor_panel" />
+      <p:ajax event="close" update="processor_panel" resetValues="true" />
+
+    </p:dialog>
+
+  </ui:composition>
+
+</html>
