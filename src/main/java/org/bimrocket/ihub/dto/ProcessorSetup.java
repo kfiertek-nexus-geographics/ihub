@@ -30,15 +30,18 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
  *
  * @author realor
  */
-public class ProcessorSetup
+public class ProcessorSetup implements Serializable
 {
   private String className;
+  private String description;
+  private Boolean enabled;
   private Map<String, Object> properties;
 
   public String getClassName()
@@ -51,6 +54,26 @@ public class ProcessorSetup
     this.className = className;
   }
 
+  public String getDescription()
+  {
+    return description;
+  }
+
+  public void setDescription(String description)
+  {
+    this.description = description;
+  }
+
+  public Boolean getEnabled()
+  {
+    return enabled;
+  }
+
+  public void setEnabled(Boolean enabled)
+  {
+    this.enabled = enabled;
+  }
+
   public Map<String, Object> getProperties()
   {
     return properties;
@@ -59,5 +82,13 @@ public class ProcessorSetup
   public void setProperties(Map<String, Object> properties)
   {
     this.properties = properties;
+  }
+
+  public void copyTo(ProcessorSetup procSetup)
+  {
+    procSetup.className = className;
+    procSetup.description = description;
+    procSetup.enabled = enabled;
+    // do not copy properties
   }
 }

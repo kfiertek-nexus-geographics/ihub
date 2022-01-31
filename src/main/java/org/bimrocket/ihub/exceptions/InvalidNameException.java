@@ -28,58 +28,16 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.dto;
-
-import java.io.Serializable;
+package org.bimrocket.ihub.exceptions;
 
 /**
  *
  * @author realor
  */
-public class ProcessorProperty implements Serializable
+public class InvalidNameException extends InvalidSetupException
 {
-  private String name;
-  private String description;
-  private boolean required;
-  private String type;
-
-  public String getName()
+  public InvalidNameException(int errorCode, String message, Object... args)
   {
-    return name;
-  }
-
-  public void setName(String name)
-  {
-    this.name = name;
-  }
-
-  public String getDescription()
-  {
-    return description;
-  }
-
-  public void setDescription(String description)
-  {
-    this.description = description;
-  }
-
-  public boolean isRequired()
-  {
-    return required;
-  }
-
-  public void setRequired(boolean required)
-  {
-    this.required = required;
-  }
-
-  public String getType()
-  {
-    return type;
-  }
-
-  public void setType(String type)
-  {
-    this.type = type;
+    super(errorCode, message, args);
   }
 }

@@ -261,6 +261,14 @@ public class Connector implements Runnable
     if (thread != null) processor.end();
   }
 
+  public void removeProcessor(Processor processor)
+  {
+    if (processors.remove(processor))
+    {
+      if (thread != null) processor.end();
+    }
+  }
+
   public boolean isDebugEnabled()
   {
     return debugEnabled;
@@ -348,9 +356,12 @@ public class Connector implements Runnable
         while (iter.hasNext() && process)
         {
           Processor processor = iter.next();
-          process = processor.processObject(procObject);
+          if (processor.isEnabled())
+          {
+            process = processor.processObject(procObject);
+          }
         }
-        if (process)
+        if (!procObject.isIgnore())
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);

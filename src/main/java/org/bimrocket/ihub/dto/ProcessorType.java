@@ -30,6 +30,7 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +38,7 @@ import java.util.List;
  *
  * @author realor
  */
-public class ProcessorType
+public class ProcessorType implements Serializable
 {
   private String className;
   private final List<ProcessorProperty> properties = new ArrayList<>();

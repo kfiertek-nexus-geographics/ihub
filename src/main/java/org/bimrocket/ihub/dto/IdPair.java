@@ -30,13 +30,14 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  *
  * @author realor
  */
-public class IdPair
+public class IdPair implements Serializable
 {
   private String inventory;
   private String objectType;

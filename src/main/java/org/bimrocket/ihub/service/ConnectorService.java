@@ -34,8 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.exceptions.InvalidSetupException;
+import org.bimrocket.ihub.exceptions.InvalidNameException;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,12 +65,19 @@ public class ConnectorService
   @Autowired
   ConnectorMapperService connectorMapperService;
 
+  private final Pattern connectorNamePattern =
+    Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*)$");
+
   public Connector createConnector(String connectorName)
-    throws InvalidSetupException
+    throws InvalidNameException
   {
     if (connectors.containsKey(connectorName))
-      throw new InvalidSetupException(310,
+      throw new InvalidNameException(310,
         "Connector name {%s} already exists", connectorName);
+
+    if (!connectorNamePattern.matcher(connectorName).matches())
+      throw new InvalidNameException(312,
+        "Invalid connector name {%s}", connectorName);
 
     Connector connector = new Connector(this, connectorName);
 
@@ -92,6 +100,11 @@ public class ConnectorService
     return false;
   }
 
+  public boolean hasConnector(String connectorName)
+  {
+    return connectors.containsKey(connectorName);
+  }
+
   public Connector getConnector(String connectorName)
     throws NotFoundException
   {
@@ -105,6 +118,21 @@ public class ConnectorService
   public ArrayList<Connector> getConnectors()
   {
     return new ArrayList<>(connectors.values());
+  }
+
+  public ArrayList<Connector> getConnectorsByName(String name)
+  {
+    ArrayList<Connector> filteredConnectors = new ArrayList<>();
+    String lowerCaseName = name == null ? null : name.toLowerCase();
+    connectors.values().forEach(connector ->
+    {
+      if (name == null
+        || connector.getName().toLowerCase().contains(lowerCaseName))
+      {
+        filteredConnectors.add(connector);
+      }
+    });
+    return filteredConnectors;
   }
 
   public IdPairRepository getIdPairRepository()

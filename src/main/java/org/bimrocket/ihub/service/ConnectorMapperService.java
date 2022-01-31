@@ -179,6 +179,8 @@ public class ConnectorMapperService
   {
     ProcessorSetup procSetup = new ProcessorSetup();
     procSetup.setClassName(processor.getClass().getName());
+    procSetup.setDescription(processor.getDescription());
+    procSetup.setEnabled(processor.isEnabled());
 
     Map<String, Object> properties = new HashMap<>();
 
@@ -210,6 +212,15 @@ public class ConnectorMapperService
   public void setProcessorSetup(Processor processor, ProcessorSetup procSetup,
     boolean ignoreErrors) throws InvalidSetupException
   {
+    if (procSetup.getDescription() != null)
+    {
+      processor.setDescription(procSetup.getDescription());
+    }
+    if (procSetup.getEnabled() != null)
+    {
+      processor.setEnabled(procSetup.getEnabled());
+    }
+
     Map<String, Object> properties = procSetup.getProperties();
     if (properties == null) return;
 
