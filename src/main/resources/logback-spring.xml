@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d [%thread] %-5level %-50logger{40} - %msg%n</pattern>
+        </encoder>
+    </appender>
+     
+    <appender name="RollingFileDefault" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>C:/temp/ihub.log</file>
+        <encoder>
+            <pattern>%d [%thread] %-5level %-50logger{40} - %msg%n</pattern>
+        </encoder>
+         
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>C:/temp/ihub-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+    </appender>
+    
+    <springProfile name="default">
+        <root level="INFO">
+            <appender-ref ref="Console" />
+        	<appender-ref ref="RollingFileDefault" />
+        </root>
+    </springProfile>
+    
+</configuration>

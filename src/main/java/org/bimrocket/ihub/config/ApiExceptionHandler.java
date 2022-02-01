@@ -50,32 +50,31 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler
 {
   @ExceptionHandler(InvalidSetupException.class)
-  protected ResponseEntity<ApiError> exceptionHandle(
-    InvalidSetupException ex,WebRequest request)
+  protected ResponseEntity<ApiError> exceptionHandle(InvalidSetupException ex,
+      WebRequest request)
   {
     return new ResponseEntity<>(
-      new ApiError(ex.getErrorCode(), BAD_REQUEST, ex.getMessage()),
-      BAD_REQUEST);
+        new ApiError(ex.getErrorCode(), BAD_REQUEST, ex.getMessage()),
+        BAD_REQUEST);
   }
 
   @ExceptionHandler(NotFoundException.class)
   protected ResponseEntity<ApiError> exceptionHandle(NotFoundException ex,
-    WebRequest request)
+      WebRequest request)
   {
     return new ResponseEntity<>(
-      new ApiError(ex.getErrorCode(), NOT_FOUND, ex.getMessage()),
-      NOT_FOUND);
+        new ApiError(ex.getErrorCode(), NOT_FOUND, ex.getMessage()), NOT_FOUND);
   }
 
   @ExceptionHandler(Exception.class)
   protected ResponseEntity<ApiError> exceptionHandle(Exception ex,
-    WebRequest request)
+      WebRequest request)
   {
     String message = ex.getMessage();
-    if (message == null) message = ex.toString();
+    if (message == null)
+      message = ex.toString();
 
-    return new ResponseEntity<>(
-      new ApiError(0, INTERNAL_SERVER_ERROR, message),
-      INTERNAL_SERVER_ERROR);
+    return new ResponseEntity<>(new ApiError(0, INTERNAL_SERVER_ERROR, message),
+        INTERNAL_SERVER_ERROR);
   }
 }

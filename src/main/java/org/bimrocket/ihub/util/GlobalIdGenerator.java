@@ -48,8 +48,8 @@ public class GlobalIdGenerator
   {
     for (int i = 0; i < 64; i++)
     {
-      toIFCTable[(byte)BASE64.charAt(i)] = (byte)IFCB64.charAt(i);
-      fromIFCTable[(byte)IFCB64.charAt(i)] = (byte)BASE64.charAt(i);
+      toIFCTable[(byte) BASE64.charAt(i)] = (byte) IFCB64.charAt(i);
+      fromIFCTable[(byte) IFCB64.charAt(i)] = (byte) BASE64.charAt(i);
     }
   }
 
@@ -90,8 +90,8 @@ public class GlobalIdGenerator
     byte[] data = new byte[(len / 2)];
     for (int i = 0; i < len; i += 2)
     {
-      data[i / 2] = (byte)((Character.digit(s.charAt(i), 16) << 4)
-        + Character.digit(s.charAt(i + 1), 16));
+      data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+          + Character.digit(s.charAt(i + 1), 16));
     }
     return data;
   }
@@ -99,7 +99,7 @@ public class GlobalIdGenerator
   public static String byteArrayToHexString(byte[] array)
   {
     StringBuilder sb = new StringBuilder(array.length * 2);
-    for(byte b : array)
+    for (byte b : array)
     {
       sb.append(String.format("%02x", b));
     }

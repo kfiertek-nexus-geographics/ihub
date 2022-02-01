@@ -43,15 +43,22 @@ import org.bimrocket.ihub.dto.IdPair;
 public interface IdPairRepository
 {
   public IdPair save(IdPair idPair);
-  public Optional<IdPair> findByInventoryAndObjectTypeAndLocalId(
-    String inventory, String objectType, String localId);
-  public Optional<IdPair> findByInventoryAndGlobalId(
-    String inventory, String globalId);
-  public List<IdPair> findByInventoryAndObjectTypeAndLastUpdateLessThan(
-    String inventory, String objectType, Date date);
 
-  public void deleteByInventoryAndObjectTypeAndLocalId(
-    String inventory, String objectType, String localId);
-  public void deleteByInventoryAndGlobalId(
-    String inventory, String objectType, String globalId);
+  public Optional<IdPair> findByInventoryAndObjectTypeAndLocalId(
+      String inventory, String objectType, String localId);
+
+  public Optional<IdPair> findByInventoryAndGlobalId(String inventory,
+      String globalId);
+
+  public List<IdPair> findByInventoryAndObjectTypeAndLastUpdateLessThan(
+      String inventory, String objectType, Date date);
+
+  public List<IdPair> findByInventoryAndObjectType(String inventory,
+      String objectType);
+
+  public void deleteByInventoryAndObjectTypeAndLocalId(String inventory,
+      String objectType, String localId);
+
+  public void deleteByInventoryAndGlobalId(String inventory, String objectType,
+      String globalId);
 }

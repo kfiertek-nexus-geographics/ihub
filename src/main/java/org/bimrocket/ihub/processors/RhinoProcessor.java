@@ -54,7 +54,7 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class RhinoProcessor extends Processor
 {
-  @ConfigProperty(description="The script that makes the transformation")
+  @ConfigProperty(description = "The script that makes the transformation")
   public String scriptCode = "";
 
   protected Script script;
@@ -78,8 +78,8 @@ public class RhinoProcessor extends Processor
 
     scope.put("connector", scope, connector);
 
-    IdPairRepository idPairRepository =
-      connector.getConnectorService().getIdPairRepository();
+    IdPairRepository idPairRepository = connector.getConnectorService()
+        .getIdPairRepository();
     scope.put("idPairRepository", scope, idPairRepository);
   }
 
@@ -95,13 +95,13 @@ public class RhinoProcessor extends Processor
     if (localObject != null)
     {
       scope.put("localObject", scope,
-        new JsonNodeScriptable(scope, localObject));
+          new JsonNodeScriptable(scope, localObject));
     }
     JsonNode globalObject = procObject.getGlobalObject();
     if (globalObject != null)
     {
       scope.put("globalObject", scope,
-        new JsonNodeScriptable(scope, globalObject));
+          new JsonNodeScriptable(scope, globalObject));
     }
     boolean result = Context.toBoolean(script.exec(context, scope));
 
@@ -126,11 +126,11 @@ public class RhinoProcessor extends Processor
   {
     if (value instanceof JsonNode)
     {
-      return (JsonNode)value;
+      return (JsonNode) value;
     }
     else if (value instanceof NativeJavaObject)
     {
-      value = ((NativeJavaObject)value).unwrap();
+      value = ((NativeJavaObject) value).unwrap();
       if (value instanceof JsonNode)
       {
         return (JsonNode) value;
@@ -138,7 +138,7 @@ public class RhinoProcessor extends Processor
     }
     else if (value instanceof Scriptable)
     {
-      return convertToJsonNode((Scriptable)value);
+      return convertToJsonNode((Scriptable) value);
     }
     return null;
   }
@@ -149,7 +149,7 @@ public class RhinoProcessor extends Processor
     if (scriptable instanceof NativeObject)
     {
       ObjectNode objectNode = mapper.createObjectNode();
-      NativeObject object = (NativeObject)scriptable;
+      NativeObject object = (NativeObject) scriptable;
       Object[] ids = object.getIds();
       for (Object id : ids)
       {
@@ -162,7 +162,7 @@ public class RhinoProcessor extends Processor
     else if (scriptable instanceof NativeArray)
     {
       ArrayNode arrayNode = mapper.createArrayNode();
-      NativeArray array = (NativeArray)scriptable;
+      NativeArray array = (NativeArray) scriptable;
       for (Object elem : array)
       {
         addArrayNodeValue(arrayNode, elem);
@@ -171,7 +171,7 @@ public class RhinoProcessor extends Processor
     }
     else if (scriptable instanceof JsonNodeScriptable)
     {
-      JsonNodeScriptable nodeScriptable = (JsonNodeScriptable)scriptable;
+      JsonNodeScriptable nodeScriptable = (JsonNodeScriptable) scriptable;
       node = nodeScriptable.node;
     }
     return node;
@@ -196,31 +196,31 @@ public class RhinoProcessor extends Processor
     {
       if (value == null)
       {
-        node.put(name, (String)null);
+        node.put(name, (String) null);
       }
       else if (value instanceof String)
       {
-        node.put(name, (String)value);
+        node.put(name, (String) value);
       }
       else if (value instanceof Integer)
       {
-        node.put(name, (Integer)value);
+        node.put(name, (Integer) value);
       }
       else if (value instanceof Long)
       {
-        node.put(name, (Long)value);
+        node.put(name, (Long) value);
       }
       else if (value instanceof Float)
       {
-        node.put(name, (Float)value);
+        node.put(name, (Float) value);
       }
       else if (value instanceof Double)
       {
-        node.put(name, (Double)value);
+        node.put(name, (Double) value);
       }
       else if (value instanceof Boolean)
       {
-        node.put(name, (Boolean)value);
+        node.put(name, (Boolean) value);
       }
     }
   }
@@ -238,7 +238,7 @@ public class RhinoProcessor extends Processor
     }
     else if (value instanceof ConsString)
     {
-      node.add(((ConsString)value).toString());
+      node.add(((ConsString) value).toString());
     }
     else
     {
@@ -248,27 +248,27 @@ public class RhinoProcessor extends Processor
       }
       else if (value instanceof String)
       {
-        node.add((String)value);
+        node.add((String) value);
       }
       else if (value instanceof Integer)
       {
-        node.add((Integer)value);
+        node.add((Integer) value);
       }
       else if (value instanceof Long)
       {
-        node.add((Long)value);
+        node.add((Long) value);
       }
       else if (value instanceof Float)
       {
-        node.add((Float)value);
+        node.add((Float) value);
       }
       else if (value instanceof Double)
       {
-        node.add((Double)value);
+        node.add((Double) value);
       }
       else if (value instanceof Boolean)
       {
-        node.add((Boolean)value);
+        node.add((Boolean) value);
       }
     }
   }

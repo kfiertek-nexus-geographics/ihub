@@ -30,24 +30,18 @@
  */
 package org.bimrocket.ihub.controllers;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.bimrocket.ihub.connector.Processor;
+
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.dto.ProcessorProperty;
-import org.bimrocket.ihub.dto.ProcessorType;
-import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ConnectorExecution;
+import org.bimrocket.ihub.dto.ConnectorSetup;
+import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
-import org.bimrocket.ihub.service.ConnectorService;
 import org.bimrocket.ihub.service.ConnectorMapperService;
+import org.bimrocket.ihub.service.ConnectorService;
 import org.bimrocket.ihub.service.ProcessorTypeService;
-import org.bimrocket.ihub.util.ConfigPropertyHandler;
-import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -86,19 +80,17 @@ public class ConnectorController
     return response;
   }
 
-  @GetMapping(path = "/connectors/{connectorName}",
-    produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}", produces = "application/json")
   public ConnectorSetup getConnector(@PathVariable String connectorName)
-    throws Exception
+      throws Exception
   {
     Connector connector = connectorService.getConnector(connectorName);
     return connectorMapperService.getConnectorSetup(connector);
   }
 
-  @PutMapping(path = "/connectors", produces = "application/json")
-  public ConnectorSetup createConnector(
-    @RequestBody ConnectorSetup connSetup)
-    throws Exception
+  @PostMapping(path = "/connectors", produces = "application/json")
+  public ConnectorSetup createConnector(@RequestBody ConnectorSetup connSetup)
+      throws Exception
   {
     String name = connSetup.getName();
     if (name == null)
@@ -109,16 +101,15 @@ public class ConnectorController
 
     connSetup = connector.saveSetup();
 
-    if (connector.isAutoStart()) connector.start();
+    if (connector.isAutoStart())
+      connector.start();
 
     return connSetup;
   }
 
-  @PostMapping(path = "/connectors/{connectorName}",
-    produces = "application/json")
-  public ConnectorSetup updateConnector(
-    @PathVariable String connectorName,
-    @RequestBody ConnectorSetup connSetup) throws Exception
+  @PutMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  public ConnectorSetup updateConnector(@PathVariable String connectorName,
+      @RequestBody ConnectorSetup connSetup) throws Exception
   {
     Connector connector = connectorService.getConnector(connectorName);
     connectorMapperService.setConnectorSetup(connector, connSetup);
@@ -128,55 +119,50 @@ public class ConnectorController
     return connSetup;
   }
 
-  @DeleteMapping(path = "/connectors/{connectorName}",
-    produces = "application/json")
-  public boolean destroyConnector(
-    @PathVariable String connectorName) throws Exception
+  @DeleteMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  public boolean destroyConnector(@PathVariable String connectorName)
+      throws Exception
   {
     return connectorService.destroyConnector(connectorName, true);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/status",
-    produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}/status", produces = "application/json")
   public ConnectorExecution getConnectorStatus(
-    @PathVariable String connectorName) throws Exception
+      @PathVariable String connectorName) throws Exception
   {
     Connector connector = connectorService.getConnector(connectorName);
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/start",
-    produces = "application/json")
-  public ConnectorExecution startConnector(
-    @PathVariable String connectorName) throws Exception
+  @GetMapping(path = "/connectors/{connectorName}/start", produces = "application/json")
+  public ConnectorExecution startConnector(@PathVariable String connectorName)
+      throws Exception
   {
     Connector connector = connectorService.getConnector(connectorName);
     connector.start();
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/stop",
-    produces = "application/json")
-  public ConnectorExecution stopConnector(
-    @PathVariable String connectorName) throws Exception
+  @GetMapping(path = "/connectors/{connectorName}/stop", produces = "application/json")
+  public ConnectorExecution stopConnector(@PathVariable String connectorName)
+      throws Exception
   {
     Connector connector = connectorService.getConnector(connectorName);
     connector.stop();
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/executions",
-    produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}/executions", produces = "application/json")
   public List<ConnectorExecution> getConnectorExecutions(
-    @PathVariable String connectorName) throws Exception
+      @PathVariable String connectorName) throws Exception
   {
     return Collections.EMPTY_LIST;
   }
 
   @GetMapping(path = "/processors", produces = "application/json")
   public List<ProcessorType> getProcessors(
-    @RequestParam(name="name", required=false) String className)
-    throws Exception
+      @RequestParam(name = "name", required = false) String className)
+      throws Exception
   {
     return processorTypeService.findProcessorTypes(className);
   }

@@ -30,23 +30,27 @@
  */
 package org.bimrocket.ihub.config;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import java.util.Collection;
 import java.util.Collections;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 
 /**
  *
  * @author realor
  */
 @Configuration
-@ConditionalOnProperty(prefix = "data", name="store", havingValue="mongo")
+@ConditionalOnProperty(prefix = "data", name = "store", havingValue = "mongo")
 public class MongoConfig extends AbstractMongoClientConfiguration
 {
   @Value("${spring.data.mongodb.host}")
@@ -72,8 +76,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration
     ConnectionString connectionString = new ConnectionString(url);
 
     MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
-      .applyConnectionString(connectionString)
-      .build();
+        .applyConnectionString(connectionString).build();
 
     return MongoClients.create(mongoClientSettings);
   }
@@ -82,5 +85,11 @@ public class MongoConfig extends AbstractMongoClientConfiguration
   public Collection getMappingBasePackages()
   {
     return Collections.singleton("org.bimrocket.ihub");
+  }
+
+  @Autowired
+  public void setMapKeyDotReplacement(MappingMongoConverter mongoConverter)
+  {
+    mongoConverter.setMapKeyDotReplacement("#");
   }
 }

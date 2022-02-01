@@ -39,8 +39,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  *
  * @author realor
  */
-@ConditionalOnProperty(prefix = "data", name="store", havingValue="mongo")
+@ConditionalOnProperty(prefix = "data", name = "store", havingValue = "mongo")
 public interface MongoIdPairRepository
-  extends IdPairRepository, MongoRepository<IdPair, String>
+    extends IdPairRepository, MongoRepository<IdPair, String>
 {
 }

@@ -16,6 +16,10 @@ import java.lang.annotation.Target;
 public @interface ConfigProperty
 {
   String name() default "";
+
   String description() default "";
+
   boolean required() default true;
+
+  String defaultValue() default "";
 }

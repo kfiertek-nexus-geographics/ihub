@@ -76,13 +76,12 @@ public class InventoryUtils
     long el1 = System.currentTimeMillis() - t0;
     System.out.println("Time Java: " + el1);
 
-    System.out.println("Factor: " + ((double)el0 / (double)el1));
+    System.out.println("Factor: " + ((double) el0 / (double) el1));
 
-
-//    String a = "0ff7823a";
-//    byte[] bb = GlobalIdGenerator.hexStringToByteArray(a);
-//    String a2 = GlobalIdGenerator.byteArrayToHexString(bb);
-//    System.out.println(a + " - " + a2);
+    // String a = "0ff7823a";
+    // byte[] bb = GlobalIdGenerator.hexStringToByteArray(a);
+    // String a2 = GlobalIdGenerator.byteArrayToHexString(bb);
+    // System.out.println(a + " - " + a2);
 
   }
 }

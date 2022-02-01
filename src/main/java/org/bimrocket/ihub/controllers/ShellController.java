@@ -52,7 +52,7 @@ public class ShellController
   public ResponseEntity<String> execute(@RequestBody String command)
   {
     ResponseEntity<String> response;
-    
+
     try
     {
       response = ResponseEntity.ok(shellService.execute(command));

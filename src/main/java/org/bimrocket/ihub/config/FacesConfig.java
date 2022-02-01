@@ -68,6 +68,6 @@ public class FacesConfig implements ServletContextAware
   public void setServletContext(ServletContext servletContext)
   {
     servletContext.setInitParameter("com.sun.faces.forceLoadConfiguration",
-      Boolean.TRUE.toString());
+        Boolean.TRUE.toString());
   }
 }

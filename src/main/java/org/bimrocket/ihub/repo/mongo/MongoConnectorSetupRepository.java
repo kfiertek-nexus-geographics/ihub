@@ -39,8 +39,8 @@ import org.bimrocket.ihub.repo.ConnectorSetupRepository;
  *
  * @author realor
  */
-@ConditionalOnProperty(prefix = "data", name="store", havingValue="mongo")
+@ConditionalOnProperty(prefix = "data", name = "store", havingValue = "mongo")
 public interface MongoConnectorSetupRepository
-  extends ConnectorSetupRepository, MongoRepository<ConnectorSetup, String>
+    extends ConnectorSetupRepository, MongoRepository<ConnectorSetup, String>
 {
 }

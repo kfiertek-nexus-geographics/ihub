@@ -73,13 +73,13 @@ public class ConnectorMapperService
   }
 
   public void setConnectorSetup(Connector connector, ConnectorSetup connSetup)
-    throws Exception
+      throws Exception
   {
     setConnectorSetup(connector, connSetup, false);
   }
 
   public void setConnectorSetup(Connector connector, ConnectorSetup connSetup,
-    boolean ignoreErrors) throws Exception
+      boolean ignoreErrors) throws Exception
   {
     if (connSetup.getDescription() != null)
     {
@@ -112,14 +112,15 @@ public class ConnectorMapperService
 
         if (i < processors.size()) // already exists a processor at i position
         {
-          if (procSetup == null) continue;
+          if (procSetup == null)
+            continue;
 
           Processor processor = processors.get(i);
 
           String className = procSetup.getClassName();
 
           if (className != null
-            && !processor.getClass().getName().equals(className))
+              && !processor.getClass().getName().equals(className))
           {
             try
             {
@@ -127,7 +128,8 @@ public class ConnectorMapperService
             }
             catch (InvalidSetupException ex)
             {
-              if (ignoreErrors) continue;
+              if (ignoreErrors)
+                continue;
 
               throw ex;
             }
@@ -138,20 +140,22 @@ public class ConnectorMapperService
         {
           if (procSetup == null)
           {
-            if (ignoreErrors) continue;
+            if (ignoreErrors)
+              continue;
 
             throw new InvalidSetupException(340,
-              "null processor at position {%d}", i);
+                "null processor at position {%d}", i);
           }
 
           String className = procSetup.getClassName();
 
           if (className == null)
           {
-            if (ignoreErrors) continue;
+            if (ignoreErrors)
+              continue;
 
             throw new InvalidSetupException(350,
-              "processor className not set at position {%d}", i);
+                "processor className not set at position {%d}", i);
           }
 
           try
@@ -161,7 +165,8 @@ public class ConnectorMapperService
           }
           catch (InvalidSetupException ex)
           {
-            if (ignoreErrors) continue;
+            if (ignoreErrors)
+              continue;
 
             throw ex;
           }
@@ -182,8 +187,8 @@ public class ConnectorMapperService
 
     Map<String, Object> properties = new HashMap<>();
 
-    Map<String, ConfigPropertyHandler> propHandlers =
-      ConfigPropertyHandler.findProperties(processor.getClass());
+    Map<String, ConfigPropertyHandler> propHandlers = ConfigPropertyHandler
+        .findProperties(processor.getClass());
     for (ConfigPropertyHandler propHandler : propHandlers.values())
     {
       String propertyName = propHandler.getName();
@@ -202,31 +207,33 @@ public class ConnectorMapperService
   }
 
   public void setProcessorSetup(Processor processor, ProcessorSetup procSetup)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     setProcessorSetup(processor, procSetup, false);
   }
 
   public void setProcessorSetup(Processor processor, ProcessorSetup procSetup,
-    boolean ignoreErrors) throws InvalidSetupException
+      boolean ignoreErrors) throws InvalidSetupException
   {
     Map<String, Object> properties = procSetup.getProperties();
-    if (properties == null) return;
+    if (properties == null)
+      return;
 
-    Map<String, ConfigPropertyHandler> propHandlers =
-      ConfigPropertyHandler.findProperties(processor.getClass());
+    Map<String, ConfigPropertyHandler> propHandlers = ConfigPropertyHandler
+        .findProperties(processor.getClass());
     for (Map.Entry<String, Object> entry : properties.entrySet())
     {
       String propertyName = entry.getKey();
       Object propertyValue = entry.getValue();
-        ConfigPropertyHandler propHandler = propHandlers.get(propertyName);
+      ConfigPropertyHandler propHandler = propHandlers.get(propertyName);
 
       if (propHandler == null)
       {
-        if (ignoreErrors) continue;
+        if (ignoreErrors)
+          continue;
 
-        throw new InvalidSetupException(360,
-          "Unsupported config property {%s}", propertyName);
+        throw new InvalidSetupException(360, "Unsupported config property {%s}",
+            propertyName);
       }
 
       try
@@ -235,11 +242,12 @@ public class ConnectorMapperService
       }
       catch (Exception ex)
       {
-        if (ignoreErrors) continue;
+        if (ignoreErrors)
+          continue;
 
         throw new InvalidSetupException(360,
-          "Can not set value {%s} to config property {%s}",
-          propertyValue, propertyName);
+            "Can not set value {%s} to config property {%s}", propertyValue,
+            propertyName);
       }
     }
   }

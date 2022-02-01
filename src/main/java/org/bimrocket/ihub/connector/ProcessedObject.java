@@ -42,6 +42,7 @@ public class ProcessedObject
   public static final String INSERT = "insert";
   public static final String UPDATE = "update";
   public static final String DELETE = "delete";
+  public static final String CONSUME = "consume";
 
   private String objectType;
   private String localId;
@@ -159,20 +160,11 @@ public class ProcessedObject
   {
     StringBuilder buffer = new StringBuilder();
 
-    return buffer
-      .append("ConnectorObject")
-      .append("{ localId: ")
-      .append(localId)
-      .append(", globalId: ")
-      .append(globalId)
-      .append(", objectType: ")
-      .append(objectType)
-      .append(", operation: ")
-      .append(operation)
-      .append(", localObject: ")
-      .append(localObject)
-      .append(", globalObject: ")
-      .append(globalObject)
-      .append(" }").toString();
+    return buffer.append("ConnectorObject").append("{ localId: ")
+        .append(localId).append(", globalId: ").append(globalId)
+        .append(", objectType: ").append(objectType).append(", operation: ")
+        .append(operation).append(", localObject: ").append(localObject)
+        .append(", globalObject: ").append(globalObject).append(" }")
+        .toString();
   }
 }

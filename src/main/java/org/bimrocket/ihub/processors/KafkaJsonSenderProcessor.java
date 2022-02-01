@@ -32,15 +32,24 @@ package org.bimrocket.ihub.processors;
 
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Processor;
+import org.bimrocket.ihub.util.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *
- * @author realor
+ * @author kfiertek-nexus-geographics
  */
-public class KafkaLoader extends Processor
+public class KafkaJsonSenderProcessor extends KafkaSenderAbstract
 {
-  public KafkaLoader(Connector connector)
+
+  private static final Logger log = LoggerFactory
+      .getLogger(KafkaJsonSenderProcessor.class);
+
+  public KafkaJsonSenderProcessor(Connector connector)
   {
     super(connector);
   }
@@ -48,6 +57,30 @@ public class KafkaLoader extends Processor
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    return false;
+
+    JsonNode toSend = this.getNodeToSend(procObject);
+    if (toSend == null)
+    {
+      return false;
+    }
+
+    try
+    {
+
+      var value = this.mapper.writeValueAsString(toSend);
+      log.debug(
+          "processObject@KafkaJsonSenderProcessor - Connector::{} sending {} json object to topic {}",
+          this.connector.getName(), toSend.toPrettyString(), this.topicName);
+      this.template.send(this.topicName, value);
+      return true;
+    }
+    catch (JsonProcessingException e)
+    {
+      log.error(
+          "processObject@KafkaJsonSenderProcessor - Connector::{} error processing following json::{}, this should never happen",
+          this.connector.getName(), toSend.toPrettyString());
+      return false;
+    }
+
   }
 }

@@ -30,18 +30,16 @@
  */
 package org.bimrocket.ihub.config;
 
-import org.bimrocket.ihub.repo.filesystem.FileSystemConnectorSetupRepository;
+import org.bimrocket.ihub.repo.ConnectorSetupRepository;
+import org.bimrocket.ihub.repo.IdPairRepository;
+import org.bimrocket.ihub.repo.mongo.MongoConnectorSetupRepository;
+import org.bimrocket.ihub.repo.mongo.MongoIdPairRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.bimrocket.ihub.repo.ConnectorSetupRepository;
-import org.bimrocket.ihub.repo.IdPairRepository;
-import org.bimrocket.ihub.repo.filesystem.FileSystemIdPairRepository;
-import org.bimrocket.ihub.repo.mongo.MongoConnectorSetupRepository;
-import org.bimrocket.ihub.repo.mongo.MongoIdPairRepository;
 
 /**
  *
@@ -65,9 +63,7 @@ public class RepositoryConfig
       return context.getBean(MongoConnectorSetupRepository.class);
     }
     else
-    {
-      return context.getBean(FileSystemConnectorSetupRepository.class);
-    }
+      return null;
   }
 
   @Bean
@@ -79,8 +75,6 @@ public class RepositoryConfig
       return context.getBean(MongoIdPairRepository.class);
     }
     else
-    {
-      return context.getBean(FileSystemIdPairRepository.class);
-    }
+      return null;
   }
 }

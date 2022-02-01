@@ -17,14 +17,17 @@ public class ConfigPropertyHandler
   private final boolean required;
   private final String description;
   private final Field field;
+  private final String defaultValue;
 
   ConfigPropertyHandler(ConfigProperty property, Field field)
   {
     String propName = property.name();
-    if (propName.length() == 0) propName = field.getName();
+    if (propName.length() == 0)
+      propName = field.getName();
     this.name = propName;
     this.required = property.required();
     this.description = property.description();
+    this.defaultValue = property.defaultValue();
     this.field = field;
     this.field.setAccessible(true);
   }
@@ -57,7 +60,7 @@ public class ConfigPropertyHandler
     }
     else if (Collection.class.isAssignableFrom(field.getType()))
     {
-      ((Collection)field.get(bean)).clear();
+      ((Collection) field.get(bean)).clear();
     }
   }
 
@@ -72,13 +75,14 @@ public class ConfigPropertyHandler
     Type genericType = field.getGenericType();
     if (genericType instanceof ParameterizedType)
     {
-      ParameterizedType paramType = (ParameterizedType)genericType;
+      ParameterizedType paramType = (ParameterizedType) genericType;
       typeName += "<";
       Type[] typeArgs = paramType.getActualTypeArguments();
       for (int i = 0; i < typeArgs.length; i++)
       {
-        if (i > 0) typeName += ", ";
-        typeName += ((Class)typeArgs[i]).getSimpleName();
+        if (i > 0)
+          typeName += ", ";
+        typeName += ((Class) typeArgs[i]).getSimpleName();
       }
       typeName += ">";
     }
@@ -104,9 +108,10 @@ public class ConfigPropertyHandler
   }
 
   public static Map<String, ConfigPropertyHandler> findProperties(Class cls,
-    Map<String, ConfigPropertyHandler> properties)
+      Map<String, ConfigPropertyHandler> properties)
   {
-    if (properties == null) properties = new HashMap<>();
+    if (properties == null)
+      properties = new HashMap<>();
 
     Class superClass = cls.getSuperclass();
     if (superClass != null && superClass != Object.class)
@@ -120,12 +125,18 @@ public class ConfigPropertyHandler
       ConfigProperty property = field.getAnnotation(ConfigProperty.class);
       if (property != null)
       {
-        ConfigPropertyHandler propHandler =
-          new ConfigPropertyHandler(property, field);
+        ConfigPropertyHandler propHandler = new ConfigPropertyHandler(property,
+            field);
         properties.put(propHandler.getName(), propHandler);
       }
     }
 
     return properties;
   }
+
+  public String getDefaultValue()
+  {
+    return defaultValue;
+  }
+
 }

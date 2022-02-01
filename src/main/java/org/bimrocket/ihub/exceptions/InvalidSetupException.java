@@ -38,7 +38,7 @@ public class InvalidSetupException extends Exception
 {
   private final int errorCode;
 
-  public InvalidSetupException(int errorCode, String message, Object ...args)
+  public InvalidSetupException(int errorCode, String message, Object... args)
   {
     super(String.format(message, args));
     this.errorCode = errorCode;

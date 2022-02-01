@@ -40,6 +40,7 @@ public class ProcessorProperty
   private String description;
   private boolean required;
   private String type;
+  private String defaultValue;
 
   public String getName()
   {
@@ -80,4 +81,15 @@ public class ProcessorProperty
   {
     this.type = type;
   }
+
+  public String getDefaultValue()
+  {
+    return defaultValue;
+  }
+
+  public void setDefaultValue(String defaultValue)
+  {
+    this.defaultValue = defaultValue;
+  }
+
 }

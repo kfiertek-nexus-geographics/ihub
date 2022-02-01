@@ -54,8 +54,8 @@ public class TestSender extends Processor
   {
     try
     {
-      System.out.println(
-        mapper.writeValueAsString(procObject.getGlobalObject()));
+      System.out
+          .println(mapper.writeValueAsString(procObject.getGlobalObject()));
     }
     catch (JsonProcessingException ex)
     {

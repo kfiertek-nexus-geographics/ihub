@@ -28,47 +28,24 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.repo.filesystem;
-
-import java.util.Collections;
-import java.util.Optional;
-import org.bimrocket.ihub.dto.ConnectorSetup;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
-import org.bimrocket.ihub.repo.ConnectorSetupRepository;
+package org.bimrocket.ihub.exceptions;
 
 /**
  *
  * @author realor
  */
-@Repository
-@ConditionalOnProperty(prefix = "data", name="store", havingValue="filesystem")
-public class FileSystemConnectorSetupRepository
-  implements ConnectorSetupRepository
+public class InvalidProcessorInitException extends Exception
 {
-  @Override
-  public Iterable<ConnectorSetup> findAll()
+  private final int errorCode;
+
+  public InvalidProcessorInitException(int errorCode, String message, Object... args)
   {
-    return () ->
-    {
-      return Collections.emptyIterator();
-    };
+    super(String.format(message, args));
+    this.errorCode = errorCode;
   }
 
-  @Override
-  public ConnectorSetup save(ConnectorSetup connSetup)
+  public int getErrorCode()
   {
-    return connSetup;
-  }
-
-  @Override
-  public Optional<ConnectorSetup> findById(String connectorName)
-  {
-    return Optional.empty();
-  }
-
-  @Override
-  public void deleteById(String connectorName)
-  {
+    return errorCode;
   }
 }

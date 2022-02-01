@@ -31,12 +31,20 @@
 
 package org.bimrocket.ihub.connector;
 
+import org.bimrocket.ihub.exceptions.InvalidProcessorInitException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  *
  * @author realor
  */
 public abstract class Processor
 {
+  protected static final String IDLE = "IDLE";
+  protected static final String CONSUMING = "CONSUMING";
+  protected static final String SHUTDOWN = "SHUTDOWN";
+  protected final ObjectMapper mapper = new ObjectMapper();
   protected Connector connector;
 
   public Processor(Connector connector)
@@ -52,6 +60,11 @@ public abstract class Processor
 
   public void end()
   {
+  }
+
+  public void reset()
+  {
+
   }
 
   public Connector getConnector()

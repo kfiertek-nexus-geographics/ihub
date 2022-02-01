@@ -38,7 +38,7 @@ public class NotFoundException extends Exception
 {
   private final int errorCode;
 
-  public NotFoundException(int errorCode, String message, Object ...args)
+  public NotFoundException(int errorCode, String message, Object... args)
   {
     super(String.format(message, args));
     this.errorCode = errorCode;

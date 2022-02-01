@@ -30,20 +30,26 @@
  */
 package org.bimrocket.ihub.connector;
 
+import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
+import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
+import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
+import org.bimrocket.ihub.dto.ConnectorSetup;
+import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.repo.IdPairRepository;
-import org.bimrocket.ihub.dto.IdPair;
-import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.service.ConnectorService;
-import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
-import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
-import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
+import org.bimrocket.ihub.service.KafkaConsumerRunnable;
+import org.bimrocket.ihub.util.InventoryUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -51,6 +57,9 @@ import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
  */
 public class Connector implements Runnable
 {
+  private static final Logger log = LoggerFactory
+      .getLogger(Connector.class);
+
   public static final String RUNNING_STATUS = "RUNNING";
   public static final String STOPPED_STATUS = "STOPPED";
   public static final String STARTING_STATUS = "STARTING";
@@ -200,7 +209,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T addProcessor(String className)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     T processor = createProcessor(className);
     processors.add(processor);
@@ -209,7 +218,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T addProcessor(Class<T> processorClass)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     T processor = createProcessor(processorClass);
     processors.add(processor);
@@ -218,7 +227,7 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T insertProcessor(String className, int index)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     T processor = createProcessor(className);
     processors.add(index, processor);
@@ -226,8 +235,8 @@ public class Connector implements Runnable
     return processor;
   }
 
-  public <T extends Processor> T insertProcessor(
-    Class<T> processorClass, int index) throws InvalidSetupException
+  public <T extends Processor> T insertProcessor(Class<T> processorClass,
+      int index) throws InvalidSetupException
   {
     T processor = createProcessor(processorClass);
     processors.add(index, processor);
@@ -236,20 +245,22 @@ public class Connector implements Runnable
   }
 
   public <T extends Processor> T setProcessor(String className, int index)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     T processor = createProcessor(className);
-    if (thread != null) processor.end();
+    if (thread != null)
+      processor.end();
     processors.set(index, processor);
 
     return processor;
   }
 
-  public <T extends Processor> T setProcessor(
-    Class<T> processorClass, int index) throws InvalidSetupException
+  public <T extends Processor> T setProcessor(Class<T> processorClass,
+      int index) throws InvalidSetupException
   {
     T processor = createProcessor(processorClass);
-    if (thread != null) processor.end();
+    if (thread != null)
+      processor.end();
     processors.set(index, processor);
 
     return processor;
@@ -258,7 +269,8 @@ public class Connector implements Runnable
   public void removeProcessor(int index)
   {
     Processor processor = processors.remove(index);
-    if (thread != null) processor.end();
+    if (thread != null)
+      processor.end();
   }
 
   public boolean isDebugEnabled()
@@ -309,30 +321,20 @@ public class Connector implements Runnable
   {
     StringBuilder buffer = new StringBuilder();
 
-    return buffer
-      .append("Connector")
-      .append("{ name: \"")
-      .append(name)
-      .append("\", description: \"")
-      .append(description == null ? "" : description)
-      .append("\", inventory: \"")
-      .append(inventory)
-      .append("\", status: ")
-      .append(getStatus())
-      .append(", autoStart: ")
-      .append(autoStart)
-      .append(", singleRun: ")
-      .append(singleRun)
-      .append(", debug: ")
-      .append(debugEnabled)
-      .append(", processors: ")
-      .append(processors)
-      .append(" }").toString();
+    return buffer.append("Connector").append("{ name: \"").append(name)
+        .append("\", description: \"")
+        .append(description == null ? "" : description)
+        .append("\", inventory: \"").append(inventory).append("\", status: ")
+        .append(getStatus()).append(", autoStart: ").append(autoStart)
+        .append(", singleRun: ").append(singleRun).append(", debug: ")
+        .append(debugEnabled).append(", processors: ").append(processors)
+        .append(" }").toString();
   }
 
   @Override
   public void run()
   {
+    log.debug("run@Connector - Connector::{} running connector", this.getName());
     status = RUNNING_STATUS;
     init();
     resetStatistics();
@@ -341,17 +343,20 @@ public class Connector implements Runnable
     {
       try
       {
+        log.debug("run@Connector - Connector::{} reseting ProcessedObject", this.getName());
         procObject.reset();
 
         boolean process = true;
         Iterator<Processor> iter = processors.iterator();
         while (iter.hasNext() && process)
         {
-          Processor processor = iter.next();
-          process = processor.processObject(procObject);
+          Processor pro = iter.next();
+          log.debug("run@Connector - Connector::{} running processor {}", this.getName(), pro.getClass().toString());
+          process = pro.processObject(procObject);
         }
         if (process)
         {
+
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
           captureObject(procObject);
@@ -359,8 +364,11 @@ public class Connector implements Runnable
         }
         else
         {
-          if (singleRun) end = true;
-          else Thread.sleep(waitMillis);
+          this.reset();
+          if (singleRun)
+            end = true;
+          else
+            Thread.sleep(waitMillis);
         }
       }
       catch (InterruptedException ex)
@@ -375,6 +383,15 @@ public class Connector implements Runnable
     end();
     thread = null;
     status = STOPPED_STATUS;
+  }
+
+  private void reset()
+  {
+    Iterator<Processor> procIter = processors.iterator();
+    while (procIter.hasNext())
+    {
+      procIter.next().reset();
+    }
   }
 
   public synchronized Connector start()
@@ -408,8 +425,8 @@ public class Connector implements Runnable
 
   public ConnectorSetup saveSetup()
   {
-    ConnectorSetup connSetup =
-      service.getConnectorMapperService().getConnectorSetup(this);
+    ConnectorSetup connSetup = service.getConnectorMapperService()
+        .getConnectorSetup(this);
 
     service.getConnectorSetupRepository().save(connSetup);
 
@@ -427,13 +444,13 @@ public class Connector implements Runnable
   {
     ConnectorSetup connSetup = null;
 
-    Optional<ConnectorSetup> optConnSetup =
-      service.getConnectorSetupRepository().findById(name);
+    Optional<ConnectorSetup> optConnSetup = service
+        .getConnectorSetupRepository().findById(name);
     if (optConnSetup.isPresent())
     {
       connSetup = optConnSetup.get();
-      service.getConnectorMapperService()
-        .setConnectorSetup(this, connSetup, true);
+      service.getConnectorMapperService().setConnectorSetup(this, connSetup,
+          true);
     }
     return connSetup;
   }
@@ -479,7 +496,7 @@ public class Connector implements Runnable
     IdPairRepository idPairRepository = service.getIdPairRepository();
 
     idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(inventory,
-      procObject.getObjectType(), procObject.getLocalId());
+        procObject.getObjectType(), procObject.getLocalId());
 
     if (procObject.isInsert() || procObject.isUpdate())
     {
@@ -508,11 +525,17 @@ public class Connector implements Runnable
     processed++;
     switch (procObject.getOperation())
     {
-      case INSERT: inserted++; break;
-      case UPDATE: updated++; break;
-      case DELETE: deleted++; break;
-      default:
-        ignored++;
+    case INSERT:
+      inserted++;
+      break;
+    case UPDATE:
+      updated++;
+      break;
+    case DELETE:
+      deleted++;
+      break;
+    default:
+      ignored++;
     }
   }
 
@@ -525,7 +548,7 @@ public class Connector implements Runnable
   }
 
   <T extends Processor> T createProcessor(Class<T> processorClass)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     try
     {
@@ -534,29 +557,30 @@ public class Connector implements Runnable
     catch (Exception ex)
     {
       throw new InvalidSetupException(320,
-        "Can not create processor class {%s}", processorClass);
+          "Can not create processor class {%s}", processorClass);
     }
   }
 
   <T extends Processor> T createProcessor(String className)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     try
     {
       className = completeClassName(className);
-      Class<T> processorClass = (Class<T>)Class.forName(className);
+      Class<T> processorClass = (Class<T>) Class.forName(className);
       return createProcessor(processorClass);
     }
     catch (ClassNotFoundException ex)
     {
-      throw new InvalidSetupException(330,
-        "Invalid processor className {%s}", className);
+      throw new InvalidSetupException(330, "Invalid processor className {%s}",
+          className);
     }
   }
 
   String completeClassName(String className)
   {
-    if (className.contains(".")) return className;
+    if (className.contains("."))
+      return className;
 
     return "org.bimrocket.ihub.processors." + className;
   }

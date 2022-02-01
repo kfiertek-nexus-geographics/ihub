@@ -66,7 +66,8 @@ public class TestLoader extends Processor
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    if (entries.isEmpty()) return false;
+    if (entries.isEmpty())
+      return false;
 
     Entry entry = entries.poll();
     procObject.setOperation(entry.operation);

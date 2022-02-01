@@ -40,7 +40,10 @@ import org.bimrocket.ihub.dto.ConnectorSetup;
 public interface ConnectorSetupRepository
 {
   public Iterable<ConnectorSetup> findAll();
+
   public ConnectorSetup save(ConnectorSetup connSetup);
+
   public Optional<ConnectorSetup> findById(String connectorName);
+
   public void deleteById(String connectorName);
 }

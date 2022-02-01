@@ -50,10 +50,10 @@ import org.bimrocket.ihub.repo.ConnectorSetupRepository;
  */
 @Service
 public class ConnectorService
-  implements ApplicationListener<ApplicationReadyEvent>
+    implements ApplicationListener<ApplicationReadyEvent>
 {
-  private final Map<String, Connector> connectors =
-    Collections.synchronizedMap(new HashMap<>());
+  private final Map<String, Connector> connectors = Collections
+      .synchronizedMap(new HashMap<>());
 
   @Autowired
   IdPairRepository idPairRepository;
@@ -65,11 +65,11 @@ public class ConnectorService
   ConnectorMapperService connectorMapperService;
 
   public Connector createConnector(String connectorName)
-    throws InvalidSetupException
+      throws InvalidSetupException
   {
     if (connectors.containsKey(connectorName))
-      throw new InvalidSetupException(310,
-        "Connector name {%s} already exists", connectorName);
+      throw new InvalidSetupException(310, "Connector name {%s} already exists",
+          connectorName);
 
     Connector connector = new Connector(this, connectorName);
 
@@ -85,20 +85,20 @@ public class ConnectorService
     {
       connector.stop();
 
-      if (deleteFromRepo) connectorSetupRepository.deleteById(connectorName);
+      if (deleteFromRepo)
+        connectorSetupRepository.deleteById(connectorName);
 
       return true;
     }
     return false;
   }
 
-  public Connector getConnector(String connectorName)
-    throws NotFoundException
+  public Connector getConnector(String connectorName) throws NotFoundException
   {
     Connector connector = connectors.get(connectorName);
     if (connector == null)
-      throw new NotFoundException(150,
-        "Connector {%s} not found", connectorName);
+      throw new NotFoundException(150, "Connector {%s} not found",
+          connectorName);
     return connector;
   }
 
@@ -130,7 +130,8 @@ public class ConnectorService
       {
         System.out.println("Restoring " + connSetup.getName());
         Connector connector = createConnector(connSetup.getName()).restore();
-        if (connector.isAutoStart()) connector.start();
+        if (connector.isAutoStart())
+          connector.start();
       }
       catch (Exception ex)
       {
@@ -140,7 +141,7 @@ public class ConnectorService
   }
 
   @Override
-	public void onApplicationEvent(ApplicationReadyEvent event)
+  public void onApplicationEvent(ApplicationReadyEvent event)
   {
     System.out.println("INIT");
     System.out.println("idPairRepository: " + idPairRepository);

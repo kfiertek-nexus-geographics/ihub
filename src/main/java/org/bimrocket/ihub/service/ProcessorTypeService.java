@@ -35,10 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.lang.model.util.Types;
+
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
+import org.python.antlr.ast.arguments.vararg_descriptor;
 import org.reflections.Reflections;
 import org.springframework.stereotype.Service;
 
@@ -53,13 +57,13 @@ public class ProcessorTypeService
   {
     List<ProcessorType> procTypes = new ArrayList<>();
 
-    Reflections reflections = new Reflections(
-      "org.bimrocket.ihub.processors");
-    Set<Class<? extends Processor>> classSet =
-      reflections.getSubTypesOf(Processor.class);
+    Reflections reflections = new Reflections("org.bimrocket.ihub.processors");
+    Set<Class<? extends Processor>> classSet = reflections
+        .getSubTypesOf(Processor.class);
     for (Class<? extends Processor> procClass : classSet)
     {
-      if (Modifier.isAbstract(procClass.getModifiers())) continue;
+      if (Modifier.isAbstract(procClass.getModifiers()))
+        continue;
 
       if (className == null || procClass.getName().contains(className))
       {
@@ -74,8 +78,8 @@ public class ProcessorTypeService
     ProcessorType procType = new ProcessorType();
     procType.setClassName(procClass.getName());
 
-    Map<String, ConfigPropertyHandler> propHandlers =
-      ConfigPropertyHandler.findProperties(procClass);
+    Map<String, ConfigPropertyHandler> propHandlers = ConfigPropertyHandler
+        .findProperties(procClass);
 
     for (ConfigPropertyHandler propHandler : propHandlers.values())
     {
@@ -84,6 +88,7 @@ public class ProcessorTypeService
       property.setDescription(propHandler.getDescription());
       property.setRequired(propHandler.isRequired());
       property.setType(propHandler.getType());
+      property.setDefaultValue(propHandler.getDefaultValue());
       procType.getProperties().add(property);
     }
     return procType;
