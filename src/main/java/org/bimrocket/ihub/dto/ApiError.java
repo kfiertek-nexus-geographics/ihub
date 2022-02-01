@@ -30,13 +30,14 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.io.Serializable;
 import org.springframework.http.HttpStatus;
 
 /**
  *
  * @author realor
  */
-public class ApiError
+public class ApiError implements Serializable
 {
   private final int errorCode;
   private final HttpStatus httpStatus;

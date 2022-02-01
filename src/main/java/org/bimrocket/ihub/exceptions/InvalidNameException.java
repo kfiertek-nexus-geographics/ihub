@@ -28,81 +28,16 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.dto;
-
-import java.io.Serializable;
-import java.util.Date;
+package org.bimrocket.ihub.exceptions;
 
 /**
  *
  * @author realor
  */
-public class IdPair implements Serializable
+public class InvalidNameException extends InvalidSetupException
 {
-  private String inventory;
-  private String objectType;
-  private String localId;
-  private String globalId;
-  private Date lastUpdate;
-  private String connectorName;
-
-  public String getInventory()
+  public InvalidNameException(int errorCode, String message, Object... args)
   {
-    return inventory;
-  }
-
-  public void setInventory(String inventory)
-  {
-    this.inventory = inventory;
-  }
-
-  public String getObjectType()
-  {
-    return objectType;
-  }
-
-  public void setObjectType(String objectType)
-  {
-    this.objectType = objectType;
-  }
-
-  public String getLocalId()
-  {
-    return localId;
-  }
-
-  public void setLocalId(String localId)
-  {
-    this.localId = localId;
-  }
-
-  public String getGlobalId()
-  {
-    return globalId;
-  }
-
-  public void setGlobalId(String globalId)
-  {
-    this.globalId = globalId;
-  }
-
-  public Date getLastUpdate()
-  {
-    return lastUpdate;
-  }
-
-  public void setLastUpdate(Date lastUpdate)
-  {
-    this.lastUpdate = lastUpdate;
-  }
-
-  public String getConnectorName()
-  {
-    return connectorName;
-  }
-
-  public void setConnectorName(String connectorName)
-  {
-    this.connectorName = connectorName;
+    super(errorCode, message, args);
   }
 }

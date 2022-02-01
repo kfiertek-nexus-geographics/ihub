@@ -57,8 +57,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Connector implements Runnable
 {
-  private static final Logger log = LoggerFactory
-      .getLogger(Connector.class);
+  private static final Logger log = LoggerFactory.getLogger(Connector.class);
 
   public static final String RUNNING_STATUS = "RUNNING";
   public static final String STOPPED_STATUS = "STOPPED";
@@ -273,6 +272,15 @@ public class Connector implements Runnable
       processor.end();
   }
 
+  public void removeProcessor(Processor processor)
+  {
+    if (processors.remove(processor))
+    {
+      if (thread != null)
+        processor.end();
+    }
+  }
+
   public boolean isDebugEnabled()
   {
     return debugEnabled;
@@ -334,7 +342,8 @@ public class Connector implements Runnable
   @Override
   public void run()
   {
-    log.debug("run@Connector - Connector::{} running connector", this.getName());
+    log.debug("run@Connector - Connector::{} running connector",
+        this.getName());
     status = RUNNING_STATUS;
     init();
     resetStatistics();
@@ -343,18 +352,23 @@ public class Connector implements Runnable
     {
       try
       {
-        log.debug("run@Connector - Connector::{} reseting ProcessedObject", this.getName());
+        log.debug("run@Connector - Connector::{} reseting ProcessedObject",
+            this.getName());
         procObject.reset();
 
         boolean process = true;
         Iterator<Processor> iter = processors.iterator();
         while (iter.hasNext() && process)
         {
-          Processor pro = iter.next();
-          log.debug("run@Connector - Connector::{} running processor {}", this.getName(), pro.getClass().toString());
-          process = pro.processObject(procObject);
+          Processor processor = iter.next();
+          log.debug("run@Connector - Connector::{} running processor {}",
+              this.getName(), processor.getClass().toString());
+          if (processor.isEnabled())
+          {
+            process = processor.processObject(procObject);
+          }
         }
-        if (process)
+        if (!procObject.isIgnore() && process)
         {
 
           updateIdPairRepository(procObject);

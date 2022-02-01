@@ -46,10 +46,32 @@ public abstract class Processor
   protected static final String SHUTDOWN = "SHUTDOWN";
   protected final ObjectMapper mapper = new ObjectMapper();
   protected Connector connector;
+  protected String description;
+  protected boolean enabled;
 
   public Processor(Connector connector)
   {
     this.connector = connector;
+  }
+
+  public String getDescription()
+  {
+    return description;
+  }
+
+  public void setDescription(String description)
+  {
+    this.description = description;
+  }
+
+  public boolean isEnabled()
+  {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled)
+  {
+    this.enabled = enabled;
   }
 
   public void init()

@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition>
+
+    <p:messages id="messages"
+                globalOnly="true">
+       <p:autoUpdate />
+    </p:messages>
+
+    <p:panel id="search_panel">
+      <h:outputLabel for="filter" value="Filter:" />
+      <p:inputText id="filter" value="#{connectorListBean.connectorName}"
+                   style="margin-left:4px" />
+      <p:commandButton value="Search"
+                       id="search_connectors"
+                       update="filter,connectors"
+                       icon="pi pi-search"
+                       style="margin-left:4px"
+                       action="#{connectorListBean.search}" />
+    </p:panel>
+
+    <p:defaultCommand target="search_connectors" scope="search_panel" />
+
+    <p:tree id="connectors" value="#{connectorListBean.nodes}"
+            var="data" nodeVar="node"
+            selection="#{connectorListBean.selectedNode}" cache="false"
+            dynamic="true" selectionMode="single" animate="true"
+            style="margin-top:4px">
+
+      <p:ajax event="expand"
+              listener="#{connectorListBean.onNodeExpand}" global="false" />
+      <p:ajax event="collapse"
+              listener="#{connectorListBean.onNodeCollapse}" global="false" />
+
+      <p:treeNode type="root">
+        <h:outputText value="Connectors" />
+      </p:treeNode>
+      <p:treeNode type="connector"
+                  expandedIcon="pi pi-folder-open"
+                  collapsedIcon="pi pi-folder">
+        <h:outputText value="#{data.name}: #{data.inventory}"
+                      styleClass="#{connectorListBean.isConnectorChanged(data) ?
+                      'changed' : 'unchanged'}" />
+        <p:toggleSwitch value="#{connectorListBean.connectorRunning}"
+                        style="margin-left:8px; vertical-align: middle">
+          <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
+        </p:toggleSwitch>
+
+<!--
+        <p:toggleSwitch value="#{connectorListBean.isConnectorStarted(data.name)}"
+                        style="margin-left:8px; vertical-align: middle">
+          <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
+        </p:toggleSwitch>
+-->
+      </p:treeNode>
+      <p:treeNode type="processor" icon="pi pi-cog">
+        <h:outputText value="#{connectorListBean.getProcessorDescription(data)}"
+                      styleClass="#{connectorListBean.isProcessorEnabled(data) ?
+                      'enabled' : 'disabled'}" />
+      </p:treeNode>
+      <p:treeNode type="property" icon="pi pi-circle">
+        <h:outputText value="#{data.name}: " title="#{data.description}" />
+        <h:outputText value="#{connectorListBean.getPropertyValue(node)}" />
+      </p:treeNode>
+    </p:tree>
+
+    <p:contextMenu id="connector_menu"
+                   for="connectors"
+                   nodeType="connector">
+      <p:menuitem value="Add processor"
+                  action="#{connectorListBean.addProcessor}"
+                  update="processor_dialog"
+                  oncomplete="PF('processor').show()"
+                  icon="pi pi-plus-circle"/>
+      <p:menuitem value="Edit"
+                  action="#{connectorListBean.editConnector}"
+                  update="connector_dialog"
+                  oncomplete="PF('connector').show()"
+                  icon="pi pi-pencil"/>
+      <p:menuitem value="Apply changes"
+                  action="#{connectorListBean.applyConnectorChanges}"
+                  update="connectors"
+                  icon="pi pi-check"/>
+      <p:menuitem value="Undo changes"
+                  action="#{connectorListBean.undoConnectorChanges}"
+                  update="connectors"
+                  icon="pi pi-undo"/>
+      <p:menuitem value="Save"
+                  action="#{connectorListBean.saveConnector}"
+                  update="connectors"
+                  icon="pi pi-save"/>
+      <p:menuitem value="Delete"
+                  action="#{connectorListBean.deleteConnector}"
+                  update="connectors"
+                  icon="pi pi-trash">
+        <p:confirm header="Confirm" icon="pi pi-exclamation-triangle"
+                   message="Really want to delete this connector?" />
+      </p:menuitem>
+    </p:contextMenu>
+
+    <p:contextMenu id="processor_menu"
+                  for="connectors"
+                  nodeType="processor">
+      <p:menuitem value="Insert processor"
+                  action="#{connectorListBean.insertProcessor}"
+                  update="processor_dialog"
+                  oncomplete="PF('processor').show()"
+                  icon="pi pi-plus-circle"/>
+      <p:menuitem value="Edit"
+                  action="#{connectorListBean.editProcessor}"
+                  update="processor_dialog"
+                  oncomplete="PF('processor').show()"
+                  icon="pi pi-pencil"/>
+      <p:menuitem value="Delete"
+                  action="#{connectorListBean.deleteProcessor}"
+                  update="connectors"
+                  icon="pi pi-trash"/>
+    </p:contextMenu>
+
+    <p:contextMenu id="property_menu"
+                   for="connectors"
+                   nodeType="property">
+      <p:menuitem value="Edit"
+                  action="#{connectorListBean.editProperty}"
+                  update="property_dialog"
+                  oncomplete="PF('property').show()"
+                  icon="pi pi-pencil"/>
+    </p:contextMenu>
+
+    <p:commandButton action="#{connectorListBean.addConnector}"
+                     update="connector_dialog"
+                     icon="pi pi-plus-circle"
+                     value="Add connector"
+                     style="margin-top: 4px"
+                     oncomplete="PF('connector').show()" />
+
+    <p:confirmDialog global="true"
+                     responsive="true" width="350">
+      <p:commandButton value="No" type="button"
+                       styleClass="ui-confirmdialog-no ui-button-flat"/>
+      <p:commandButton value="Yes"
+                       type="button" styleClass="ui-confirmdialog-yes" />
+    </p:confirmDialog>
+
+    <ui:include src="connector_dialog.xhtml" />
+    <ui:include src="processor_dialog.xhtml" />
+    <ui:include src="property_dialog.xhtml" />
+
+  </ui:composition>
+
+</html>

@@ -30,6 +30,8 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -46,7 +48,7 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author realor
  */
-public class ConnectorSetup
+public class ConnectorSetup implements Serializable
 {
   @Id
   @ApiModelProperty(notes = "Unique identifier of the connector.", example = "ConsumerGeoConnector", required = true, position = 0)
@@ -75,7 +77,7 @@ public class ConnectorSetup
   @Max(24 * 60 * 60 * 1000)
   private Long waitMillis;
 
-  private List<ProcessorSetup> processors;
+  private List<ProcessorSetup> processors = new ArrayList<>();
 
   public String getName()
   {
@@ -145,5 +147,16 @@ public class ConnectorSetup
   public void setProcessors(List<ProcessorSetup> processors)
   {
     this.processors = processors;
+  }
+
+  public void copyTo(ConnectorSetup connSetup)
+  {
+    connSetup.name = name;
+    connSetup.description = description;
+    connSetup.inventory = inventory;
+    connSetup.autoStart = autoStart;
+    connSetup.singleRun = singleRun;
+    connSetup.waitMillis = waitMillis;
+    // do not copy processors
   }
 }

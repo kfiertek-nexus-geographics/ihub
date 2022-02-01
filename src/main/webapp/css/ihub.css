@@ -37,6 +37,7 @@ div.block
 
 div.block.code
 {
+  margin-top: 10px;
   font-family: monospace;
 }
 
@@ -48,4 +49,33 @@ span.error
 h1
 {
   font-size: 20px;
+}
+
+.changed
+{
+  vertical-align: middle;
+  font-style: italic;
+  color: blue;
+}
+
+.unchanged
+{
+  vertical-align: middle;
+  font-style: normal;
+  color: black;
+}
+
+.enabled
+{
+  color: #404040;
+}
+
+.disabled
+{
+  color: #b0b0b0;
+}
+
+.p-field
+{
+  margin-top: 6px;
 }

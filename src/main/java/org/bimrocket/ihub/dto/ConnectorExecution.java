@@ -30,11 +30,13 @@
  */
 package org.bimrocket.ihub.dto;
 
+import java.io.Serializable;
+
 /**
  *
  * @author realor
  */
-public class ConnectorExecution
+public class ConnectorExecution implements Serializable
 {
   private String name;
   private String description;
