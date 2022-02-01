@@ -48,7 +48,7 @@
         <h:outputText value="#{data.name}: #{data.inventory}"
                       styleClass="#{connectorListBean.isConnectorChanged(data) ?
                       'changed' : 'unchanged'}" />
-        <p:toggleSwitch value="#{connectorListBean.connectorStatus}"
+        <p:toggleSwitch value="#{connectorListBean.connectorRunning}"
                         style="margin-left:8px; vertical-align: middle">
           <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
         </p:toggleSwitch>

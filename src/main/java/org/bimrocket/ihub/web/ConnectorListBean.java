@@ -35,11 +35,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
+import javax.faces.component.ValueHolder;
 import javax.faces.event.FacesEvent;
 import org.bimrocket.ihub.connector.Connector;
-import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
-import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.bimrocket.ihub.dto.ProcessorSetup;
@@ -54,6 +52,8 @@ import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
+import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
 
 /**
  *
@@ -86,6 +86,7 @@ public class ConnectorListBean
   String connectorName;
   String operation;
   Set<String> changed = new HashSet<>();
+  boolean connectorRunning;
 
   public void search()
   {
@@ -238,7 +239,7 @@ public class ConnectorListBean
     }
   }
 
-  public boolean getConnectorStatus()
+  public boolean getConnectorRunning()
   {
     Object data = FacesUtils.getExpressionValue("#{data}");
     if (data instanceof ConnectorSetup)
@@ -257,33 +258,33 @@ public class ConnectorListBean
     return false;
   }
 
-  public void setConnectorStatus(boolean start)
+  public void setConnectorRunning(boolean running)
   {
+    // status change is performed in listener
+    connectorRunning = running;
   }
 
   public void connectorStatusChanged(FacesEvent event)
   {
-    Object data = FacesUtils.getExpressionValue("#{data}");
-    if (data instanceof ConnectorSetup)
+    ConnectorSetup connSetup =
+      (ConnectorSetup)FacesUtils.getExpressionValue("#{data}");
+
+    String name = connSetup.getName();
+    try
     {
-      String name = ((ConnectorSetup)data).getName();
-      try
+      Connector connector = connectorService.getConnector(name);
+      if (connectorRunning)
       {
-        Connector connector = connectorService.getConnector(name);
-        String status = connector.getStatus();
-        if (RUNNING_STATUS.equals(status) || STARTING_STATUS.equals(status))
-        {
-          connector.stop();
-        }
-        else
-        {
-          connector.start();
-        }
+        connector.start();
       }
-      catch (NotFoundException ex)
+      else
       {
-        FacesUtils.addErrorMessage(ex);
+        connector.stop();
       }
+    }
+    catch (NotFoundException ex)
+    {
+      FacesUtils.addErrorMessage(ex);
     }
   }
 
