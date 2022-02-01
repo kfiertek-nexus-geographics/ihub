@@ -38,6 +38,9 @@
               listener="#{connectorListBean.onNodeExpand}" global="false" />
       <p:ajax event="collapse"
               listener="#{connectorListBean.onNodeCollapse}" global="false" />
+      <p:ajax event="contextMenu"
+              update="main:tabs:connector_menu"
+              global="false" />
 
       <p:treeNode type="root">
         <h:outputText value="Connectors" />
@@ -52,13 +55,6 @@
                         style="margin-left:8px; vertical-align: middle">
           <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
         </p:toggleSwitch>
-
-<!--
-        <p:toggleSwitch value="#{connectorListBean.isConnectorStarted(data.name)}"
-                        style="margin-left:8px; vertical-align: middle">
-          <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
-        </p:toggleSwitch>
--->
       </p:treeNode>
       <p:treeNode type="processor" icon="pi pi-cog">
         <h:outputText value="#{connectorListBean.getProcessorDescription(data)}"
@@ -86,10 +82,12 @@
                   icon="pi pi-pencil"/>
       <p:menuitem value="Apply changes"
                   action="#{connectorListBean.applyConnectorChanges}"
+                  rendered="#{connectorListBean.connectorChanged}"
                   update="connectors"
                   icon="pi pi-check"/>
       <p:menuitem value="Undo changes"
                   action="#{connectorListBean.undoConnectorChanges}"
+                  rendered="#{connectorListBean.connectorChanged}"
                   update="connectors"
                   icon="pi pi-undo"/>
       <p:menuitem value="Save"
@@ -141,12 +139,13 @@
                      style="margin-top: 4px"
                      oncomplete="PF('connector').show()" />
 
-    <p:confirmDialog global="true"
+    <p:confirmDialog id="confirm_dialog" global="true"
                      responsive="true" width="350">
       <p:commandButton value="No" type="button"
                        styleClass="ui-confirmdialog-no ui-button-flat"/>
       <p:commandButton value="Yes"
-                       type="button" styleClass="ui-confirmdialog-yes" />
+                       type="button"
+                       styleClass="ui-confirmdialog-yes ui-button-danger" />
     </p:confirmDialog>
 
     <ui:include src="connector_dialog.xhtml" />
