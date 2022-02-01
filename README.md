@@ -9,6 +9,48 @@ You should use [Allman code style](https://en.wikipedia.org/wiki/Indentation_sty
 
 **In Eclipse**
 Go to Window > Preferences > Java > Code Style > Formatter and import [allman_formatter_eclipse.xml](allman_formatter_eclipse.xml)
+Inside class you can use shortcut CTRL + SHIFT + F to format automatically all objects in class.
+
+### API Documentation
+Run application and documentation is available http://localhost:8080/swagger-ui.html
+Swagger also allows execution/test of endpoints very useful to create connectors or check available processors.
+
+### Logging
+We use org.slf4j.Logger
+Declare field on start of class :
+```  
+private static final Logger log = LoggerFactory
+      .getLogger(NAME_OF_CLASS.class);
+```
+Use following syntax:
+```
+log.info("methodName@className - message")
+```
+Inside processors please define connector name running for easier debugging like this:
+```
+log.info("methodName@className - Connector::{} message", this.getConnector.getName());
+```
+**Logging levels are following:**
+* **TRACE** - Use to output variables content in order to trace which data is generating unexcepted behaviour. Excepted to be very verbose.
+```
+log.trace("VERY VERBOSE INCLUDE AS MUCH INFORMATION AS YOU CAN");
+```
+* **DEBUG** - Use to add more information about specified step in order to diagnose issues in code.
+```
+log.debug("VERBOSE NOTIFY STEP BY STEP CODE EXECUTION");
+```
+* **INFO** - Standard logging level, use it to notify changes in state of application like for example start of an connector.
+```
+log.info("INDICATE SOMETHING IS HAPPENING");
+```
+* **ERROR** - Use when something unexcepted has occured or when developer made a configuration mistake so it's easy to know which step of configuration failed.
+```
+log.error("SOMETHING WENT WRONG, WITH OBJECT {} INITIALIZATION FAILED", object.toString());
+```
+* **FATAL** - Datastore connection is failing or crucial part of app went wrong.
+```
+log.fatal("USE ONLY IF SOMETHING TERRIBLE HAPPEND");
+```
 
 ### Datastore
 Actually you can use one datastore **mongo** which is recommended for production environments.
