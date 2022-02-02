@@ -86,7 +86,8 @@ public class KafkaConsumerRunnable implements Runnable
   {
     try
     {
-      log.debug("run@KafkaConsumerRunnable - subscribing to topic {}", this.topic);
+      log.debug("run@KafkaConsumerRunnable - subscribing to topic {}",
+          this.topic);
       consumer.subscribe(new ArrayList<>(Arrays.asList(this.topic)));
 
       while (!con.getStatus().equals(Connector.STOPPING_STATUS)
@@ -111,7 +112,14 @@ public class KafkaConsumerRunnable implements Runnable
     }
     finally
     {
-      consumer.close();
+      try
+      {
+        consumer.close();
+      }
+      catch (Exception e)
+      {
+
+      }
     }
   }
 

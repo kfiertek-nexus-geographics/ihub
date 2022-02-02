@@ -37,14 +37,18 @@ import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.bimrocket.ihub.connector.Connector;
+import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.service.KafkaConsumerRunnable;
 import org.bimrocket.ihub.util.ConfigProperty;
 
 public abstract class KafkaLoaderAbstract
-    extends FullScanLoader
+    extends Processor
 {
   protected KafkaConsumerRunnable runnableKafka;
   protected Thread threatRunner;
+
+  @ConfigProperty(name = "kafka.object.type", description = "The object type")
+  public String objectType;
 
   @ConfigProperty(name = "kafka.consumer.group.id", description = "Number of the kafka group to which the loader belongs.")
   public String groupId;
@@ -89,9 +93,8 @@ public abstract class KafkaLoaderAbstract
     threatRunner.start();
   }
 
-  protected List<String> getRecords()
-  {
-    return Arrays.asList(runnableKafka.getRecords());
+  protected String getRecord() {
+    return this.runnableKafka.getRecord();
   }
 
   @Override

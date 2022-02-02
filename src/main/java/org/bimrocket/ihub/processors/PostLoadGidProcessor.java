@@ -41,6 +41,8 @@ import org.bimrocket.ihub.dto.PostProcessorGlobalObject;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.bimrocket.ihub.util.InventoryUtils;
 import org.python.icu.util.Calendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -59,7 +61,9 @@ import com.jayway.jsonpath.JsonPath;
  */
 public class PostLoadGidProcessor extends Processor
 {
-
+  private static final Logger log = LoggerFactory
+      .getLogger(PostLoadGidProcessor.class);
+  
   private InventoryUtils invUtils;
   private List<IdPair> actualIdPairs;
 
@@ -79,6 +83,7 @@ public class PostLoadGidProcessor extends Processor
   {
     if (proObject.isIgnore())
     {
+      log.trace("processObject@PostLoadGidProcessor - processed object is ignore");
       return true;
     }
 
@@ -86,6 +91,7 @@ public class PostLoadGidProcessor extends Processor
         || proObject.getObjectType().isBlank()))
     {
 
+      log.error("processObject@PostLoadGidProcessor - processed object type is null or blank");
       // This should never happen all loaders should assign object type to
       // ProcessedObject
       return false;
@@ -94,7 +100,7 @@ public class PostLoadGidProcessor extends Processor
     if (proObject.getLocalObject() == null
         && (proObject.isInsert() || proObject.isUpdate()))
     {
-
+      log.error("processObject@PostLoadGidProcessor - processed object local object is null while operation is insert or update");
       // This should never happen all insert or update should have valid
       // JsonNode as localObject
       // In case of Ignore or Delete operation localObject can be null
@@ -104,6 +110,7 @@ public class PostLoadGidProcessor extends Processor
     if ((proObject.getLocalId() == null || proObject.getLocalId().isBlank())
         && (proObject.isInsert() || proObject.isUpdate()))
     {
+      log.debug("processObject@PostLoadGidProcessor - setting local id of ProcessedObject");
       JsonNode nodeToProcess = proObject.getLocalObject();
       String localId = null;
       try
@@ -111,10 +118,11 @@ public class PostLoadGidProcessor extends Processor
         localId = JsonPath.parse(mapper.writeValueAsString(nodeToProcess))
             .read(pathLocalId).toString();
 
+        log.debug("processObject@PostLoadGidProcessor - local id found::{}", localId);
       }
-      catch (JsonProcessingException jsonProcessingException)
+      catch (JsonProcessingException e)
       {
-        jsonProcessingException.printStackTrace();
+        log.error("processObject@PostLoadGidProcessor - couldn't parse local id given json path::{} and json node::{}", pathLocalId, nodeToProcess.toPrettyString(), e);
         return false;
       }
       proObject.setLocalId(localId);
@@ -122,6 +130,7 @@ public class PostLoadGidProcessor extends Processor
 
     if (proObject.getGlobalId() == null || proObject.getGlobalId().isBlank())
     {
+      log.debug("processObject@PostLoadGidProcessor - setting global id for ProcessedObject");
       var idPair = searchIdPair(proObject);
       if (idPair == null)
       {
@@ -137,7 +146,7 @@ public class PostLoadGidProcessor extends Processor
         proObject.setOperation(ProcessedObject.INSERT);
       }
       else
-      {
+      { 
         proObject.setGlobalId(idPair.getGlobalId());
         proObject.setOperation(ProcessedObject.INSERT);
       }

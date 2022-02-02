@@ -224,6 +224,8 @@ public class ConnectorMapperService
     if (procSetup.getEnabled() != null)
     {
       processor.setEnabled(procSetup.getEnabled());
+    } else {
+      processor.setEnabled(false);
     }
 
     Map<String, Object> properties = procSetup.getProperties();

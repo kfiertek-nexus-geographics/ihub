@@ -33,6 +33,7 @@ package org.bimrocket.ihub.processors;
 import java.util.Iterator;
 
 import org.bimrocket.ihub.connector.Connector;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,32 +57,31 @@ public class KafkaJsonLoaderProcessor extends KafkaLoaderAbstract
   }
 
   @Override
-  protected Iterator<JsonNode> fullScan()
+  public boolean processObject(ProcessedObject procObject)
   {
-    log.debug("scan@KafkaJsonLoaderProcessor - Connector::{} scanning for objects from kafka to load", this.getConnector().getName());
-    return super.getRecords().stream().map((consumerRecord) ->
-    {
+
+    String recordLoaded = this.getRecord();
+    
+    log.debug("processObject@KafkaJsonLoaderProcessor - Connector:{} getting record from kafka, record::{}", this.getConnector().getName(), recordLoaded);
+    if (recordLoaded == null) {
+      procObject.setObjectType(this.objectType);
+      procObject.setOperation(ProcessedObject.IGNORE);
+      return false;
+    } else {
+      procObject.setOperation(ProcessedObject.INSERT);
+      procObject.setObjectType(this.objectType);
       try
       {
-        log.debug("scan@KafkaJsonLoaderProcessor - Connector:{} found new record in kafka, record::{}", this.getConnector().getName(), consumerRecord);
-        return this.mapper.readTree(consumerRecord);
+        procObject.setLocalObject(this.mapper.readTree(recordLoaded));
       }
       catch (JsonProcessingException e)
       {
-        log.error("scan@KafkaJsonLoaderProcessor - Connector::{} not a json object found in topic record::{}",this.getConnector().getName(), consumerRecord);
-        return null;
+        log.debug("processObject@KafkaJsonLoaderProcessor - record not a valid json, this should never happen incoming record::{}", recordLoaded);
+        procObject.setOperation(ProcessedObject.IGNORE);
+        return false;
       }
-    }).iterator();
-  }
-
-  @Override
-  public void end()
-  {
-    super.end();
-    runnableKafka.shutdown();
-    threatRunner.interrupt();
-    runnableKafka = null;
-    threatRunner = null;
+      return true;
+    }
   }
 
 }
