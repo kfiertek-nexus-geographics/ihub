@@ -39,6 +39,7 @@
                              rendered="#{propertyBean.isStringValue()}" />
 
             <p:inputNumber value="#{propertyBean.value}"
+                           decimalPlaces="#{propertyBean.isDecimalValue() ? 2 : 0}"
                            converter="#{propertyBean.converter}"
                            rendered="#{propertyBean.isNumericValue()}" />
 

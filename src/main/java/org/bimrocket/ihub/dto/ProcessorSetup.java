@@ -31,6 +31,7 @@
 package org.bimrocket.ihub.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -42,7 +43,7 @@ public class ProcessorSetup implements Serializable
   private String className;
   private String description;
   private Boolean enabled;
-  private Map<String, Object> properties;
+  private Map<String, Object> properties = new HashMap<>();
 
   public String getClassName()
   {

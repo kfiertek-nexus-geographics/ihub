@@ -104,6 +104,12 @@ public class PropertyBean
     return converters.get(property.getType()) instanceof NumericConverter;
   }
 
+  public boolean isDecimalValue()
+  {
+    if (property == null) return false;
+    return "float double Float Double".contains(property.getType());
+  }
+
   public boolean isStringValue()
   {
     if (property == null) return false;
