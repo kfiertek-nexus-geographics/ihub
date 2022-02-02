@@ -45,9 +45,9 @@
       <p:treeNode type="root">
         <h:outputText value="Connectors" />
       </p:treeNode>
+
       <p:treeNode type="connector"
-                  expandedIcon="pi pi-folder-open"
-                  collapsedIcon="pi pi-folder">
+                  icon="connector">
         <h:outputText value="#{data.name}: #{data.inventory}"
                       styleClass="#{connectorListBean.isConnectorChanged(data) ?
                       'changed' : 'unchanged'}" />
@@ -56,11 +56,13 @@
           <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
         </p:toggleSwitch>
       </p:treeNode>
+
       <p:treeNode type="processor" icon="pi pi-cog">
         <h:outputText value="#{connectorListBean.getProcessorDescription(data)}"
                       styleClass="#{connectorListBean.isProcessorEnabled(data) ?
                       'enabled' : 'disabled'}" />
       </p:treeNode>
+
       <p:treeNode type="property" icon="pi pi-circle">
         <h:outputText value="#{data.name}: " title="#{data.description}" />
         <h:outputText value="#{connectorListBean.getPropertyValue(node)}" />
