@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.faces.bean.ViewScoped;
-import javax.faces.component.ValueHolder;
 import javax.faces.event.FacesEvent;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.dto.ConnectorSetup;
@@ -122,6 +121,19 @@ public class ConnectorListBean
   public TreeNode getNodes()
   {
     return rootNode;
+  }
+
+  public boolean isConnectorChanged()
+  {
+    if (selectedNode == null) return false;
+
+    Object data = selectedNode.getData();
+    if (data instanceof ConnectorSetup)
+    {
+      ConnectorSetup connSetup = (ConnectorSetup)data;
+      return changed.contains(connSetup.getName());
+    }
+    return false;
   }
 
   public boolean isConnectorChanged(ConnectorSetup connSetup)

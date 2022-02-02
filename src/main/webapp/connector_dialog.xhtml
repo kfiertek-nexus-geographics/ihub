@@ -11,49 +11,72 @@
 
     <p:dialog id="connector_dialog"
               header="Connector" widgetVar="connector"
-              resizable="true" width="600"
-              modal="true" height="300"
-              style="max-width:80%; max-height: 80%"
+              resizable="false" width="700"
+              modal="true" height="400"
+              style="max-width:90%; max-height: 90%"
               class="modal-dialog">
+
+      <f:facet name="header">
+        <span class="ui-icon connector"></span> Connector
+      </f:facet>
 
       <p:messages>
          <p:autoUpdate />
       </p:messages>
 
       <p:panel id="connector_panel" class="ui-fluid">
-        <div class="p-field">
-          <p:outputLabel value="Name:" for="connector_name" />
-          <p:inputText id="connector_name" disabled="#{connectorBean.nameDisabled}"
-                       value="#{connectorBean.connectorSetup.name}" /></div>
-
-        <div class="p-field">
-          <p:outputLabel value="Description:" for="connector_description" />
-          <p:inputText id="connector_description"
-                       value="#{connectorBean.connectorSetup.description}" />
+        <div class="field grid">
+          <p:outputLabel value="Name:" for="connector_name"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="connector_name" disabled="#{connectorBean.nameDisabled}"
+                         value="#{connectorBean.connectorSetup.name}" />
+          </div>
         </div>
 
-        <div class="p-field">
-          <p:outputLabel value="Inventory:" for="inventory" />
-          <p:inputText id="inventory"
-                       value="#{connectorBean.connectorSetup.inventory}" />
+        <div class="field grid">
+          <p:outputLabel value="Description:" for="connector_description"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="connector_description"
+                         value="#{connectorBean.connectorSetup.description}" />
+          </div>
         </div>
 
-        <div class="p-field">
-          <p:outputLabel value="Auto start:" for="auto_start" />
-          <p:toggleSwitch id="auto_start"
-                          value="#{connectorBean.connectorSetup.autoStart}" />
+        <div class="field grid">
+          <p:outputLabel value="Inventory:" for="inventory"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="inventory"
+                         value="#{connectorBean.connectorSetup.inventory}" />
+          </div>
         </div>
 
-        <div class="p-field">
-          <p:outputLabel value="Single run:" for="single_run" />
-          <p:toggleSwitch id="single_run"
-                          value="#{connectorBean.connectorSetup.singleRun}" />
+        <div class="field grid">
+          <p:outputLabel value="Auto start:" for="auto_start"
+                         styleClass="col-fixed" style="width:100px" />
+          <div class="col">
+            <p:toggleSwitch id="auto_start"
+                            value="#{connectorBean.connectorSetup.autoStart}" />
+          </div>
         </div>
 
-        <div>
-          <p:outputLabel value="Wait millis:" for="wait_millis" />
-          <p:spinner id="wait_millis"
-                     value="#{connectorBean.connectorSetup.waitMillis}" />
+        <div class="field grid">
+          <p:outputLabel value="Single run:" for="single_run"
+                         styleClass="col-fixed" style="width:100px" />
+          <div class="col">
+            <p:toggleSwitch id="single_run"
+                            value="#{connectorBean.connectorSetup.singleRun}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Wait millis:" for="wait_millis"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-4">
+            <p:spinner id="wait_millis"
+                       value="#{connectorBean.connectorSetup.waitMillis}" />
+          </div>
         </div>
       </p:panel>
 

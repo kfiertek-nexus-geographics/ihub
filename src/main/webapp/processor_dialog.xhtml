@@ -11,10 +11,14 @@
 
     <p:dialog id="processor_dialog"
               header="Processor" widgetVar="processor"
-              resizable="true" width="600"
-              modal="true" height="180"
-              style="max-width:80%; max-height: 80%"
+              resizable="false" width="700"
+              modal="true" height="200"
+              style="max-width:90%; max-height: 90%"
               class="modal-dialog">
+
+      <f:facet name="header">
+        <span class="ui-icon pi pi-cog"></span> Processor
+      </f:facet>
 
       <p:messages>
          <p:autoUpdate />
@@ -22,34 +26,49 @@
 
       <p:panel id="processor_panel" class="ui-fluid">
 
-        <h:panelGroup class="p-field" style="display:block"
+        <h:panelGroup class="field grid"
                       rendered="#{processorBean.creation}">
-          <p:outputLabel for="processor_type"
-                         value="Processor class:"/>
-          <p:selectOneMenu id="processor_type"
-                           value="#{processorBean.processorSetup.className}">
-            <f:selectItems value="#{processorBean.processorTypeSelectItems}" />
-          </p:selectOneMenu>
+          <p:outputLabel value="Class name:"
+                         for="processor_type"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0"/>
+          <div class="col-12 md:col-10">
+            <p:selectOneMenu id="processor_type"
+                             value="#{processorBean.processorSetup.className}">
+              <f:selectItems value="#{processorBean.processorTypeSelectItems}" />
+            </p:selectOneMenu>
+          </div>
         </h:panelGroup>
 
-        <h:panelGroup class="p-field" style="display:block"
+        <h:panelGroup class="field grid"
                       rendered="#{not processorBean.creation}">
-          <h:outputText value="Processor class: " />
-          <h:outputText value="#{processorBean.processorSetup.className}" />
+          <p:outputLabel value="Class name:"
+                         for="processor_type_input"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="processor_type_input"
+                         disabled="true"
+                         value="#{processorBean.processorSetup.className}" />
+          </div>
         </h:panelGroup>
 
-        <div class="p-field">
+        <div class="field grid">
           <p:outputLabel for="processor_description"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0"
                          value="Description:"/>
-          <p:inputText id="processor_description"
-                       value="#{processorBean.processorSetup.description}"/>
+          <div class="col-12 md:col-10">
+            <p:inputText id="processor_description"
+                         value="#{processorBean.processorSetup.description}"/>
+          </div>
         </div>
 
-        <div class="p-field">
+        <div class="field grid">
           <p:outputLabel for="processor_enabled"
+                         styleClass="col-fixed" style="width:100px"
                          value="Enabled:"/>
-          <p:toggleSwitch id="processor_enabled"
-                          value="#{processorBean.processorSetup.enabled}" />
+          <div class="col">
+            <p:toggleSwitch id="processor_enabled"
+                            value="#{processorBean.processorSetup.enabled}" />
+          </div>
         </div>
       </p:panel>
 

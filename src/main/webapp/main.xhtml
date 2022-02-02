@@ -9,13 +9,14 @@
   <h:head>
     <title>IHUB</title>
     <link href="css/ihub.css" type="text/css" rel="stylesheet" />
+    <link href="css/primeflex.css" type="text/css" rel="stylesheet" />
   </h:head>
 
   <h:body>
-    <h:form>
+    <h:form id="main">
 
       <h1>BIMROCKET - IHUB</h1>
-      <p:tabView>
+      <p:tabView id="tabs">
         <p:tab title="Connectors">
           <ui:include src="connector_list.xhtml" />
         </p:tab>

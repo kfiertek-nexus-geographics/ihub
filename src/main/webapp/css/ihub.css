@@ -12,8 +12,10 @@
 }
 
 body,
-body .ui-widget
+body .ui-widget,
+body .ui-inputfield
 {
+  --font-family: Montserrat, Arial;
   font-family: Montserrat, Arial;
   font-size: 14px;
 }
@@ -75,7 +77,10 @@ h1
   color: #b0b0b0;
 }
 
-.p-field
+.connector
 {
-  margin-top: 6px;
+  background-image: url(images/connector.svg);
+  background-size: 16px 16px;
+  width:16px;
+  height:16px;
 }
