@@ -11,9 +11,9 @@
 
     <p:dialog id="property_dialog"
               header="Property" widgetVar="property"
-              resizable="true" width="600"
+              resizable="true" width="700"
               modal="true" height="300"
-              style="max-width:80%; max-height: 80%"
+              style="max-width:90%; max-height: 90%"
               class="modal-dialog">
 
       <p:messages>
@@ -22,24 +22,25 @@
 
       <p:panel id="property_panel" class="ui-fluid">
 
-        <div>
-          <h:outputText value="#{propertyBean.property.name} (#{propertyBean.property.type}):"/>
-        </div>
+        <div class="field">
+          <div class="col">
+            <h:outputText value="#{propertyBean.property.name} (#{propertyBean.property.type}):"/>
+          </div>
+          <div class="col">
+            <h:outputText value="#{propertyBean.property.description}"/>
+          </div>
 
-        <div>
-          <h:outputText value="#{propertyBean.property.description}"/>
-        </div>
+          <div class="col">
+            <p:inputTextarea value="#{propertyBean.value}"
+                             rendered="#{propertyBean.isStringValue()}" />
 
-        <div class="p-field">
-          <p:inputTextarea value="#{propertyBean.value}"
-                           rendered="#{propertyBean.isStringValue()}" />
+            <p:inputNumber value="#{propertyBean.value}"
+                           converter="#{propertyBean.converter}"
+                           rendered="#{propertyBean.isNumericValue()}" />
 
-          <p:inputNumber value="#{propertyBean.value}"
-                         converter="#{propertyBean.converter}"
-                         rendered="#{propertyBean.isNumericValue()}" />
-
-          <p:toggleSwitch value="#{propertyBean.value}"
-                          rendered="#{propertyBean.isBooleanValue()}" />
+            <p:toggleSwitch value="#{propertyBean.value}"
+                            rendered="#{propertyBean.isBooleanValue()}" />
+          </div>
         </div>
       </p:panel>
 
