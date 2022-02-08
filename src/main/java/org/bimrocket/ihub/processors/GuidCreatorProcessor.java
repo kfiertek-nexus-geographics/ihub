@@ -44,10 +44,7 @@ import org.python.icu.util.Calendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 
 /**
  * Designed for objects that doesn't have globalId, usually after using one
@@ -59,21 +56,21 @@ import com.jayway.jsonpath.JsonPath;
  * @author kfiertek-nexus-geographics
  *
  */
-public class PostLoadGidProcessor extends Processor
+public class GuidCreatorProcessor extends Processor
 {
   private static final Logger log = LoggerFactory
-      .getLogger(PostLoadGidProcessor.class);
-  
+      .getLogger(GuidCreatorProcessor.class);
+
   private InventoryUtils invUtils;
   private List<IdPair> actualIdPairs;
 
-  @ConfigProperty(name = "postload.object.type", description = "The object type to treat Global Ids")
+  @ConfigProperty(name = "creator.object.type", description = "The object type to treat Global Ids")
   public String objectType;
 
-  @ConfigProperty(name = "postload.object.path.local.id", description = "Path to local id in JsonNode object")
+  @ConfigProperty(name = "creator.object.path.local.id", description = "Path to local id in JsonNode object")
   public String pathLocalId;
 
-  public PostLoadGidProcessor(Connector connector)
+  public GuidCreatorProcessor(Connector connector)
   {
     super(connector);
   }
@@ -83,7 +80,8 @@ public class PostLoadGidProcessor extends Processor
   {
     if (proObject.isIgnore())
     {
-      log.trace("processObject@PostLoadGidProcessor - processed object is ignore");
+      log.trace(
+          "processObject@GuidCreatorProcessor - processed object is ignore");
       return true;
     }
 
@@ -91,7 +89,8 @@ public class PostLoadGidProcessor extends Processor
         || proObject.getObjectType().isBlank()))
     {
 
-      log.error("processObject@PostLoadGidProcessor - processed object type is null or blank");
+      log.error(
+          "processObject@GuidCreatorProcessor - processed object type is null or blank");
       // This should never happen all loaders should assign object type to
       // ProcessedObject
       return false;
@@ -100,7 +99,9 @@ public class PostLoadGidProcessor extends Processor
     if (proObject.getLocalObject() == null
         && (proObject.isInsert() || proObject.isUpdate()))
     {
-      log.error("processObject@PostLoadGidProcessor - processed object local object is null while operation is insert or update");
+      log.error(
+          "processObject@GuidCreatorProcessor - Connector::{}, processed object local object is null while operation is insert or update",
+          this.getConnector().getName());
       // This should never happen all insert or update should have valid
       // JsonNode as localObject
       // In case of Ignore or Delete operation localObject can be null
@@ -110,27 +111,29 @@ public class PostLoadGidProcessor extends Processor
     if ((proObject.getLocalId() == null || proObject.getLocalId().isBlank())
         && (proObject.isInsert() || proObject.isUpdate()))
     {
-      log.debug("processObject@PostLoadGidProcessor - setting local id of ProcessedObject");
+      log.debug(
+          "processObject@GuidCreatorProcessor - Connector::{}, setting local id of ProcessedObject", this.getConnector().getName());
       JsonNode nodeToProcess = proObject.getLocalObject();
       String localId = null;
-      try
-      {
-        localId = JsonPath.parse(mapper.writeValueAsString(nodeToProcess))
-            .read(pathLocalId).toString();
 
-        log.debug("processObject@PostLoadGidProcessor - local id found::{}", localId);
-      }
-      catch (JsonProcessingException e)
+      String[] pathsLocalId = pathLocalId.split("\\.");
+      JsonNode currentNode = nodeToProcess;
+      for (int i = 0; i < pathsLocalId.length; i++)
       {
-        log.error("processObject@PostLoadGidProcessor - couldn't parse local id given json path::{} and json node::{}", pathLocalId, nodeToProcess.toPrettyString(), e);
-        return false;
+        currentNode = currentNode.get(pathsLocalId[i]);
       }
+      localId = currentNode.asText();
+
+      log.debug("processObject@GuidCreatorProcessor - Connector::{}, local id found::{}",
+         this.getConnector().getName(), localId);
       proObject.setLocalId(localId);
     }
 
     if (proObject.getGlobalId() == null || proObject.getGlobalId().isBlank())
     {
-      log.debug("processObject@PostLoadGidProcessor - setting global id for ProcessedObject");
+      log.debug(
+          "processObject@GuidCreatorProcessor - Connector::{}, setting global id for ProcessedObject", 
+          this.getConnector().getName());
       var idPair = searchIdPair(proObject);
       if (idPair == null)
       {
@@ -146,7 +149,7 @@ public class PostLoadGidProcessor extends Processor
         proObject.setOperation(ProcessedObject.INSERT);
       }
       else
-      { 
+      {
         proObject.setGlobalId(idPair.getGlobalId());
         proObject.setOperation(ProcessedObject.INSERT);
       }

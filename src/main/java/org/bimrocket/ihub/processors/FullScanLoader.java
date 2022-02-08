@@ -30,24 +30,23 @@
  */
 package org.bimrocket.ihub.processors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.jayway.jsonpath.JsonPath;
+import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
+import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
+import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
-import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
-import org.bimrocket.ihub.connector.Processor;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *

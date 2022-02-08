@@ -36,13 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.lang.model.util.Types;
-
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
-import org.python.antlr.ast.arguments.vararg_descriptor;
 import org.reflections.Reflections;
 import org.springframework.stereotype.Service;
 
