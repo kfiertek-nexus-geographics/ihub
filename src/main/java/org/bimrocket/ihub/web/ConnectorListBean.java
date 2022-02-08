@@ -300,6 +300,19 @@ public class ConnectorListBean
     }
   }
 
+  public String getSelectedConnectorName()
+  {
+    if (selectedNode != null)
+    {
+      if (selectedNode.getData() instanceof ConnectorSetup)
+      {
+        ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
+        return connSetup.getName();
+      }
+    }
+    return null;
+  }
+
   // processor operations
 
   public String getProcessorDescription(ProcessorSetup procSetup)

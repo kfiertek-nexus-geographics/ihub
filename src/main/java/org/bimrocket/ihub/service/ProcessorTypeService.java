@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.bimrocket.ihub.dto.ProcessorType;

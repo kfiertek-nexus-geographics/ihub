@@ -35,12 +35,11 @@
             style="margin-top:4px">
 
       <p:ajax event="expand"
-              listener="#{connectorListBean.onNodeExpand}" global="false" />
+              listener="#{connectorListBean.onNodeExpand}" />
       <p:ajax event="collapse"
-              listener="#{connectorListBean.onNodeCollapse}" global="false" />
+              listener="#{connectorListBean.onNodeCollapse}" />
       <p:ajax event="contextMenu"
-              update="main:tabs:connector_menu"
-              global="false" />
+              update="main:tabs:connector_menu" />
 
       <p:treeNode type="root">
         <h:outputText value="Connectors" />
@@ -101,7 +100,7 @@
                   update="connectors"
                   icon="pi pi-trash">
         <p:confirm header="Confirm" icon="pi pi-exclamation-triangle"
-                   message="Really want to delete this connector?" />
+                   message="Really want to delete the connector {#{connectorListBean.selectedConnectorName}}?" />
       </p:menuitem>
     </p:contextMenu>
 
