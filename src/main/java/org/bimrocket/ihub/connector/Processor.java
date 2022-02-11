@@ -31,8 +31,6 @@
 
 package org.bimrocket.ihub.connector;
 
-import org.bimrocket.ihub.exceptions.InvalidProcessorInitException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
