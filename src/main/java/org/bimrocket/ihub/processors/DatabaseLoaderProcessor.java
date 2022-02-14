@@ -22,9 +22,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
+ * 
  * @author wilberquito
  */
-
 public class DatabaseLoaderProcessor extends FullScanLoader
 {
 
@@ -114,7 +114,9 @@ public class DatabaseLoaderProcessor extends FullScanLoader
                 ObjectNode node = mapper.createObjectNode();
 
                 for (String c : columns)
+                {
                     node.put(c, row.getString(c));
+                }
 
                 return node;
             });

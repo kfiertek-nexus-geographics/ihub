@@ -224,7 +224,9 @@ public class ConnectorMapperService
     if (procSetup.getEnabled() != null)
     {
       processor.setEnabled(procSetup.getEnabled());
-    } else {
+    }
+    else
+    {
       processor.setEnabled(false);
     }
 

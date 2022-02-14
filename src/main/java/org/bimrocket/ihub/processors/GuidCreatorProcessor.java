@@ -112,7 +112,8 @@ public class GuidCreatorProcessor extends Processor
         && (proObject.isInsert() || proObject.isUpdate()))
     {
       log.debug(
-          "processObject@GuidCreatorProcessor - Connector::{}, setting local id of ProcessedObject", this.getConnector().getName());
+          "processObject@GuidCreatorProcessor - Connector::{}, setting local id of ProcessedObject",
+          this.getConnector().getName());
       JsonNode nodeToProcess = proObject.getLocalObject();
       String localId = null;
 
@@ -124,15 +125,16 @@ public class GuidCreatorProcessor extends Processor
       }
       localId = currentNode.asText();
 
-      log.debug("processObject@GuidCreatorProcessor - Connector::{}, local id found::{}",
-         this.getConnector().getName(), localId);
+      log.debug(
+          "processObject@GuidCreatorProcessor - Connector::{}, local id found::{}",
+          this.getConnector().getName(), localId);
       proObject.setLocalId(localId);
     }
 
     if (proObject.getGlobalId() == null || proObject.getGlobalId().isBlank())
     {
       log.debug(
-          "processObject@GuidCreatorProcessor - Connector::{}, setting global id for ProcessedObject", 
+          "processObject@GuidCreatorProcessor - Connector::{}, setting global id for ProcessedObject",
           this.getConnector().getName());
       var idPair = searchIdPair(proObject);
       if (idPair == null)

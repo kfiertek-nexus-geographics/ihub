@@ -32,7 +32,6 @@ package org.bimrocket.ihub.processors;
 
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.util.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +65,6 @@ public class KafkaJsonSenderProcessor extends KafkaSenderAbstract
 
     try
     {
-
       var value = this.mapper.writeValueAsString(toSend);
       log.debug(
           "processObject@KafkaJsonSenderProcessor - Connector::{} sending {} json object to topic {}",
