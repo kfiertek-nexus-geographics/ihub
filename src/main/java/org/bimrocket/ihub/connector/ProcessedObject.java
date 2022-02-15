@@ -42,7 +42,6 @@ public class ProcessedObject
   public static final String INSERT = "insert";
   public static final String UPDATE = "update";
   public static final String DELETE = "delete";
-  public static final String CONSUME = "consume";
 
   private String objectType;
   private String localId;

@@ -87,7 +87,7 @@ public abstract class FullScanLoader extends Processor
     case IDLE:
       if (isTimeToScan())
       {
-        log.debug("processObject@LoaderAbstractProcessor - Connector:{} it's time to scan, changing phase to UPDATE", this.getConnector().getName());
+        log.debug("it's time to scan, changing phase to UPDATE");
         phase = UPDATE;
         updateStartTime = System.currentTimeMillis();
         updateIterator = fullScan();
@@ -98,12 +98,12 @@ public abstract class FullScanLoader extends Processor
     case UPDATE:
       if (loadUpdate(procObject))
       {
-        log.debug("processObject@LoaderAbstractProcessor - Connector:{} loaded update object", this.getConnector().getName());     
+        log.debug("loaded update object");     
         return true;
       }
       else
       {
-        log.debug("processObject@LoaderAbstractProcessor - Connector:{} changing phase to DELETE", this.getConnector().getName());
+        log.debug("changing phase to DELETE");
         phase = DELETE;
         deleteIterator = purge();
       }
@@ -111,12 +111,12 @@ public abstract class FullScanLoader extends Processor
     case DELETE:
       if (loadDelete(procObject))
       {
-        log.debug("processObject@LoaderAbstractProcessor - Connector:{} loaded delete object", this.getConnector().getName());
+        log.debug("loaded delete object");
         return true;
       }
       else
       {
-        log.debug("processObject@LoaderAbstractProcessor - Connector:{} changing phase to IDLE", this.getConnector().getName());
+        log.debug("changing phase to IDLE");
         phase = IDLE;
       }
       break;

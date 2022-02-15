@@ -39,29 +39,29 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author kfiertek-nexus-geographics
  *
  */
-public class PostProcessorGlobalObject
+public class ProcessorsGlobalObject
 {
   private String globalId;
   private JsonNode element;
 
-  public PostProcessorGlobalObject()
+  public ProcessorsGlobalObject()
   {
 
   }
 
-  public PostProcessorGlobalObject(String globalId, JsonNode element)
+  public ProcessorsGlobalObject(String globalId, JsonNode element)
   {
     this.globalId = globalId;
     this.element = element;
   }
 
-  public PostProcessorGlobalObject globalId(String globalId)
+  public ProcessorsGlobalObject globalId(String globalId)
   {
     this.globalId = globalId;
     return this;
   }
 
-  public PostProcessorGlobalObject element(JsonNode element)
+  public ProcessorsGlobalObject element(JsonNode element)
   {
     this.element = element;
     return this;

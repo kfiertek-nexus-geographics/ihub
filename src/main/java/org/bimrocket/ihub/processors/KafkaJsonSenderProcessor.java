@@ -68,17 +68,13 @@ public class KafkaJsonSenderProcessor extends KafkaSenderAbstract
     {
 
       var value = this.mapper.writeValueAsString(toSend);
-      log.debug(
-          "processObject@KafkaJsonSenderProcessor - Connector::{} sending {} json object to topic {}",
-          this.connector.getName(), toSend.toPrettyString(), this.topicName);
+      log.debug("sending {} json object to topic {}", toSend.toPrettyString(), this.topicName);
       this.template.send(this.topicName, value);
       return true;
     }
     catch (JsonProcessingException e)
     {
-      log.error(
-          "processObject@KafkaJsonSenderProcessor - Connector::{} error processing following json::{}, this should never happen",
-          this.connector.getName(), toSend.toPrettyString());
+      log.error("error processing following json::{}, this should never happen", toSend.toPrettyString());
       return false;
     }
 

@@ -44,10 +44,10 @@ import java.util.Optional;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
+import org.bimrocket.ihub.js.InventoryObjectsWorkshop;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.service.ConnectorService;
 import org.bimrocket.ihub.service.KafkaConsumerRunnable;
-import org.bimrocket.ihub.util.InventoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -343,8 +343,7 @@ public class Connector implements Runnable
   @Override
   public void run()
   {
-    log.debug("run@Connector - Connector::{} running connector",
-        this.getName());
+    log.debug("running connector");
     status = RUNNING_STATUS;
     init();
     resetStatistics();
@@ -353,8 +352,7 @@ public class Connector implements Runnable
     {
       try
       {
-        log.debug("run@Connector - Connector::{} reseting ProcessedObject",
-            this.getName());
+        log.debug("reseting ProcessedObject");
         procObject.reset();
 
         boolean process = true;
@@ -362,8 +360,7 @@ public class Connector implements Runnable
         while (iter.hasNext() && process)
         {
           Processor processor = iter.next();
-          log.debug("run@Connector - Connector::{} running processor {}",
-              this.getName(), processor.getClass().toString());
+          log.debug("running processor {}", processor.getClass().toString());
           if (processor.isEnabled())
           {
             process = processor.processObject(procObject);
@@ -388,11 +385,12 @@ public class Connector implements Runnable
       }
       catch (InterruptedException ex)
       {
-        // log
+        log.debug("Stop called");
       }
       catch (Exception ex)
       {
         lastError = ex;
+        log.error("Exception has occurred ", ex);
       }
     }
     end();

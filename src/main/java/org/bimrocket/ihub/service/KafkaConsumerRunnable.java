@@ -86,7 +86,7 @@ public class KafkaConsumerRunnable implements Runnable
   {
     try
     {
-      log.debug("run@KafkaConsumerRunnable - subscribing to topic {}",
+      log.debug("subscribing to topic {}",
           this.topic);
       consumer.subscribe(new ArrayList<>(Arrays.asList(this.topic)));
 
@@ -101,7 +101,7 @@ public class KafkaConsumerRunnable implements Runnable
           {
             Thread.sleep(1000);
           }
-          log.debug("run@KafkaConsumerRunnable - adding record");
+          log.debug("adding record");
           this.records.add(record.value());
         }
       }

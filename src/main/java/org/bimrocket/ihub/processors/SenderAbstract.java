@@ -60,42 +60,45 @@ public abstract class SenderAbstract extends Processor
   {
     super(connector);
   }
-  
-  
-  protected JsonNode getNodeToSend(ProcessedObject procObject) {
+
+  protected JsonNode getNodeToSend(ProcessedObject procObject)
+  {
     if (objectToSend.equals(GLOBAL_OBJECT)
         && (procObject == null || procObject.getGlobalObject() == null
             || procObject.getGlobalObject().isNull()))
     {
-      log.error(
-          "processObject@SenderAbstractProcessor - Connector::{} trying to send empty global object with following ProcessedObject::{}",
-          this.connector.getName(), procObject.toString());
+      log.error("trying to send empty global object"
+          + " with following ProcessedObject::{}", procObject.toString());
       return null;
     }
     else if (objectToSend.equals(LOCAL_OBJECT)
         && (procObject == null || procObject.getLocalObject() == null
             || procObject.getLocalObject().isNull()))
     {
-      log.error(
-          "processObject@SenderAbstractProcessor - Connector::{} trying to send empty local object with following ProcessedObject::{}",
-          this.connector.getName(), procObject.toString());
+      log.error("trying to send empty local object "
+          + "with following ProcessedObject::{}", procObject.toString());
       return null;
     }
 
-    
-    return objectToSend.equals(GLOBAL_OBJECT) ? procObject.getGlobalObject() : procObject.getLocalObject();
-    
+    return objectToSend.equals(GLOBAL_OBJECT) ? procObject.getGlobalObject()
+        : procObject.getLocalObject();
+
   }
 
   @Override
-  public void init() {
+  public void init()
+  {
     super.init();
-    switch (objectToSend) {
+    switch (objectToSend)
+    {
     case GLOBAL_OBJECT:
     case LOCAL_OBJECT:
       return;
     default:
-      log.error("init@SenderAbstractProcessor - Connector::{} config property (sender.object.to.send) is invalid. Allowed values: global, local. Current value : {}", this.getConnector().getName(), objectToSend);
+      log.error(
+          "config property (sender.object.to.send) is invalid. "
+              + "Allowed values: global, local. Current value : {}",
+          objectToSend);
       return;
     }
   }

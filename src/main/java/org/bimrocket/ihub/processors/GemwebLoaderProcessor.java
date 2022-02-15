@@ -91,7 +91,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
 
   @ConfigProperty(name = "gemweb.request.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
   private Integer timeoutS;
-  
+
   @ConfigProperty(name = "gemweb.records.path", description = "Path to records inside json response")
   private String recordsPath;
 
@@ -138,10 +138,9 @@ public class GemwebLoaderProcessor extends FullScanLoader
 
       String ret = inputStreamResponseToString(resp.getEntity().getContent());
 
-      if (ret == null) {
-        log.error("getAccessToken@GemwebLoaderProcessor - Connector::{}"
-            + " - response entity stream is null or empty",
-            this.getConnector().getName());
+      if (ret == null)
+      {
+        log.error("response entity stream is null or empty");
         return null;
       }
       XmlMapper xmlMapper = new XmlMapper();
@@ -151,16 +150,12 @@ public class GemwebLoaderProcessor extends FullScanLoader
 
       String accessToken = "";
 
-      log.trace("getAccessToken@GemwebLoaderProcessor - Connector::{}"
-          + " - response '{}'",
-            this.getConnector().getName(), ret);
-     
+      log.trace("response '{}'", ret);
+
       if (node.get("error") != null)
       {
-        log.error(
-            "getAccessToken@GemwebLoaderProcessor - Connector::{}"
-            + " - error in authentication, error responded : {}",
-            this.getConnector().getName(), node.get("resultat").get("error"));
+        log.error("error in authentication, error responded : {}",
+            node.get("resultat").get("error"));
       }
       JsonNode resultat = node.get("access_token");
       if (resultat != null)
@@ -171,10 +166,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
     }
     catch (IOException e)
     {
-      log.error(
-          "getAccessToken@GemwebLoaderProcessor - Connector::{}"
-          + " - exception in getting accessToken",
-          this.getConnector().getName(), e);
+      log.error("exception in getting accessToken", e);
       return null;
     }
   }
@@ -183,9 +175,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
   {
     StringBuilder sb = new StringBuilder();
 
-    log.debug(
-        "inputStreamResponseToString@GemwebLoaderProcessor - {} - reading response of petition stream",
-        this.getConnector().getName());
+    log.debug("reading response of petition stream");
     try (InputStreamReader inputStreamReader = new InputStreamReader(reader))
     {
       BufferedReader br = new BufferedReader(inputStreamReader);
@@ -197,9 +187,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
     }
     catch (IOException e)
     {
-      log.error(
-          "inputStreamResponseToString@GemwebLoader - {} -  Error reading response",
-          this.getConnector().getName(), e);
+      log.error("Error reading response", e);
       return null;
     }
 
@@ -221,21 +209,17 @@ public class GemwebLoaderProcessor extends FullScanLoader
   private Iterator<JsonNode> loadResponse(long timeout)
   {
 
-    log.debug("loadResponse@GemWebLoaderProcessor - Connector::{}"
-        + "- init with timeout '{}'", this.connector.getName(), timeout);
+    log.debug("init with timeout '{}'", timeout);
 
     try
     {
-      log.debug("loadResponse@GemWebLoaderProcessor - Connector::{}"
-          + "- execute httpClient built", this.connector.getName());
+      log.debug("execute httpClient built");
       var httpPost = new HttpPost(url);
       String accessToken = this.getAccessToken();
       if (accessToken == null || accessToken.isBlank())
       {
-        log.error(
-            "loadResponse@GemwebLoaderProcessor - Connector::{}"
-                + " - access token is empty {} returning empty iterator",
-            this.getConnector().getName(), accessToken);
+        log.error("access token is empty {} returning empty iterator",
+            accessToken);
         return Collections.emptyIterator();
       }
       String authHeader = this.getAuthHeader(accessToken);
@@ -257,7 +241,8 @@ public class GemwebLoaderProcessor extends FullScanLoader
       {
         String[] recordsPathSep = recordsPath.split("\\.");
         JsonNode currentNode = mapper.readTree(json);
-        for (int i = 0; i < recordsPathSep.length;i++) {
+        for (int i = 0; i < recordsPathSep.length; i++)
+        {
           currentNode = currentNode.get(recordsPathSep[i]);
         }
         JsonNode all = currentNode;
@@ -267,19 +252,14 @@ public class GemwebLoaderProcessor extends FullScanLoader
         }
         else
         {
-          log.error(
-              "loadResponse@GemwebLoaderProcessor - Connector::{}"
-                  + " - all is not a ArrayNode, all::{}",
-              this.getConnector().getName(), mapper.writeValueAsString(all));
+          log.error("all is not a ArrayNode, all::{}",
+              mapper.writeValueAsString(all));
           return Collections.emptyIterator();
         }
       }
       catch (Exception e)
       {
-        log.error(
-            "loadResponse@GemwebLoaderProcessor - Connector::{}"
-                + "- exception while sending petition : ",
-            this.getConnector().getName(), e);
+        log.error("exception while sending petition : ", e);
 
       }
       return Collections.emptyIterator();
@@ -287,18 +267,12 @@ public class GemwebLoaderProcessor extends FullScanLoader
     }
     catch (ConnectTimeoutException | SocketTimeoutException e)
     {
-      log.error(
-          "loadResponse@GemwebLoaderProcessor - Connector::{}"
-              + "- timeout while sending petition : ",
-          this.connector.getName(), e);
+      log.error("timeout while sending petition : ", e);
       return Collections.emptyIterator();
     }
     catch (Exception e)
     {
-      log.error(
-          "loadResponse@GemwebLoaderProcessor - Connector::{}"
-              + "- exception while sending petition : ",
-          this.connector.getName(), e);
+      log.error("exception while sending petition : ", e);
       return Collections.emptyIterator();
     }
   }
