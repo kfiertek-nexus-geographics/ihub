@@ -5,16 +5,24 @@
  */
 package org.bimrocket.ihub.processors;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.interfaces.BasicClientHandler;
 import org.bimrocket.ihub.util.ConfigProperty;
+import org.bimrocket.ihub.util.ExcelMapping;
 import org.bimrocket.ihub.util.download.FTPDownload;
+import org.python.jline.internal.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +32,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
             .getLogger(ExcelLoaderProcessor.class);
 
     @ConfigProperty(name = "source.has.headers", description = "First row should be treated as headers?", required = true)
-    boolean headers = true;
+    boolean hasHeaders = true;
 
     @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel { HTTP, FTP }", required = true)
     String protocol;
@@ -58,6 +66,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
         {
             if ("FTP".equals(protocol))
             {
+                log.info("@loadFromClient: downloading content via FTP");
                 BasicClientHandler<FTPClient> handler = new FTPDownload();
                 try
                 {
@@ -77,7 +86,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
             }
             else if ("HTTP".equals(protocol))
             {
-
+                log.info("@loadFromClient: downloading content via HTTP");
             }
             else
             {
@@ -86,7 +95,8 @@ public class ExcelLoaderProcessor extends FullScanLoader
         }
         else
         {
-            log.info("@loadFromClient: unsuported auth - {} - mechanism", auth);
+            log.error("@loadFromClient: unsuported auth - {} - mechanism",
+                    auth);
         }
         return false;
     }
@@ -94,6 +104,29 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @Override
     protected Iterator<JsonNode> fullScan()
     {
-        return null;
+        // saves temporal downloaded content in temporal folder
+        if (loadFromClient())
+        {
+            Log.info(
+                    "@fullScan: remote data correctly saved in local temporally file");
+            ExcelMapping excelMapping = new ExcelMapping();
+            List<Map<String, String>> data = excelMapping.mapping(local,
+                    hasHeaders);
+
+            List<JsonNode> scanned = new ArrayList<>();
+            for (Map<String, String> dict : data)
+            {
+                Set<String> keys = dict.keySet();
+                ObjectNode node = mapper.createObjectNode();
+                for (String key : keys)
+                {
+                    node.put(key, dict.get(key));
+                }
+                scanned.add(node);
+            }
+
+            return scanned.iterator();
+        }
+        return Collections.emptyIterator();
     }
 }
