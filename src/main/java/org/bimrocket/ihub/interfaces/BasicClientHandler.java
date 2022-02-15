@@ -1,6 +1,6 @@
 package org.bimrocket.ihub.interfaces;
 
-import java.util.Map;
+import java.util.Optional;
 
 /**
  * 
@@ -8,8 +8,26 @@ import java.util.Map;
  */
 public interface BasicClientHandler<T>
 {
-    T builder(String base, String user, String password,
-            Map<String, Object> extras) throws Exception;
+    T client();
 
-    boolean download(T client, String uri, String local);
+    /**
+     * 
+     * @param base
+     * @param user
+     * @param password
+     * @param local
+     * @param uri
+     * @param responseType
+     * @throws Exception
+     */
+    void stage(String base, String user, String password, String local,
+            Optional<String> uri, Optional<Integer> responseType)
+            throws Exception;
+
+    /**
+     * once download is made the connection is closed
+     * 
+     * @return
+     */
+    boolean download();
 }

@@ -5,8 +5,8 @@
  */
 package org.bimrocket.ihub.processors;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -61,14 +61,10 @@ public class ExcelLoaderProcessor extends FullScanLoader
                 BasicClientHandler<FTPClient> handler = new FTPDownload();
                 try
                 {
-                    var client = handler.builder(base, user, password,
-                            new HashMap<>());
-                    Boolean OK = handler.download(client, uri, local);
-                    if (client.isConnected())
-                    {
-                        client.logout();
-                        client.disconnect();
-                    }
+                    handler.stage(base, user, password, local,
+                            uri == null ? Optional.empty() : Optional.of(uri),
+                            Optional.empty());
+                    Boolean OK = handler.download();
                     return OK;
                 }
                 catch (Exception e)
