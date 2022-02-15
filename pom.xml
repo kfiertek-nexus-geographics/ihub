@@ -133,12 +133,21 @@
 		</dependency>
 		<!-- END DEVTOOLS -->
 
+		<!-- START APACHE COMMONS -->
 		<!-- Apache Commons Net library contains a collection of network utilities and protocol implementations -->
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.8.0</version>
 		</dependency>
+
+		<!-- Apache Commons IO -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.7</version>
+		</dependency>
+		<!-- END APACHE COMMONS -->
 
 		<dependency>
 			<groupId>org.json</groupId>
