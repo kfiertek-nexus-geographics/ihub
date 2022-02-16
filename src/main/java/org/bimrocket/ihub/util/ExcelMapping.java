@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.PredicateUtils;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -73,7 +70,7 @@ public class ExcelMapping
                     : buildHeaders(sheet);
 
             int size = headers.size();
-            List<Row> data = rows.subList(1, rows.size());
+            List<Row> data = rows.subList(hasHeader ? 1 : 0, rows.size());
 
             for (Row row : data)
             {
@@ -115,7 +112,7 @@ public class ExcelMapping
 
             for (int i = 0; i < colIdx; i++)
             {
-                headers.add(String.format("c{}", i + 1));
+                headers.add(String.format("c%d", i + 1));
             }
         }
         return headers;
