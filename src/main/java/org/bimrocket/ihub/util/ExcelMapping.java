@@ -86,7 +86,7 @@ public class ExcelMapping
                 }
                 if (!nullableMap(dict))
                 {
-                    result.add(dict);
+                    result.add(cleanMap(dict));
                 }
             }
             book.close();
@@ -142,6 +142,9 @@ public class ExcelMapping
 
     String cellParser(Cell cell)
     {
+        if (cell == null)
+            return null;
+
         switch (cell.getCellType())
         {
         case BOOLEAN:
@@ -162,8 +165,11 @@ public class ExcelMapping
         }
     }
 
-    boolean nullableMap(Map<String, ?> dict)
+    <K, V> boolean nullableMap(Map<K, V> dict)
     {
+        if (dict == null)
+            return true;
+
         int nuls = 0;
         for (Object value : dict.values())
         {
@@ -171,5 +177,23 @@ public class ExcelMapping
                 nuls++;
         }
         return nuls == dict.size();
+    }
+
+    /**
+     * mutates input state
+     * 
+     * @param dict
+     * @return
+     */
+    <T> Map<String, T> cleanMap(Map<String, T> dict)
+    {
+        if (dict == null)
+            return null;
+
+        if (dict.containsKey(""))
+        {
+            dict.remove("");
+        }
+        return dict;
     }
 }
