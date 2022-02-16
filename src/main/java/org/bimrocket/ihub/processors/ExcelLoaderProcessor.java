@@ -26,6 +26,10 @@ import org.python.jline.internal.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * @author wilberquito
+ */
 public class ExcelLoaderProcessor extends FullScanLoader
 {
     private static final Logger log = LoggerFactory
