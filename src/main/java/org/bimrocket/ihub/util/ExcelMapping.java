@@ -81,7 +81,7 @@ public class ExcelMapping
                     Cell cell = row.getCell(i);
                     dict.put(header, cellParser(cell));
                 }
-                if (!nullableMap(dict))
+                if (!Functions.nullableMap(dict))
                 {
                     result.add(cleanMap(dict));
                 }
@@ -160,20 +160,6 @@ public class ExcelMapping
         default:
             return null;
         }
-    }
-
-    <K, V> boolean nullableMap(Map<K, V> dict)
-    {
-        if (dict == null)
-            return true;
-
-        int nuls = 0;
-        for (Object value : dict.values())
-        {
-            if (value == null)
-                nuls++;
-        }
-        return nuls == dict.size();
     }
 
     /**
