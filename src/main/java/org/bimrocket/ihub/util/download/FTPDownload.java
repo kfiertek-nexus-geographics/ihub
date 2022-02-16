@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.net.PrintCommandListener;
@@ -27,13 +28,11 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
     Optional<String> uri = Optional.empty();
     String local = null;
 
-    /**
-     * by default downloads binary files
-     */
     @Override
     public void stage(String hostname, Optional<Integer> port, String user,
             String password, String local, Optional<String> uri,
-            Optional<Integer> responseType) throws Exception
+            Optional<Integer> responseType,
+            Optional<Map<String, String>> parameters) throws Exception
     {
         FTPClient conn = new FTPClient();
 
@@ -122,5 +121,4 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
         this.uri = Optional.empty();
         this.local = null;
     }
-
 }
