@@ -6,6 +6,7 @@
 package org.bimrocket.ihub.processors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +22,9 @@ import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.interfaces.BasicClientHandler;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.bimrocket.ihub.util.ExcelMapping;
+import org.bimrocket.ihub.util.Functions;
 import org.bimrocket.ihub.util.download.FTPDownload;
+import org.bimrocket.ihub.util.download.HTTPDownload;
 import org.python.jline.internal.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +44,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel { HTTP, FTP }", required = true)
     String protocol;
 
-    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only { BASIC } is supported and it's taken as default")
+    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only { BASIC } is supported and it's taken as default", required = true)
     String auth;
 
     @ConfigProperty(name = "source.user", description = "Source user ID")
@@ -56,8 +59,14 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host", required = false)
     Integer port;
 
-    @ConfigProperty(name = "source.uri", description = "Remote target element", required = true)
+    @ConfigProperty(name = "source.uri", description = "Remote target element")
     String uri;
+
+    @ConfigProperty(name = "source.param.names", description = "Params name for http request separated by coma. Should has params value len")
+    String paramNames;
+
+    @ConfigProperty(name = "source.param.values", description = "Params value for http request separated by coma. Should has pramams names len")
+    String paramValues;
 
     @ConfigProperty(name = "source.local", description = "Local source element identifcation", required = true)
     String local;
@@ -71,33 +80,46 @@ public class ExcelLoaderProcessor extends FullScanLoader
     {
         if ("BASIC".equals(auth.toUpperCase()))
         {
-            if ("FTP".equals(protocol.toUpperCase()))
-            {
-                log.info("@loadFromClient: downloading content via FTP");
-                BasicClientHandler<FTPClient> handler = new FTPDownload();
-                try
-                {
-                    handler.stage(hostname, Optional.ofNullable(port), user,
-                            password, local, Optional.ofNullable(uri),
-                            Optional.empty());
-                    Boolean OK = handler.download();
-                    return OK;
-                }
-                catch (Exception e)
-                {
-                    log.error(
-                            "@loadFromClinet: problem dowloading content. Error: \n",
-                            e.getMessage());
-                    return false;
-                }
-            }
-            else if ("HTTP".equals(protocol))
+            if ("HTTP".equals(protocol.toUpperCase()))
             {
                 log.info("@loadFromClient: downloading content via HTTP");
+            }
+            else if ("FTP".equals(protocol.toUpperCase()))
+            {
+                log.info("@loadFromClient: downloading content via FTP");
             }
             else
             {
                 log.error("@loadFromClient: unsoported protocol");
+                return false;
+            }
+
+            BasicClientHandler<?> handler = "FTP".equals(protocol.toUpperCase())
+                    ? new FTPDownload()
+                    : new HTTPDownload();
+            try
+            {
+                Optional<Map<String, String>> params = Optional.empty();
+                if (this.paramNames != null)
+                {
+                    params = Optional.ofNullable(Functions.toMap(
+                            paramNames == null ? new ArrayList<>()
+                                    : Arrays.asList(paramNames.split(",")),
+                            paramValues == null ? new ArrayList<>()
+                                    : Arrays.asList(paramValues.split(","))));
+                }
+                handler.stage(hostname, Optional.ofNullable(port), user,
+                        password, local, Optional.ofNullable(uri),
+                        Optional.empty(), params);
+                Boolean OK = handler.download();
+                return OK;
+            }
+            catch (Exception e)
+            {
+                log.error(
+                        "@loadFromClinet: problem dowloading content. Error: \n",
+                        e.getMessage());
+                return false;
             }
         }
         else
