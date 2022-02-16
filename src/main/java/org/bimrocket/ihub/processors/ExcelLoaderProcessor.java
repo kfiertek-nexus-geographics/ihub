@@ -37,7 +37,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel { HTTP, FTP }", required = true)
     String protocol;
 
-    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only Basic is supported and it's taken as default")
+    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only { BASIC } is supported and it's taken as default")
     String auth;
 
     @ConfigProperty(name = "source.user", description = "Source user ID")
@@ -46,13 +46,16 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.password", description = "Source user password")
     String password;
 
-    @ConfigProperty(name = "source.base", description = "IP or DNS", required = true)
-    String base;
+    @ConfigProperty(name = "source.hostname", description = "IP or DNS", required = true)
+    String hostname;
+
+    @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host", required = false)
+    Integer port;
 
     @ConfigProperty(name = "source.uri", description = "Remote target element", required = true)
     String uri;
 
-    @ConfigProperty(name = "source.local", description = "Local source element identifcation. If it is not present file will use as name declaration uri")
+    @ConfigProperty(name = "source.local", description = "Local source element identifcation", required = true)
     String local;
 
     public ExcelLoaderProcessor(Connector connector)
@@ -62,16 +65,16 @@ public class ExcelLoaderProcessor extends FullScanLoader
 
     boolean loadFromClient()
     {
-        if ("BASIC".equals(auth))
+        if ("BASIC".equals(auth.toUpperCase()))
         {
-            if ("FTP".equals(protocol))
+            if ("FTP".equals(protocol.toUpperCase()))
             {
                 log.info("@loadFromClient: downloading content via FTP");
                 BasicClientHandler<FTPClient> handler = new FTPDownload();
                 try
                 {
-                    handler.stage(base, user, password, local,
-                            uri == null ? Optional.empty() : Optional.of(uri),
+                    handler.stage(hostname, Optional.ofNullable(port), user,
+                            password, local, Optional.ofNullable(uri),
                             Optional.empty());
                     Boolean OK = handler.download();
                     return OK;
@@ -124,7 +127,6 @@ public class ExcelLoaderProcessor extends FullScanLoader
                 }
                 scanned.add(node);
             }
-
             return scanned.iterator();
         }
         return Collections.emptyIterator();

@@ -12,7 +12,8 @@ public interface BasicClientHandler<T>
 
     /**
      * 
-     * @param base
+     * @param hostname
+     * @param port
      * @param user
      * @param password
      * @param local
@@ -20,9 +21,9 @@ public interface BasicClientHandler<T>
      * @param responseType
      * @throws Exception
      */
-    void stage(String base, String user, String password, String local,
-            Optional<String> uri, Optional<Integer> responseType)
-            throws Exception;
+    void stage(String hostname, Optional<Integer> port, String user,
+            String password, String local, Optional<String> uri,
+            Optional<Integer> responseType) throws Exception;
 
     /**
      * once download is made the connection is closed

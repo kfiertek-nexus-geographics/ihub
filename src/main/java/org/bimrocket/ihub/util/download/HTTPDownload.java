@@ -2,7 +2,7 @@ package org.bimrocket.ihub.util.download;
 
 import java.io.File;
 import java.io.InputStream;
-
+import java.lang.StackWalker.Option;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -29,13 +29,14 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
 {
 
     Optional<String> uri = Optional.empty();
-    String local = null;
+    String hostname = null;
     String base = null;
+    String local = null;
 
     @Override
-    public void stage(String base, String user, String password, String local,
-            Optional<String> uri, Optional<Integer> responseType)
-            throws Exception
+    public void stage(String hostname, Optional<Integer> port, String user,
+            String password, String local, Optional<String> uri,
+            Optional<Integer> responseType) throws Exception
     {
         CredentialsProvider provider = new BasicCredentialsProvider();
         provider.setCredentials(AuthScope.ANY,
@@ -45,13 +46,13 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
                 .setDefaultCredentialsProvider(provider).build();
         this.uri = uri;
         this.local = local;
-        this.base = base;
+        this.hostname = hostname;
     }
 
     @Override
     public boolean download()
     {
-        HttpGet request = new HttpGet(base);
+        HttpGet request = new HttpGet(hostname);
         URIBuilder uri = new URIBuilder(request.getURI());
 
         if (this.uri.isPresent())
@@ -95,6 +96,6 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
 
         this.uri = Optional.empty();
         this.local = null;
-        this.base = null;
+        this.hostname = null;
     }
 }

@@ -31,16 +31,23 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
      * by default downloads binary files
      */
     @Override
-    public void stage(String base, String user, String password, String local,
-            Optional<String> uri, Optional<Integer> responseType)
-            throws Exception
+    public void stage(String hostname, Optional<Integer> port, String user,
+            String password, String local, Optional<String> uri,
+            Optional<Integer> responseType) throws Exception
     {
         FTPClient conn = new FTPClient();
 
         conn.addProtocolCommandListener(
                 new PrintCommandListener(new PrintWriter(System.out)));
 
-        conn.connect(InetAddress.getByName(base));
+        if (port.isPresent())
+        {
+            conn.connect(InetAddress.getByName(hostname), port.get());
+        }
+        else
+        {
+            conn.connect(InetAddress.getByName(hostname));
+        }
 
         if (!FTPReply.isPositiveCompletion(conn.getReplyCode()))
         {
@@ -63,7 +70,6 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
         {
             conn.setFileType(FTP.BINARY_FILE_TYPE);
         }
-
         this.uri = uri;
         this.local = local;
         this.client = conn;
@@ -108,7 +114,7 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
         }
         catch (Exception e)
         {
-            Log.error("@reset: could not close connection correclty. Error: \n",
+            Log.error("@reset: could not close connection correctly. Error: \n",
                     e.getMessage());
         }
 
