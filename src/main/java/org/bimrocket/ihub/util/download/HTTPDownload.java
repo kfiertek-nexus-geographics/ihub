@@ -2,10 +2,9 @@ package org.bimrocket.ihub.util.download;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.StackWalker.Option;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.http.HttpEntity;
@@ -19,7 +18,11 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.python.jline.internal.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -27,16 +30,26 @@ import org.python.jline.internal.Log;
  */
 public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
 {
+    private static final Logger log = LoggerFactory
+            .getLogger(HTTPDownload.class);
 
     Optional<String> uri = Optional.empty();
+
     String hostname = null;
+
     String base = null;
+
     String local = null;
+
+    Optional<Integer> port = Optional.empty();
+
+    Optional<Map<String, String>> parameters = Optional.empty();
 
     @Override
     public void stage(String hostname, Optional<Integer> port, String user,
             String password, String local, Optional<String> uri,
-            Optional<Integer> responseType) throws Exception
+            Optional<Integer> responseType,
+            Optional<Map<String, String>> parameters) throws Exception
     {
         CredentialsProvider provider = new BasicCredentialsProvider();
         provider.setCredentials(AuthScope.ANY,
@@ -44,28 +57,48 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
 
         client = HttpClientBuilder.create()
                 .setDefaultCredentialsProvider(provider).build();
+
         this.uri = uri;
         this.local = local;
         this.hostname = hostname;
+        this.parameters = parameters;
+        this.port = port;
     }
 
+    /**
+     * If you set the port in hostname please make sure to not define port
+     * because it will be used here
+     */
     @Override
     public boolean download()
     {
-        HttpGet request = new HttpGet(hostname);
-        URIBuilder uri = new URIBuilder(request.getURI());
-
-        if (this.uri.isPresent())
-        {
-            uri.addParameter("doc", this.uri.get());
-        }
+        String point = hostname
+                + (this.port.isEmpty() ? ""
+                        : String.format(":%d", this.port.get()))
+                + (this.uri.isEmpty() ? "" : this.uri.get());
 
         try
         {
+            URIBuilder uriBuilder = new URIBuilder(point);
+            if (this.parameters.isPresent())
+            {
+                Map<String, String> toAdd = this.parameters.get();
+                for (var entry : toAdd.entrySet())
+                {
+                    uriBuilder.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+
+            HttpGet request = new HttpGet(uriBuilder.build());
+
             CloseableHttpResponse response = client.execute(request);
 
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
+            {
+                log.error(
+                        "@download: remote server did not response with OK status");
                 return false;
+            }
 
             HttpEntity entity = response.getEntity();
             InputStream is = entity.getContent();
@@ -73,8 +106,13 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
                     StandardCopyOption.REPLACE_EXISTING);
             reset();
         }
-        catch (Exception e)
+        catch (
+
+        Exception e)
         {
+            log.error(
+                    "@download: there was a problem downloading remote excel file. Error:\n",
+                    e.getMessage());
             return false;
         }
         return true;
@@ -85,17 +123,17 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
     {
         try
         {
-
             client.close();
         }
         catch (Exception e)
         {
-            Log.error("@reset: could not close connection correclty. Error: \n",
+            log.error("@reset: could not close connection correclty. Error: \n",
                     e.getMessage());
         }
 
         this.uri = Optional.empty();
         this.local = null;
         this.hostname = null;
+        this.port = Optional.empty();
     }
 }
