@@ -90,7 +90,6 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
                 return false;
 
             reset();
-
         }
         catch (Exception e)
         {
@@ -116,7 +115,6 @@ public class FTPDownload extends AbstractBasicClient<FTPClient>
             Log.error("@reset: could not close connection correctly. Error: \n",
                     e.getMessage());
         }
-
         this.client = null;
         this.uri = Optional.empty();
         this.local = null;

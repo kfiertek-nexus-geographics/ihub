@@ -17,7 +17,6 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import org.apache.commons.net.ftp.FTPClient;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.interfaces.BasicClientHandler;
 import org.bimrocket.ihub.util.ConfigProperty;
@@ -56,7 +55,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.hostname", description = "IP or DNS", required = true)
     String hostname;
 
-    @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host", required = false)
+    @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host")
     Integer port;
 
     @ConfigProperty(name = "source.uri", description = "Remote target element")
@@ -141,6 +140,9 @@ public class ExcelLoaderProcessor extends FullScanLoader
             ExcelMapping excelMapping = new ExcelMapping();
             List<Map<String, String>> data = excelMapping.mapping(local,
                     hasHeaders);
+
+            // once data is loaded I remove temporally file
+            Functions.deleteFile(local);
 
             List<JsonNode> scanned = new ArrayList<>();
             for (Map<String, String> dict : data)
