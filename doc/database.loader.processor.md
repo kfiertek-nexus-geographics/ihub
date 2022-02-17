@@ -8,6 +8,7 @@ For know supported databases are
 
  - H2
  - PostgreSQL
+ - SQL Server
 
 ## :dizzy_face: How does it do?
 
@@ -20,25 +21,35 @@ To understand how does it do, I need to first explain you the processor's config
     
     Database url
 
-- **source.username** (REQUIRED)
+- **db.username** (REQUIRED)
   
     User token identification 
 
-- **source.auth**
-  
-    Represents the mechanism to authenticate to remote host. By default it uses *Basic auth*. If you don't define this parameter or you define as BASIC, you **must** define *source.user* and *source.password*.
-
-- **source.password**
-- 
+- **db.password** (REQUIRED)
+    
     User password
 
+- **db.driver** (REQUIRED)
+  
+    Which driver should jdbc use for connecting to remote database
 
+    Available:
+    -  org.h2.Driver
+    -  org.postgresql.Driver
+    -  microsoft.sqlserver.jdbc
+
+- **db.query** (REQUIRED)
+  
+    SQL query to get content from remote database
+
+- db.request.timeout
+
+    Timeout for database response query request
 
 </details>
 
 Let's list the proces that logic commits. At each step if it fails, it returns an empty collection
 
-- Try to load remote excel file and save data to a temporally file
-- Transform temporal file data into Json Node collection
-- Closes temporal file
+- Try to load data from remote database using configured query
+- Transform data to Json Collection
 - Finally, it returns an iterator of the built Json Node collection
