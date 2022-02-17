@@ -2,7 +2,7 @@
 
 ## :neutral_face: What does it do?
 
-The purpose of this loader is to load Excel binary files from remote host. 
+The purpose of this loader is to load Excel binary files from remote host 
 
 For know source protocols supported are.
 
@@ -56,8 +56,14 @@ To understand how does it do, I need to first explain you the processor's config
   
     Values related to names params, separated them using semicoloms
 
-- **source.local**
+- **source.local** (REQUIRED)
   
-    Path of temporally file rescued from remote
+    Path of temporal file rescued from remote
 </details>
-  
+
+Let's list the proces that logic commits. At each step if it fails, it returns an empty collection
+
+- Try to load remote excel file and save data to a temporally file
+- Transform temporal file data into Json Node collection
+- Closes temporal file
+- Finally, it returns an iterator of the built Json Node collection
