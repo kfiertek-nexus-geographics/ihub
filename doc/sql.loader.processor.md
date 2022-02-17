@@ -4,7 +4,7 @@
 
 The purpose of this loader is to load data from databases and then parse it's data to Json Node collection 
 
-For know supported databases are
+For know supported databases are:
 
  - H2
  - PostgreSQL

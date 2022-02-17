@@ -2,9 +2,9 @@
 
 ## :neutral_face: What does it do?
 
-The purpose of this loader is to load data from databases and then parse it's data to Json Node collection 
+The purpose of this sender is transform `ProcessedObject` to SQL sentence to send to table of a database 
 
-For know supported databases are
+For know supported databases are:
 
  - H2
  - PostgreSQL
