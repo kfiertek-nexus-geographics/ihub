@@ -21,11 +21,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
  * 
  * @author wilberquito
  */
-public class DatabaseSenderProcessor extends SenderAbstract
+public class SQLSenderProcessor extends SenderAbstract
 {
 
     private static final Logger log = LoggerFactory
-            .getLogger(DatabaseLoaderProcessor.class);
+            .getLogger(SQLLoaderProcessor.class);
 
     @ConfigProperty(name = "db.url", description = "Geoserver wfs url")
     String url;
@@ -77,7 +77,7 @@ public class DatabaseSenderProcessor extends SenderAbstract
         return this.jdbcTemplate;
     }
 
-    public DatabaseSenderProcessor(Connector connector)
+    public SQLSenderProcessor(Connector connector)
     {
         super(connector);
     }

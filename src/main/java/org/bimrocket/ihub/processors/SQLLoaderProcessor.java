@@ -25,31 +25,28 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * 
  * @author wilberquito
  */
-public class DatabaseLoaderProcessor extends FullScanLoader
+public class SQLLoaderProcessor extends FullScanLoader
 {
 
     private static final Logger log = LoggerFactory
-            .getLogger(DatabaseLoaderProcessor.class);
+            .getLogger(SQLLoaderProcessor.class);
 
-    @ConfigProperty(name = "db.url", description = "Database url")
+    @ConfigProperty(name = "db.url", description = "Database url", required = true)
     String url;
 
-    @ConfigProperty(name = "db.username", description = "User used for basic authentication")
+    @ConfigProperty(name = "db.username", description = "User used for basic authentication", required = true)
     String username;
 
-    @ConfigProperty(name = "db.password", description = "Password used for basic authentication")
+    @ConfigProperty(name = "db.password", description = "Password used for basic authentication", required = true)
     String password;
 
-    @ConfigProperty(name = "db.auth", description = "Type of authentication currently only Basic is supported")
-    String auth;
-
-    @ConfigProperty(name = "db.driver", description = "Password used for basic authentication")
+    @ConfigProperty(name = "db.driver", description = "Password used for basic authentication", required = true)
     String driver;
 
-    @ConfigProperty(name = "db.query", description = "SQL query to rescue content from database")
+    @ConfigProperty(name = "db.query", description = "SQL query to rescue content from database", required = true)
     String query;
 
-    @ConfigProperty(name = "db.request.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
+    @ConfigProperty(name = "db.request.timeout", description = "Timeout for database response query request", defaultValue = "60")
     Integer timeout;
 
     JdbcTemplate jdbcTemplate;
@@ -66,7 +63,7 @@ public class DatabaseLoaderProcessor extends FullScanLoader
         return jdbcTemplate;
     }
 
-    public DatabaseLoaderProcessor(Connector connector)
+    public SQLLoaderProcessor(Connector connector)
     {
         super(connector);
     }
