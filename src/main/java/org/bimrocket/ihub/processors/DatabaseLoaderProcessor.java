@@ -31,7 +31,7 @@ public class DatabaseLoaderProcessor extends FullScanLoader
     private static final Logger log = LoggerFactory
             .getLogger(DatabaseLoaderProcessor.class);
 
-    @ConfigProperty(name = "db.url", description = "Geoserver wfs url")
+    @ConfigProperty(name = "db.url", description = "Database url")
     String url;
 
     @ConfigProperty(name = "db.username", description = "User used for basic authentication")

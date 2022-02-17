@@ -86,17 +86,17 @@ public class DatabaseSenderProcessor extends SenderAbstract
     public boolean processObject(ProcessedObject procObject)
     {
 
-        JsonNode toSend = this.getNodeToSend(procObject);
+        JsonNode send = this.getNodeToSend(procObject);
 
-        if (toSend == null)
+        if (send == null)
             return false;
 
-        if (toSend.get("globalId") == null || toSend.get("element") == null)
+        if (send.get("globalId") == null || send.get("element") == null)
             return false;
 
         MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
 
-        JsonNode element = toSend.get("element");
+        JsonNode element = send.get("element");
         List<String> requires = Arrays.asList(reqCols.split(","));
         List<String> optionals = Arrays.asList(optCols.split(","));
 
@@ -155,7 +155,7 @@ public class DatabaseSenderProcessor extends SenderAbstract
                 {
                     log.info(
                             "@updateTable: updating register with global id - {}",
-                            toSend.get("globalId"));
+                            send.get("globalId"));
                     jdbcTemplateInstance().update(queryUpdate, sqlParameters);
                 }
                 else
