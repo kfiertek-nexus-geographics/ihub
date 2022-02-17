@@ -68,4 +68,4 @@ Let's list the proces that logic commits. At each step if it fails, returns fals
 
 - Create maps of parameters to add to SQL query
 - Check if it should add or update register
-- Execute SQL query, returns SUCCESS if it were correclty
+- Execute SQL query
