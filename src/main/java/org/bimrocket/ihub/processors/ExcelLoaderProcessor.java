@@ -43,16 +43,16 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel { HTTP, FTP }", required = true)
     String protocol;
 
-    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only { BASIC } is supported and it's taken as default", required = true)
+    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only { BASIC } is supported and it's taken as default", defaultValue = "BASIC")
     String auth;
 
-    @ConfigProperty(name = "source.user", description = "Source user ID")
+    @ConfigProperty(name = "source.user", description = "Source user ID", defaultValue = "admin")
     String user;
 
-    @ConfigProperty(name = "source.password", description = "Source user password")
+    @ConfigProperty(name = "source.password", description = "Source user password", defaultValue = "admin")
     String password;
 
-    @ConfigProperty(name = "source.hostname", description = "IP or DNS")
+    @ConfigProperty(name = "source.hostname", description = "IP or DNS", required = true)
     String hostname;
 
     @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host")
