@@ -18,9 +18,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.python.jline.internal.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +64,10 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
 
     /**
      * If you set the port in hostname please make sure to not define port
-     * because it will be used here
+     * because it will be used here.
+     * 
+     * By default, if http and https was not defined in hostname http is setted
+     * to be used in request
      */
     @Override
     public boolean download()
@@ -76,6 +76,11 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
                 + (this.port.isEmpty() ? ""
                         : String.format(":%d", this.port.get()))
                 + (this.uri.isEmpty() ? "" : this.uri.get());
+
+        if (!point.startsWith("http://") && !point.startsWith("https://"))
+        {
+            point = "http://".concat(point);
+        }
 
         try
         {
@@ -106,12 +111,10 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
                     StandardCopyOption.REPLACE_EXISTING);
             reset();
         }
-        catch (
-
-        Exception e)
+        catch (Exception e)
         {
             log.error(
-                    "@download: there was a problem downloading remote excel file. Error:\n",
+                    "@download: there was a problem downloading remote excel file. Error:\n {}",
                     e.getMessage());
             return false;
         }
@@ -130,7 +133,6 @@ public class HTTPDownload extends AbstractBasicClient<CloseableHttpClient>
             log.error("@reset: could not close connection correclty. Error: \n",
                     e.getMessage());
         }
-
         this.uri = Optional.empty();
         this.local = null;
         this.hostname = null;
