@@ -27,19 +27,16 @@ public class SQLSenderProcessor extends SenderAbstract
     private static final Logger log = LoggerFactory
             .getLogger(SQLLoaderProcessor.class);
 
-    @ConfigProperty(name = "db.url", description = "Geoserver wfs url")
+    @ConfigProperty(name = "db.url", description = "Database url", required = true)
     String url;
 
-    @ConfigProperty(name = "db.username", description = "User used for basic authentication")
+    @ConfigProperty(name = "db.username", description = "User used for basic authentication", required = true)
     String username;
 
-    @ConfigProperty(name = "db.password", description = "Password used for basic authentication")
+    @ConfigProperty(name = "db.password", description = "Password used for basic authentication", required = true)
     String password;
 
-    @ConfigProperty(name = "db.auth", description = "Type of authentication currently only Basic is supported")
-    String auth;
-
-    @ConfigProperty(name = "db.driver", description = "Password used for basic authentication")
+    @ConfigProperty(name = "db.driver", description = "Password used for basic authentication", required = true)
     String driver;
 
     @ConfigProperty(name = "db.query.check", description = "SQL query to know if object exists already in database")
@@ -48,10 +45,10 @@ public class SQLSenderProcessor extends SenderAbstract
     @ConfigProperty(name = "db.query.update", description = "SQL query to update object")
     String queryUpdate;
 
-    @ConfigProperty(name = "db.query.insert", description = "SQL query to insert object")
+    @ConfigProperty(name = "db.query.insert", description = "SQL query to insert object", required = true)
     String queryInsert;
 
-    @ConfigProperty(name = "db.query.requires", description = "Required fields separated by semicolumn")
+    @ConfigProperty(name = "db.query.requires", description = "Required fields separated by semicolumn", required = true)
     String reqCols;
 
     @ConfigProperty(name = "db.query.optionals", description = "Optional fields separated by semicolumn")
@@ -97,8 +94,12 @@ public class SQLSenderProcessor extends SenderAbstract
         MapSqlParameterSource sqlParameters = new MapSqlParameterSource();
 
         JsonNode element = send.get("element");
-        List<String> requires = Arrays.asList(reqCols.split(","));
-        List<String> optionals = Arrays.asList(optCols.split(","));
+        List<String> requires = reqCols != null
+                ? Arrays.asList(reqCols.split(","))
+                : new ArrayList<>();
+        List<String> optionals = optCols != null
+                ? Arrays.asList(optCols.split(","))
+                : new ArrayList<>();
 
         for (String r : requires)
         {
@@ -128,17 +129,20 @@ public class SQLSenderProcessor extends SenderAbstract
 
         List<Map<String, Object>> resultSet = new ArrayList<>();
 
-        try
+        if (queryCheck != null)
         {
-            resultSet = jdbcTemplateInstance().queryForList(queryCheck,
-                    sqlParameters);
-        }
-        catch (Exception e)
-        {
-            log.error(
-                    "@processObject: there was a problem consulting datasource, error:\n {}",
-                    e.getMessage());
-            return false;
+            try
+            {
+                resultSet = jdbcTemplateInstance().queryForList(queryCheck,
+                        sqlParameters);
+            }
+            catch (Exception e)
+            {
+                log.error(
+                        "@processObject: there was a problem consulting datasource, error:\n {}",
+                        e.getMessage());
+                return false;
+            }
         }
 
         if (resultSet.size() > 1)
