@@ -72,16 +72,12 @@ public class HardcodedLoader extends Processor
     {
       try
       {
-        log.debug(
-            "processObject@HardcodedLoader - Connector::{} setting local object of ProcessedObject to following::{}",
-            this.getConnector().getName(), jsonObjects.get(id));
+        log.debug("setting local object of ProcessedObject to following::{}", jsonObjects.get(id));
         procObject.setLocalObject(this.mapper.readTree(jsonObjects.get(id)));
       }
       catch (JsonProcessingException e)
       {
-        log.error(
-            "processObject@HardcodedLoader - Connector::{} error reading json object with position::{} inside hardcoded array",
-            this.getConnector().getName(), id);
+        log.error("error reading json object with position::{} inside hardcoded array", id);
         return false;
       }
       procObject.setObjectType(objectType);

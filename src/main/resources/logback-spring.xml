@@ -3,14 +3,14 @@
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d [%thread] %-5level %-50logger{40} - %msg%n</pattern>
+            <pattern>%d [%thread] %-5level %M@%-50logger{40} - %msg%n</pattern>
         </encoder>
     </appender>
      
     <appender name="RollingFileDefault" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>C:/temp/ihub.log</file>
         <encoder>
-            <pattern>%d [%thread] %-5level %-50logger{40} - %msg%n</pattern>
+            <pattern>%d [%thread] %-5level %M@%-50logger{40} - %msg%n</pattern>
         </encoder>
          
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">

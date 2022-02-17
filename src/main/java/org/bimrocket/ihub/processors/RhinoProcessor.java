@@ -54,7 +54,7 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class RhinoProcessor extends Processor
 {
-  @ConfigProperty(description = "The script that makes the transformation")
+  @ConfigProperty(name ="rhino.script.code", description = "The script that makes the transformation")
   public String scriptCode = "";
 
   protected Script script;
@@ -90,6 +90,7 @@ public class RhinoProcessor extends Processor
     scope.put("globalId", scope, procObject.getGlobalId());
     scope.put("objectType", scope, procObject.getObjectType());
     scope.put("operation", scope, procObject.getOperation());
+    
 
     JsonNode localObject = procObject.getLocalObject();
     if (localObject != null)

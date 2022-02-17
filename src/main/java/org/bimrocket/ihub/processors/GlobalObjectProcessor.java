@@ -33,44 +33,43 @@ package org.bimrocket.ihub.processors;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.IdPair;
-import org.bimrocket.ihub.dto.PostProcessorGlobalObject;
+import org.bimrocket.ihub.dto.ProcessorsGlobalObject;
+import org.bimrocket.ihub.js.InventoryObjectsWorkshop;
 import org.bimrocket.ihub.util.ConfigProperty;
-import org.bimrocket.ihub.util.InventoryUtils;
 import org.python.icu.util.Calendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Designed for objects that doesn't have globalId, usually after using one
  * loader which gets external data we only have localId, this processor adds to
  * ProcessedObject either new globalId or existing one from database IdPair's.
  * So use should be sequential after loader processor. Also sets global object
- * as json from dto PostProcessorGlobalObject
+ * as json from dto ProcessorsGlobalObject
  * 
  * @author kfiertek-nexus-geographics
  *
  */
-public class GuidCreatorProcessor extends Processor
+public class GlobalObjectProcessor extends Processor
 {
   private static final Logger log = LoggerFactory
-      .getLogger(GuidCreatorProcessor.class);
+      .getLogger(GlobalObjectProcessor.class);
 
-  private InventoryUtils invUtils;
   private List<IdPair> actualIdPairs;
 
   @ConfigProperty(name = "creator.object.type", description = "The object type to treat Global Ids")
   public String objectType;
 
-  @ConfigProperty(name = "creator.object.path.local.id", description = "Path to local id in JsonNode object")
-  public String pathLocalId;
+  @ConfigProperty(name = "creator.object.path.local.id", description = "Path to local id in JsonNode object if empty means sender will set local id", required = false, defaultValue = "")
+  public String pathLocalId = "";
 
-  public GuidCreatorProcessor(Connector connector)
+  public GlobalObjectProcessor(Connector connector)
   {
     super(connector);
   }
@@ -80,8 +79,7 @@ public class GuidCreatorProcessor extends Processor
   {
     if (proObject.isIgnore())
     {
-      log.trace(
-          "processObject@GuidCreatorProcessor - processed object is ignore");
+      log.trace("processed object is ignore");
       return true;
     }
 
@@ -89,8 +87,7 @@ public class GuidCreatorProcessor extends Processor
         || proObject.getObjectType().isBlank()))
     {
 
-      log.error(
-          "processObject@GuidCreatorProcessor - processed object type is null or blank");
+      log.error("processed object type is null or blank");
       // This should never happen all loaders should assign object type to
       // ProcessedObject
       return false;
@@ -100,8 +97,7 @@ public class GuidCreatorProcessor extends Processor
         && (proObject.isInsert() || proObject.isUpdate()))
     {
       log.error(
-          "processObject@GuidCreatorProcessor - Connector::{}, processed object local object is null while operation is insert or update",
-          this.getConnector().getName());
+          "processed object local object is null while operation is insert or update");
       // This should never happen all insert or update should have valid
       // JsonNode as localObject
       // In case of Ignore or Delete operation localObject can be null
@@ -109,10 +105,10 @@ public class GuidCreatorProcessor extends Processor
     }
 
     if ((proObject.getLocalId() == null || proObject.getLocalId().isBlank())
-        && (proObject.isInsert() || proObject.isUpdate()))
+        && (proObject.isInsert() || proObject.isUpdate())
+        && !pathLocalId.isBlank())
     {
-      log.debug(
-          "processObject@GuidCreatorProcessor - Connector::{}, setting local id of ProcessedObject", this.getConnector().getName());
+      log.debug("setting local id of ProcessedObject");
       JsonNode nodeToProcess = proObject.getLocalObject();
       String localId = null;
 
@@ -124,22 +120,45 @@ public class GuidCreatorProcessor extends Processor
       }
       localId = currentNode.asText();
 
-      log.debug("processObject@GuidCreatorProcessor - Connector::{}, local id found::{}",
-         this.getConnector().getName(), localId);
+      log.debug("local id found::{}", localId);
       proObject.setLocalId(localId);
     }
 
     if (proObject.getGlobalId() == null || proObject.getGlobalId().isBlank())
     {
-      log.debug(
-          "processObject@GuidCreatorProcessor - Connector::{}, setting global id for ProcessedObject", 
-          this.getConnector().getName());
+      log.debug("setting global id for ProcessedObject");
+
+      // Check if local object is actually global object
+      // If true sets globalId
+      JsonNode localObjectNode = proObject.getLocalObject();
+      if (localObjectNode != null && !localObjectNode.isNull())
+      {
+        JsonNode globalIdNode = localObjectNode.get("globalId");
+        if (globalIdNode != null && !globalIdNode.isNull()
+            && globalIdNode.isTextual())
+        {
+          proObject.setGlobalId(globalIdNode.asText());
+        }
+        else
+        {
+          log.trace(
+              "local object not a valid global object skipping set of globalId");
+        }
+      }
+      // Searching for Pair of LocalID and GlobalID for specificed inventory and
+      // object type
       var idPair = searchIdPair(proObject);
       if (idPair == null)
       {
+        // Not found Pair in database
+        // Create new IdPair
+        // If processed object doesn't have globalId defined
+        // new one is created.
         idPair = new IdPair();
         idPair.setConnectorName(connector.getName());
-        idPair.setGlobalId(invUtils.getGuid());
+        idPair.setGlobalId(proObject.getGlobalId() != null
+            && !proObject.getGlobalId().isBlank() ? proObject.getGlobalId()
+                : InventoryObjectsWorkshop.getGuid());
         idPair.setInventory(connector.getInventory());
         idPair.setLocalId(proObject.getLocalId());
         idPair.setObjectType(proObject.getObjectType());
@@ -150,13 +169,26 @@ public class GuidCreatorProcessor extends Processor
       }
       else
       {
-        proObject.setGlobalId(idPair.getGlobalId());
-        proObject.setOperation(ProcessedObject.INSERT);
+        // IdPair found in database
+        // either localId or globalId was already 
+        // saved
+        idPair.setLastUpdate(Calendar.getInstance().getTime());
+        if (proObject.getLocalId() == null && proObject.getLocalId().isBlank())
+        {
+          proObject.setLocalId(idPair.getLocalId());
+        }
+        if (proObject.getGlobalId() == null
+            && proObject.getGlobalId().isBlank())
+        {
+          proObject.setGlobalId(idPair.getGlobalId());
+        }
+        proObject.setOperation(ProcessedObject.UPDATE);
       }
     }
+    // If global object is empty set new ProcessorsGlobalObject
     if (proObject.getGlobalObject() == null)
     {
-      PostProcessorGlobalObject globObject = new PostProcessorGlobalObject()
+      ProcessorsGlobalObject globObject = new ProcessorsGlobalObject()
           .globalId(proObject.getGlobalId());
       if (proObject.isDelete())
       {
@@ -176,7 +208,6 @@ public class GuidCreatorProcessor extends Processor
   public void init()
   {
     super.init();
-    this.invUtils = new InventoryUtils();
     this.setActualIdPairs();
   }
 
@@ -187,7 +218,8 @@ public class GuidCreatorProcessor extends Processor
     while (ite.hasNext() && found == null)
     {
       IdPair actual = ite.next();
-      if (actual.getLocalId().equals(proObject.getLocalId()))
+      if ((actual.getLocalId() != null && actual.getLocalId().equals(proObject.getLocalId()))
+          || (actual.getGlobalId() != null && actual.getGlobalId().equals(proObject.getGlobalId())))
       {
         found = actual;
       }

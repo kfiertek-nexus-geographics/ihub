@@ -63,34 +63,33 @@ public class WfsLoaderProcessor extends FullScanLoader
 {
   private static final Logger log = LoggerFactory
       .getLogger(WfsLoaderProcessor.class);
-  
+
   private final String AUTH_BASIC = "Basic";
 
-  @ConfigProperty(name="wfs.url", description="Geoserver wfs url")
+  @ConfigProperty(name = "wfs.url", description = "Geoserver wfs url")
   String url;
 
-  @ConfigProperty(name="wfs.params", description="Geoserver url query params")
+  @ConfigProperty(name = "wfs.params", description = "Geoserver url query params")
   String urlParams;
 
-  @ConfigProperty(name="wfs.username", description="User used for basic authentication")
+  @ConfigProperty(name = "wfs.username", description = "User used for basic authentication")
   String username;
 
-  @ConfigProperty(name="wfs.password", description="Password used for basic authentication")
+  @ConfigProperty(name = "wfs.password", description = "Password used for basic authentication")
   String password;
 
-  @ConfigProperty(name="wfs.layers", description="Layers to load from geoserver can be multiple comma separeted like this: layers.01, layers.02...")
+  @ConfigProperty(name = "wfs.layers", description = "Layers to load from geoserver can be multiple comma separeted like this: layers.01, layers.02...")
   String layersLoad;
 
-  @ConfigProperty(name="wfs.format", description="Format of petition's body sent to geoserver")
+  @ConfigProperty(name = "wfs.format", description = "Format of petition's body sent to geoserver")
   String formatPetition;
 
-  @ConfigProperty(name="wfs.auth", description="Type of authentication currently only Basic is supported")
+  @ConfigProperty(name = "wfs.auth", description = "Type of authentication currently only Basic is supported")
   String auth;
-  
-  @ConfigProperty(name="wfs.request.timeout", description="Timeout for uri request in seconds", defaultValue="60")
+
+  @ConfigProperty(name = "wfs.request.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
   Integer timeoutS;
-  
-  
+
   public WfsLoaderProcessor(Connector connector)
   {
     super(connector);
@@ -101,76 +100,85 @@ public class WfsLoaderProcessor extends FullScanLoader
   {
     return loadResponse(timeoutS);
   }
-  
-  private HttpClient buildHttpClient() {
+
+  private HttpClient buildHttpClient()
+  {
     int timeoutMs = timeoutS * 1000;
     RequestConfig.Builder requestBuilder = RequestConfig.custom();
     requestBuilder.setConnectTimeout(timeoutMs);
     requestBuilder.setConnectionRequestTimeout(timeoutMs);
-    
-    
+
     HttpClientBuilder clientBuilder = HttpClients.custom();
     clientBuilder.setDefaultRequestConfig(requestBuilder.build());
-    HttpClient httpClient = clientBuilder.build();
     return clientBuilder.build();
   }
-  
-  private HttpUriRequest buildRequest() {
+
+  private HttpUriRequest buildRequest()
+  {
 
     RequestBuilder request = RequestBuilder.get()
-      .setUri(this.url + this.urlParams + "&typeName=" + layersLoad + "&outputFormat=" + this.formatPetition);
-    if (auth != null && auth.equals(AUTH_BASIC)) {
-     request.setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader());
+        .setUri(this.url + this.urlParams + "&typeName=" + layersLoad
+            + "&outputFormat=" + this.formatPetition);
+    if (auth != null && auth.equals(AUTH_BASIC))
+    {
+      request.setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader());
     }
-    
+
     return request.build();
   }
-  
-  private String getAuthHeader() {
+
+  private String getAuthHeader()
+  {
     String authHeader = "";
-    if (auth != null && auth.equals(AUTH_BASIC)) {
-     String auth = username + ":" + password;
-     byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
-     authHeader = AUTH_BASIC + " " + new String(encodedAuth);
+    if (auth != null && auth.equals(AUTH_BASIC))
+    {
+      String auth = username + ":" + password;
+      byte[] encodedAuth = Base64
+          .encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+      authHeader = AUTH_BASIC + " " + new String(encodedAuth);
     }
     return authHeader;
   }
-  
-  private Iterator<JsonNode> loadResponse(long timeout) {
 
-    log.debug("loadResponse@WfsLoaderProcessor - Connector::{}"
-        + " - init with timeout '{}'", this.connector.getName(), timeout);
+  private Iterator<JsonNode> loadResponse(long timeout)
+  {
+
+    log.debug("init with timeout '{}'", timeout);
 
     JsonNode jsonResponse;
 
-    try {
-     log.debug("loadResponse@WfsLoaderProcessor - Connector::{}"
-         + " - execute httpClient built", this.connector.getName());
-     HttpResponse response = buildHttpClient().execute(buildRequest());
-     String bodyResp = EntityUtils.toString(response.getEntity(), 
-         StandardCharsets.UTF_8);
-     jsonResponse = mapper.readTree(bodyResp);
+    try
+    {
+      log.debug("execute httpClient built");
+      HttpResponse response = buildHttpClient().execute(buildRequest());
+      String bodyResp = EntityUtils.toString(response.getEntity(),
+          StandardCharsets.UTF_8);
+      jsonResponse = mapper.readTree(bodyResp);
 
-    } catch (ConnectTimeoutException | SocketTimeoutException e) {
-     log.error("loadResponse@WfsLoaderProcessor - Connector::{}"
-         + " - timeout while sending petition : ", this.connector.getName(), e);
-     return Collections.emptyIterator();
-    } catch (Exception e) {
-     log.error("loadResponse@WfsLoaderProcessor - Connector::{}"
-         + " - exception while sending petition : ", this.connector.getName(), e);
-     return Collections.emptyIterator();
+    }
+    catch (ConnectTimeoutException | SocketTimeoutException e)
+    {
+      log.error("timeout while sending petition : ", e);
+      return Collections.emptyIterator();
+    }
+    catch (Exception e)
+    {
+      log.error("exception while sending petition : ", e);
+      return Collections.emptyIterator();
     }
 
-    try {
-     ArrayNode all = mapper.valueToTree(jsonResponse.get("features"));
-   
-     return all.iterator();
-    } catch (Exception e) {
-     log.error("loadResponse@WfsLoader - Connector::{}"
-         + " - exception while parsing features : ", this.getConnector().getName(), e);
-     return Collections.emptyIterator();
+    try
+    {
+      ArrayNode all = mapper.valueToTree(jsonResponse.get("features"));
+
+      return all.iterator();
+    }
+    catch (Exception e)
+    {
+      log.error("exception while parsing features : ", e);
+      return Collections.emptyIterator();
     }
 
-   }
+  }
 
 }

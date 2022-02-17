@@ -62,7 +62,7 @@ public class KafkaJsonLoaderProcessor extends KafkaLoaderAbstract
 
     String recordLoaded = this.getRecord();
     
-    log.debug("processObject@KafkaJsonLoaderProcessor - Connector:{} getting record from kafka, record::{}", this.getConnector().getName(), recordLoaded);
+    log.debug("getting record from kafka, record::{}", recordLoaded);
     if (recordLoaded == null) {
       procObject.setObjectType(this.objectType);
       procObject.setOperation(ProcessedObject.IGNORE);
@@ -76,7 +76,7 @@ public class KafkaJsonLoaderProcessor extends KafkaLoaderAbstract
       }
       catch (JsonProcessingException e)
       {
-        log.debug("processObject@KafkaJsonLoaderProcessor - record not a valid json, this should never happen incoming record::{}", recordLoaded);
+        log.debug("record not a valid json, this should never happen incoming record::{}", recordLoaded);
         procObject.setOperation(ProcessedObject.IGNORE);
         return false;
       }

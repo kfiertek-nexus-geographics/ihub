@@ -1,7 +1,29 @@
 package org.bimrocket.ihub.js;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.geotools.geojson.geom.GeometryJSON;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GeometryWorkshop {
-	/*private static final Logger log = LoggerFactory.getLogger(GeometryWorkshop.class);
+	private static final Logger log = LoggerFactory.getLogger(GeometryWorkshop.class);
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	public GeometryWorkshop() {
@@ -177,7 +199,7 @@ public class GeometryWorkshop {
 			if (!type.equals("LineString") && !type.equals("MultiLineString")) {
 				if (type.equals("Point")) {
 					String error = String.format("Incorrect transformation of type '%s' to LineString", type);
-					log.error("toLineString@GeometryXMLUtils - {}", error);
+					log.error(error);
 					throw new UnsupportedOperationException(error);
 				} else {
 					if (type.equals("MultiPolygon")) {
@@ -221,7 +243,7 @@ public class GeometryWorkshop {
 			if (!type.equals("Polygon") && !type.equals("MultiPolygon")) {
 				if (type.equals("Point")) {
 					String error = String.format("Incorrect transformation of type '%s' to Polygon", type);
-					log.error("toPoligon@GeometryXMLUtils - {}", error);
+					log.error(error);
 					throw new UnsupportedOperationException(error);
 				} else {
 					if (type.equals("LineString") || type.equals("MultiPoint")) {
@@ -233,7 +255,7 @@ public class GeometryWorkshop {
 							String error = String.format(
 									"Incorrect transformation of type '%s' to Polygon, does not meet the conditions",
 									type);
-							log.error("toPoligon@GeometryXMLUtils - {}", error);
+							log.error(error);
 							throw new UnsupportedOperationException(error);
 						}
 					} else if (type.equals("MultiLineString")) {
@@ -247,7 +269,7 @@ public class GeometryWorkshop {
 								String error = String.format(
 										"Incorrect transformation of type '%s' to Polygon, does not meet the conditions",
 										type);
-								log.error("toPoligon@GeometryXMLUtils - {}", error);
+								log.error(error);
 								throw new UnsupportedOperationException(error);
 							}
 						}
@@ -278,8 +300,7 @@ public class GeometryWorkshop {
 				try {
 					geometry = mapper.readTree(polygon);
 				} catch (JsonProcessingException e) {
-					log.error("bufferPoint@GeometryWorkshop - error creating buffer of geometry :: {}",
-							geometry.toPrettyString(), e);
+					log.error(geometry.toPrettyString(), e);
 				}
 			}
 		}
@@ -321,7 +342,7 @@ public class GeometryWorkshop {
 			reader = new StringReader(mapper.writeValueAsString(geometry));
 			geo = gjson.read(reader);
 		} catch (IOException e) {
-			log.error("nodeToGeometry@GeometryWorkshop - can't read following geojson :: {}", geometry.toPrettyString(),
+			log.error("can't read following geojson :: {}", geometry.toPrettyString(),
 					e);
 		}
 		return geo;
@@ -340,13 +361,13 @@ public class GeometryWorkshop {
 			geojson = mapper.readTree(st);
 
 		} catch (FactoryException e) {
-			log.error("crsTransfom@GeometryWorkshop - can't decode a Coordinate Reference System");
+			log.error("can't decode a Coordinate Reference System");
 		} catch (TransformException e) {
-			log.error("crsTransfom@GeometryWorkshop - can't transform a Coordinate Reference System");
+			log.error("can't transform a Coordinate Reference System");
 		} catch (IOException e) {
-			log.error("crsTransfom@GeometryWorkshop - can't read geometry to Json Node");
+			log.error("can't read geometry to Json Node");
 		}
 
 		return geojson;
-	}*/
+	}
 }
