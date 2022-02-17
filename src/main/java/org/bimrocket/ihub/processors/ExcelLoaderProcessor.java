@@ -52,7 +52,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.password", description = "Source user password")
     String password;
 
-    @ConfigProperty(name = "source.hostname", description = "IP or DNS", required = true)
+    @ConfigProperty(name = "source.hostname", description = "IP or DNS")
     String hostname;
 
     @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host")
@@ -77,7 +77,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
 
     boolean loadFromClient()
     {
-        if ("BASIC".equals(auth.toUpperCase()))
+        if ("BASIC".equals(auth.toUpperCase()) || auth == null)
         {
             if ("HTTP".equals(protocol.toUpperCase()))
             {
