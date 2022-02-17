@@ -2,7 +2,7 @@
 
 ## :neutral_face: What does it do?
 
-The purpose of this loader is to load Excel binary files from remote host 
+The purpose of this loader is to load Excel binary files from remote host and then parse it's data to Json Node collection 
 
 For know source protocols supported are.
 
