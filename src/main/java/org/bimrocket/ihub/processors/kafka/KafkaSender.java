@@ -28,8 +28,9 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
+package org.bimrocket.ihub.processors.kafka;
 
+import org.bimrocket.ihub.processors.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ import org.springframework.kafka.core.KafkaTemplate;
  *
  * @author realor
  */
-public abstract class KafkaSenderAbstract extends SenderAbstract
+public abstract class KafkaSender extends Sender
 {
   protected KafkaTemplate<String, String> template;
 
@@ -54,7 +55,7 @@ public abstract class KafkaSenderAbstract extends SenderAbstract
   @ConfigProperty(name = "kafka.sender.bootstrap.address", description = "Kafka bootstrap servers address")
   public String bootstrapAddress;
 
-  public KafkaSenderAbstract(Connector connector)
+  public KafkaSender(Connector connector)
   {
     super(connector);
   }

@@ -1,47 +1,47 @@
-/**
-BIMROCKET
-
-Copyright (C) 2022, CONSULTORIA TECNICA NEXUS GEOGRAPHICS
-
-This program is licensed and may be used, modified and redistributed under
-the terms of the European Public License (EUPL), either version 1.1 or (at
-your option) any later version as soon as they are approved by the European
-Commission.
-
-Alternatively, you may redistribute and/or modify this program under the
-terms of the GNU Lesser General Public License as published by the Free
-Software Foundation; either  version 3 of the License, or (at your option)
-any later version.
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-See the licenses for the specific language governing permissions, limitations
-and more details.
-
-You should have received a copy of the EUPL1.1 and the LGPLv3 licenses along
-with this program; if not, you may find them at:
-
-https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
-http://www.gnu.org/licenses/
-and
-https://www.gnu.org/licenses/lgpl.txt
-**/
-package org.bimrocket.ihub.processors;
+/*
+ * BIMROCKET
+ *
+ * Copyright (C) 2022, Ajuntament de Sant Feliu de Llobregat
+ *
+ * This program is licensed and may be used, modified and redistributed under
+ * the terms of the European Public License (EUPL), either version 1.1 or (at
+ * your option) any later version as soon as they are approved by the European
+ * Commission.
+ *
+ * Alternatively, you may redistribute and/or modify this program under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either  version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the licenses for the specific language governing permissions, limitations
+ * and more details.
+ *
+ * You should have received a copy of the EUPL1.1 and the LGPLv3 licenses along
+ * with this program; if not, you may find them at:
+ *
+ * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+ * http://www.gnu.org/licenses/
+ * and
+ * https://www.gnu.org/licenses/lgpl.txt
+ */
+package org.bimrocket.ihub.processors.guid;
 
 import java.util.Iterator;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.IdPair;
-import org.bimrocket.ihub.dto.ProcessorsGlobalObject;
-import org.bimrocket.ihub.js.InventoryObjectsWorkshop;
 import org.bimrocket.ihub.util.ConfigProperty;
+import org.bimrocket.ihub.util.GlobalIdGenerator;
 import org.python.icu.util.Calendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,21 +52,27 @@ import org.slf4j.LoggerFactory;
  * ProcessedObject either new globalId or existing one from database IdPair's.
  * So use should be sequential after loader processor. Also sets global object
  * as json from dto ProcessorsGlobalObject
- * 
+ *
  * @author kfiertek-nexus-geographics
  *
  */
 public class GlobalObjectProcessor extends Processor
 {
-  private static final Logger log = LoggerFactory
-      .getLogger(GlobalObjectProcessor.class);
+  private static final Logger log =
+    LoggerFactory.getLogger(GlobalObjectProcessor.class);
+
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   private List<IdPair> actualIdPairs;
 
-  @ConfigProperty(name = "creator.object.type", description = "The object type to treat Global Ids")
+  @ConfigProperty(name = "creator.object.type",
+    description = "The object type to treat Global Ids")
   public String objectType;
 
-  @ConfigProperty(name = "creator.object.path.local.id", description = "Path to local id in JsonNode object if empty means sender will set local id", required = false, defaultValue = "")
+  @ConfigProperty(name = "creator.object.path.local.id",
+    description = "Path to local id in JsonNode object if empty means sender will set local id",
+    required = false,
+    defaultValue = "")
   public String pathLocalId = "";
 
   public GlobalObjectProcessor(Connector connector)
@@ -158,7 +164,7 @@ public class GlobalObjectProcessor extends Processor
         idPair.setConnectorName(connector.getName());
         idPair.setGlobalId(proObject.getGlobalId() != null
             && !proObject.getGlobalId().isBlank() ? proObject.getGlobalId()
-                : InventoryObjectsWorkshop.getGuid());
+                : GlobalIdGenerator.randomGlobalId());
         idPair.setInventory(connector.getInventory());
         idPair.setLocalId(proObject.getLocalId());
         idPair.setObjectType(proObject.getObjectType());
@@ -170,7 +176,7 @@ public class GlobalObjectProcessor extends Processor
       else
       {
         // IdPair found in database
-        // either localId or globalId was already 
+        // either localId or globalId was already
         // saved
         idPair.setLastUpdate(Calendar.getInstance().getTime());
         if (proObject.getLocalId() == null && proObject.getLocalId().isBlank())
@@ -233,5 +239,4 @@ public class GlobalObjectProcessor extends Processor
         .getIdPairRepository().findByInventoryAndObjectType(
             this.getConnector().getInventory(), this.objectType);
   }
-
 }

@@ -28,38 +28,63 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.controllers;
+package org.bimrocket.ihub.processors.guid;
 
-import org.bimrocket.ihub.service.ShellService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
+ * Dto to generate following JsonNode used as GlobalObject { "globalId" :
+ * ProcessedObject.getGlobalId(), "element" : ProcessedObject.getLocalObject() }
  *
- * @author realor
+ * @author kfiertek-nexus-geographics
+ *
  */
-@RestController
-public class ShellController
+public class ProcessorsGlobalObject
 {
-  @Autowired
-  ShellService shellService;
+  private String globalId;
+  private JsonNode element;
 
-  @PostMapping("/webshell")
-  public ResponseEntity<String> execute(@RequestBody String command)
+  public ProcessorsGlobalObject()
   {
-    ResponseEntity<String> response;
 
-    try
-    {
-      response = ResponseEntity.ok(shellService.execute(command));
-    }
-    catch (Exception ex)
-    {
-      response = ResponseEntity.badRequest().body(ex.getMessage());
-    }
-    return response;
   }
+
+  public ProcessorsGlobalObject(String globalId, JsonNode element)
+  {
+    this.globalId = globalId;
+    this.element = element;
+  }
+
+  public ProcessorsGlobalObject globalId(String globalId)
+  {
+    this.globalId = globalId;
+    return this;
+  }
+
+  public ProcessorsGlobalObject element(JsonNode element)
+  {
+    this.element = element;
+    return this;
+  }
+
+  public String getGlobalId()
+  {
+    return globalId;
+  }
+
+  public void setGlobalId(String globalId)
+  {
+    this.globalId = globalId;
+  }
+
+  public JsonNode getElement()
+  {
+    return element;
+  }
+
+  public void setElement(JsonNode element)
+  {
+    this.element = element;
+  }
+
 }

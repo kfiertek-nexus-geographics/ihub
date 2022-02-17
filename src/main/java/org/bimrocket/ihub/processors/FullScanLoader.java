@@ -30,42 +30,44 @@
  */
 package org.bimrocket.ihub.processors;
 
-import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
-import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
-
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *
  * @author realor
  */
-public abstract class FullScanLoader extends Processor
+public abstract class FullScanLoader extends Loader
 {
-  private static final Logger log = LoggerFactory
-      .getLogger(FullScanLoader.class);
-  
+  private static final Logger log =
+    LoggerFactory.getLogger(FullScanLoader.class);
+
+  private static final String IDLE = "idle";
+  private static final String UPDATE = "update";
+  private static final String DELETE = "delete";
+
   private Iterator<JsonNode> updateIterator;
   private Iterator<IdPair> deleteIterator;
   private String phase = IDLE;
   private long updateStartTime;
 
-  @ConfigProperty(name = "scanner.object.type", description = "The object type")
+  @ConfigProperty(name = "scanner.object.type",
+    description = "The object type")
   public String objectType;
 
-  @ConfigProperty(name = "scanner.interval.period", description = "Period to perform incoming records scan in seconds", required = false, defaultValue = "10 * 60")
+  @ConfigProperty(name = "scanner.interval.period",
+    description = "Period to perform incoming records scan in seconds",
+    required = false,
+    defaultValue = "10 * 60")
   public int intervalPeriod = 10 * 60;
 
   public FullScanLoader(Connector connector)
@@ -84,42 +86,44 @@ public abstract class FullScanLoader extends Processor
   {
     switch (phase)
     {
-    case IDLE:
-      if (isTimeToScan())
-      {
-        log.debug("it's time to scan, changing phase to UPDATE");
-        phase = UPDATE;
-        updateStartTime = System.currentTimeMillis();
-        updateIterator = fullScan();
-      }
-      else
-        return false;
+      case IDLE:
+        if (isTimeToScan())
+        {
+          log.debug("it's time to scan, changing phase to UPDATE");
+          phase = UPDATE;
+          updateStartTime = System.currentTimeMillis();
+          updateIterator = fullScan();
+        }
+        else
+        {
+          return false;
+        }
 
-    case UPDATE:
-      if (loadUpdate(procObject))
-      {
-        log.debug("loaded update object");     
-        return true;
-      }
-      else
-      {
-        log.debug("changing phase to DELETE");
-        phase = DELETE;
-        deleteIterator = purge();
-      }
+      case UPDATE:
+        if (loadUpdate(procObject))
+        {
+          log.debug("loaded update object");
+          return true;
+        }
+        else
+        {
+          log.debug("changing phase to DELETE");
+          phase = DELETE;
+          deleteIterator = purge();
+        }
 
-    case DELETE:
-      if (loadDelete(procObject))
-      {
-        log.debug("loaded delete object");
-        return true;
-      }
-      else
-      {
-        log.debug("changing phase to IDLE");
-        phase = IDLE;
-      }
-      break;
+      case DELETE:
+        if (loadDelete(procObject))
+        {
+          log.debug("loaded delete object");
+          return true;
+        }
+        else
+        {
+          log.debug("changing phase to IDLE");
+          phase = IDLE;
+        }
+        break;
     }
     return false;
   }
@@ -150,7 +154,7 @@ public abstract class FullScanLoader extends Processor
     {
       IdPair idPair = deleteIterator.next();
       procObject.setLocalId(idPair.getLocalId());
-      procObject.setLocalObject(this.mapper.nullNode());
+      procObject.setLocalObject(mapper.nullNode());
       procObject.setObjectType(objectType);
       procObject.setOperation(DELETE);
       return true;
@@ -161,18 +165,18 @@ public abstract class FullScanLoader extends Processor
   protected boolean isTimeToScan()
   {
     return (System.currentTimeMillis() - updateStartTime) > intervalPeriod
-        * 1000;
+      * 1000;
   }
 
   protected Iterator<IdPair> purge()
   {
     Date lastUpdateDate = new Date(updateStartTime);
     IdPairRepository idPairRepository = connector.getConnectorService()
-        .getIdPairRepository();
+      .getIdPairRepository();
 
     List<IdPair> idPairs = idPairRepository
-        .findByInventoryAndObjectTypeAndLastUpdateLessThan(
-            connector.getInventory(), objectType, lastUpdateDate);
+      .findByInventoryAndObjectTypeAndLastUpdateLessThan(
+        connector.getInventory(), objectType, lastUpdateDate);
 
     return idPairs.iterator();
   }

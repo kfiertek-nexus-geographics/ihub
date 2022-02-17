@@ -28,40 +28,24 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Processor;
+package org.bimrocket.ihub.exceptions;
 
 /**
  *
  * @author realor
  */
-public class TestSender extends Processor
+public class ProcessorInitException extends Exception
 {
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final int errorCode;
 
-  public TestSender(Connector connector)
+  public ProcessorInitException(int errorCode, String message, Object... args)
   {
-    super(connector);
+    super(String.format(message, args));
+    this.errorCode = errorCode;
   }
 
-  @Override
-  public boolean processObject(ProcessedObject procObject)
+  public int getErrorCode()
   {
-    try
-    {
-      System.out
-          .println(mapper.writeValueAsString(procObject.getGlobalObject()));
-    }
-    catch (JsonProcessingException ex)
-    {
-
-    }
-    return true;
+    return errorCode;
   }
-
 }

@@ -1,34 +1,34 @@
-/**
-BIMROCKET
-
-Copyright (C) 2022, CONSULTORIA TECNICA NEXUS GEOGRAPHICS
-
-This program is licensed and may be used, modified and redistributed under
-the terms of the European Public License (EUPL), either version 1.1 or (at
-your option) any later version as soon as they are approved by the European
-Commission.
-
-Alternatively, you may redistribute and/or modify this program under the
-terms of the GNU Lesser General Public License as published by the Free
-Software Foundation; either  version 3 of the License, or (at your option)
-any later version.
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-See the licenses for the specific language governing permissions, limitations
-and more details.
-
-You should have received a copy of the EUPL1.1 and the LGPLv3 licenses along
-with this program; if not, you may find them at:
-
-https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
-http://www.gnu.org/licenses/
-and
-https://www.gnu.org/licenses/lgpl.txt
-**/
-package org.bimrocket.ihub.processors;
+/*
+ * BIMROCKET
+ *
+ * Copyright (C) 2022, Ajuntament de Sant Feliu de Llobregat
+ *
+ * This program is licensed and may be used, modified and redistributed under
+ * the terms of the European Public License (EUPL), either version 1.1 or (at
+ * your option) any later version as soon as they are approved by the European
+ * Commission.
+ *
+ * Alternatively, you may redistribute and/or modify this program under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either  version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the licenses for the specific language governing permissions, limitations
+ * and more details.
+ *
+ * You should have received a copy of the EUPL1.1 and the LGPLv3 licenses along
+ * with this program; if not, you may find them at:
+ *
+ * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+ * http://www.gnu.org/licenses/
+ * and
+ * https://www.gnu.org/licenses/lgpl.txt
+ */
+package org.bimrocket.ihub.processors.wfs;
 
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
@@ -53,44 +53,53 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.bimrocket.ihub.processors.FullScanLoader;
 
 /**
- * 
+ *
  * @author kfiertek-nexus-geographics
  *
  */
-public class WfsLoaderProcessor extends FullScanLoader
+public class WfsLoader extends FullScanLoader
 {
-  private static final Logger log = LoggerFactory
-      .getLogger(WfsLoaderProcessor.class);
+  private static final Logger log = LoggerFactory.getLogger(WfsLoader.class);
 
   private final String AUTH_BASIC = "Basic";
 
-  @ConfigProperty(name = "wfs.url", description = "Geoserver wfs url")
+  @ConfigProperty(name = "wfs.url",
+    description = "Geoserver wfs url")
   String url;
 
-  @ConfigProperty(name = "wfs.params", description = "Geoserver url query params")
+  @ConfigProperty(name = "wfs.params",
+    description = "Geoserver url query params")
   String urlParams;
 
-  @ConfigProperty(name = "wfs.username", description = "User used for basic authentication")
+  @ConfigProperty(name = "wfs.username",
+    description = "User used for basic authentication")
   String username;
 
-  @ConfigProperty(name = "wfs.password", description = "Password used for basic authentication")
+  @ConfigProperty(name = "wfs.password",
+    description = "Password used for basic authentication")
   String password;
 
-  @ConfigProperty(name = "wfs.layers", description = "Layers to load from geoserver can be multiple comma separeted like this: layers.01, layers.02...")
+  @ConfigProperty(name = "wfs.layers",
+    description = "Layers to load from geoserver can be multiple comma separeted like this: layers.01, layers.02...")
   String layersLoad;
 
-  @ConfigProperty(name = "wfs.format", description = "Format of petition's body sent to geoserver")
+  @ConfigProperty(name = "wfs.format",
+    description = "Format of petition's body sent to geoserver")
   String formatPetition;
 
-  @ConfigProperty(name = "wfs.auth", description = "Type of authentication currently only Basic is supported")
+  @ConfigProperty(name = "wfs.auth",
+    description = "Type of authentication currently only Basic is supported")
   String auth;
 
-  @ConfigProperty(name = "wfs.request.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
+  @ConfigProperty(name = "wfs.request.timeout",
+    description = "Timeout for uri request in seconds",
+    defaultValue = "60")
   Integer timeoutS;
 
-  public WfsLoaderProcessor(Connector connector)
+  public WfsLoader(Connector connector)
   {
     super(connector);
   }
@@ -115,10 +124,9 @@ public class WfsLoaderProcessor extends FullScanLoader
 
   private HttpUriRequest buildRequest()
   {
-
     RequestBuilder request = RequestBuilder.get()
-        .setUri(this.url + this.urlParams + "&typeName=" + layersLoad
-            + "&outputFormat=" + this.formatPetition);
+      .setUri(this.url + this.urlParams + "&typeName=" + layersLoad
+        + "&outputFormat=" + this.formatPetition);
     if (auth != null && auth.equals(AUTH_BASIC))
     {
       request.setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader());
@@ -134,7 +142,7 @@ public class WfsLoaderProcessor extends FullScanLoader
     {
       String auth = username + ":" + password;
       byte[] encodedAuth = Base64
-          .encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+        .encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
       authHeader = AUTH_BASIC + " " + new String(encodedAuth);
     }
     return authHeader;
@@ -152,7 +160,7 @@ public class WfsLoaderProcessor extends FullScanLoader
       log.debug("execute httpClient built");
       HttpResponse response = buildHttpClient().execute(buildRequest());
       String bodyResp = EntityUtils.toString(response.getEntity(),
-          StandardCharsets.UTF_8);
+        StandardCharsets.UTF_8);
       jsonResponse = mapper.readTree(bodyResp);
 
     }
@@ -178,7 +186,5 @@ public class WfsLoaderProcessor extends FullScanLoader
       log.error("exception while parsing features : ", e);
       return Collections.emptyIterator();
     }
-
   }
-
 }

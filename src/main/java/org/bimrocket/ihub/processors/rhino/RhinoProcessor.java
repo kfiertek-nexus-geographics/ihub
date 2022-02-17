@@ -28,7 +28,7 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
+package org.bimrocket.ihub.processors.rhino;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,8 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class RhinoProcessor extends Processor
 {
-  @ConfigProperty(name ="rhino.script.code", description = "The script that makes the transformation")
+  @ConfigProperty(name ="rhino.script.code",
+    description = "The script that process the object")
   public String scriptCode = "";
 
   protected Script script;
@@ -90,7 +91,7 @@ public class RhinoProcessor extends Processor
     scope.put("globalId", scope, procObject.getGlobalId());
     scope.put("objectType", scope, procObject.getObjectType());
     scope.put("operation", scope, procObject.getOperation());
-    
+
 
     JsonNode localObject = procObject.getLocalObject();
     if (localObject != null)
@@ -172,8 +173,8 @@ public class RhinoProcessor extends Processor
     }
     else if (scriptable instanceof JsonNodeScriptable)
     {
-      JsonNodeScriptable nodeScriptable = (JsonNodeScriptable) scriptable;
-      node = nodeScriptable.node;
+      JsonNodeScriptable nodeScriptable = (JsonNodeScriptable)scriptable;
+      node = nodeScriptable.getNode();
     }
     return node;
   }
@@ -271,84 +272,6 @@ public class RhinoProcessor extends Processor
       {
         node.add((Boolean) value);
       }
-    }
-  }
-
-  public class JsonNodeScriptable extends NativeJavaObject
-  {
-    private final JsonNode node;
-
-    public JsonNodeScriptable(Scriptable scope, JsonNode node)
-    {
-      super(scope, node, JsonNode.class);
-      this.node = node;
-    }
-
-    @Override
-    public String getClassName()
-    {
-      return "JsonNodeScriptable";
-    }
-
-    @Override
-    public Object get(String name, Scriptable scope)
-    {
-      if (node.has(name))
-      {
-        JsonNode valueNode = node.get(name);
-        if (valueNode.isArray() || valueNode.isObject())
-        {
-          return new JsonNodeScriptable(scope, valueNode);
-        }
-        else
-        {
-          return nodeToJava(valueNode);
-        }
-      }
-      return super.get(name, scope);
-    }
-
-    @Override
-    public Object get(int i, Scriptable scope)
-    {
-      if (i < node.size())
-      {
-        JsonNode valueNode = node.get(i);
-        if (valueNode.isArray() || valueNode.isObject())
-        {
-          return new JsonNodeScriptable(scope, valueNode);
-        }
-        else
-        {
-          return nodeToJava(valueNode);
-        }
-      }
-      return super.get(i, scope);
-    }
-
-    private Object nodeToJava(JsonNode valueNode)
-    {
-      if (valueNode.isInt())
-      {
-        return valueNode.asInt();
-      }
-      if (valueNode.isLong())
-      {
-        return valueNode.asInt();
-      }
-      if (valueNode.isNumber())
-      {
-        return valueNode.asDouble();
-      }
-      if (valueNode.isBoolean())
-      {
-        return valueNode.asBoolean();
-      }
-      if (valueNode.isTextual())
-      {
-        return valueNode.asText();
-      }
-      return null;
     }
   }
 }

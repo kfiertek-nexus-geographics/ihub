@@ -28,38 +28,51 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.controllers;
+package org.bimrocket.ihub.processors.kafka;
 
-import org.bimrocket.ihub.service.ShellService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.bimrocket.ihub.connector.Connector;
+import org.bimrocket.ihub.connector.ProcessedObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *
- * @author realor
+ * @author kfiertek-nexus-geographics
  */
-@RestController
-public class ShellController
+public class JsonKafkaSender extends KafkaSender
 {
-  @Autowired
-  ShellService shellService;
+  private static final Logger log =
+    LoggerFactory.getLogger(JsonKafkaSender.class);
 
-  @PostMapping("/webshell")
-  public ResponseEntity<String> execute(@RequestBody String command)
+  public JsonKafkaSender(Connector connector)
   {
-    ResponseEntity<String> response;
+    super(connector);
+  }
+
+  @Override
+  public boolean processObject(ProcessedObject procObject)
+  {
+    JsonNode toSend = this.getNodeToSend(procObject);
+    if (toSend == null)
+    {
+      return false;
+    }
 
     try
     {
-      response = ResponseEntity.ok(shellService.execute(command));
+      var value = mapper.writeValueAsString(toSend);
+      log.debug("sending {} json object to topic {}", toSend.toPrettyString(),
+        this.topicName);
+      this.template.send(this.topicName, value);
+      return true;
     }
-    catch (Exception ex)
+    catch (JsonProcessingException e)
     {
-      response = ResponseEntity.badRequest().body(ex.getMessage());
+      log.error("error processing following json::{}, this should never happen",
+        toSend.toPrettyString());
+      return false;
     }
-    return response;
   }
 }

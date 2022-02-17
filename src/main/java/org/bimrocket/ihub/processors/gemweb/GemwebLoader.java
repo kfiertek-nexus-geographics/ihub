@@ -1,35 +1,36 @@
-/**
-BIMROCKET
+/*
+ * BIMROCKET
+ *
+ * Copyright (C) 2022, Ajuntament de Sant Feliu de Llobregat
+ *
+ * This program is licensed and may be used, modified and redistributed under
+ * the terms of the European Public License (EUPL), either version 1.1 or (at
+ * your option) any later version as soon as they are approved by the European
+ * Commission.
+ *
+ * Alternatively, you may redistribute and/or modify this program under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either  version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the licenses for the specific language governing permissions, limitations
+ * and more details.
+ *
+ * You should have received a copy of the EUPL1.1 and the LGPLv3 licenses along
+ * with this program; if not, you may find them at:
+ *
+ * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+ * http://www.gnu.org/licenses/
+ * and
+ * https://www.gnu.org/licenses/lgpl.txt
+ */
+package org.bimrocket.ihub.processors.gemweb;
 
-Copyright (C) 2022, CONSULTORIA TECNICA NEXUS GEOGRAPHICS
-
-This program is licensed and may be used, modified and redistributed under
-the terms of the European Public License (EUPL), either version 1.1 or (at
-your option) any later version as soon as they are approved by the European
-Commission.
-
-Alternatively, you may redistribute and/or modify this program under the
-terms of the GNU Lesser General Public License as published by the Free
-Software Foundation; either  version 3 of the License, or (at your option)
-any later version.
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-See the licenses for the specific language governing permissions, limitations
-and more details.
-
-You should have received a copy of the EUPL1.1 and the LGPLv3 licenses along
-with this program; if not, you may find them at:
-
-https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
-http://www.gnu.org/licenses/
-and
-https://www.gnu.org/licenses/lgpl.txt
-**/
-package org.bimrocket.ihub.processors;
-
+import org.bimrocket.ihub.processors.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,39 +64,48 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 /**
- * 
+ *
  * @author kfiertek-nexus-geographics
  *
  */
-public class GemwebLoaderProcessor extends FullScanLoader
+public class GemwebLoader extends FullScanLoader
 {
-  private static final Logger log = LoggerFactory
-      .getLogger(GemwebLoaderProcessor.class);
+  private static final Logger log =
+    LoggerFactory.getLogger(GemwebLoader.class);
 
   private static final String AUTH_BEARER = "Bearer";
 
-  @ConfigProperty(name = "gemweb.url", description = "Gemweb url")
+  @ConfigProperty(name = "gemweb.url",
+    description = "Gemweb url")
   private String url;
 
-  @ConfigProperty(name = "gemweb.client.id", description = "Used to obtain token")
+  @ConfigProperty(name = "gemweb.client.id",
+    description = "Used to obtain token")
   private String clientId;
 
-  @ConfigProperty(name = "gemweb.client.secret", description = "Secret used for authentication")
+  @ConfigProperty(name = "gemweb.client.secret",
+    description = "Secret used for authentication")
   private String clientSecret;
 
-  @ConfigProperty(name = "gemweb.category", description = "Category to load from gemweb")
+  @ConfigProperty(name = "gemweb.category",
+    description = "Category to load from gemweb")
   private String category;
 
-  @ConfigProperty(name = "gemweb.auth", description = "Authentication used currently supported only Bearer", required = false, defaultValue = "Bearer")
+  @ConfigProperty(name = "gemweb.auth",
+    description = "Authentication used currently supported only Bearer",
+    required = false,
+    defaultValue = "Bearer")
   private String auth = AUTH_BEARER;
 
-  @ConfigProperty(name = "gemweb.request.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
+  @ConfigProperty(name = "gemweb.request.timeout",
+    description = "Timeout for uri request in seconds", defaultValue = "60")
   private Integer timeoutS;
 
-  @ConfigProperty(name = "gemweb.records.path", description = "Path to records inside json response")
+  @ConfigProperty(name = "gemweb.records.path",
+    description = "Path to records inside json response")
   private String recordsPath;
 
-  public GemwebLoaderProcessor(Connector connector)
+  public GemwebLoader(Connector connector)
   {
     super(connector);
   }
@@ -120,7 +130,6 @@ public class GemwebLoaderProcessor extends FullScanLoader
 
   private String getAccessToken()
   {
-
     HttpPost httpPost = new HttpPost(url);
 
     List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -155,7 +164,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
       if (node.get("error") != null)
       {
         log.error("error in authentication, error responded : {}",
-            node.get("resultat").get("error"));
+          node.get("resultat").get("error"));
       }
       JsonNode resultat = node.get("access_token");
       if (resultat != null)
@@ -192,7 +201,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
     }
 
     String ret = sb.toString().replaceAll("\r\n", "").replaceAll("\t", "")
-        .replaceAll("\n", "");
+      .replaceAll("\n", "");
     return ret;
   }
 
@@ -208,7 +217,6 @@ public class GemwebLoaderProcessor extends FullScanLoader
 
   private Iterator<JsonNode> loadResponse(long timeout)
   {
-
     log.debug("init with timeout '{}'", timeout);
 
     try
@@ -219,7 +227,7 @@ public class GemwebLoaderProcessor extends FullScanLoader
       if (accessToken == null || accessToken.isBlank())
       {
         log.error("access token is empty {} returning empty iterator",
-            accessToken);
+          accessToken);
         return Collections.emptyIterator();
       }
       String authHeader = this.getAuthHeader(accessToken);
@@ -253,14 +261,13 @@ public class GemwebLoaderProcessor extends FullScanLoader
         else
         {
           log.error("all is not a ArrayNode, all::{}",
-              mapper.writeValueAsString(all));
+            mapper.writeValueAsString(all));
           return Collections.emptyIterator();
         }
       }
       catch (Exception e)
       {
         log.error("exception while sending petition : ", e);
-
       }
       return Collections.emptyIterator();
 
@@ -276,5 +283,4 @@ public class GemwebLoaderProcessor extends FullScanLoader
       return Collections.emptyIterator();
     }
   }
-
 }

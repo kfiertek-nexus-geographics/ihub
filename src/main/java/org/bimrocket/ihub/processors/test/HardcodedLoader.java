@@ -28,7 +28,11 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
+package org.bimrocket.ihub.processors.test;
+
+import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
+
+import java.util.List;
 
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
@@ -37,46 +41,61 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.bimrocket.ihub.processors.Loader;
 
 /**
  *
- * @author kfiertek-nexus-geographics
+ * @author realor
  */
-public class KafkaJsonSenderProcessor extends KafkaSenderAbstract
+public class HardcodedLoader extends Loader
 {
+  private static final Logger log =
+    LoggerFactory.getLogger(HardcodedLoader.class);
 
-  private static final Logger log = LoggerFactory
-      .getLogger(KafkaJsonSenderProcessor.class);
+  private int id = 0;
 
-  public KafkaJsonSenderProcessor(Connector connector)
+  public HardcodedLoader(Connector connector)
   {
     super(connector);
   }
 
+  @ConfigProperty(name = "hardcoded.loader.array.json.objects",
+    description = "Sample json object array to load")
+  public List<String> jsonObjects;
+
+  @ConfigProperty(name = "hardcoded.loader.object.type",
+    description = "Type of object we loading")
+  public String objectType;
+
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-
-    JsonNode toSend = this.getNodeToSend(procObject);
-    if (toSend == null)
+    if (id != jsonObjects.size())
     {
-      return false;
-    }
-
-    try
-    {
-
-      var value = this.mapper.writeValueAsString(toSend);
-      log.debug("sending {} json object to topic {}", toSend.toPrettyString(), this.topicName);
-      this.template.send(this.topicName, value);
+      try
+      {
+        log.debug("setting local object of ProcessedObject to following::{}", jsonObjects.get(id));
+        procObject.setLocalObject(mapper.readTree(jsonObjects.get(id)));
+      }
+      catch (JsonProcessingException e)
+      {
+        log.error("error reading json object with position::{} inside hardcoded array", id);
+        return false;
+      }
+      procObject.setObjectType(objectType);
+      procObject.setOperation(INSERT);
+      id++;
       return true;
     }
-    catch (JsonProcessingException e)
+    else
     {
-      log.error("error processing following json::{}, this should never happen", toSend.toPrettyString());
       return false;
     }
+  }
 
+  @Override
+  public void init()
+  {
+    this.id = 0;
   }
 }

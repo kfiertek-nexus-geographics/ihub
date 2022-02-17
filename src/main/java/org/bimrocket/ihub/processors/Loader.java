@@ -30,70 +30,24 @@
  */
 package org.bimrocket.ihub.processors;
 
-import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
-
-import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
-import org.bimrocket.ihub.util.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  *
  * @author realor
  */
-public class HardcodedLoader extends Processor
+public abstract class Loader extends Processor
 {
-  private static final Logger log = LoggerFactory
-      .getLogger(HardcodedLoader.class);
+  protected final ObjectMapper mapper = new ObjectMapper();
 
-  private int id = 0;
-
-  public HardcodedLoader(Connector connector)
+  public Loader(Connector connector)
   {
     super(connector);
   }
 
-  @ConfigProperty(name = "hardcoded.loader.array.json.objects", description = "Sample json object array to load")
-  public List<String> jsonObjects;
-
-  @ConfigProperty(name = "hardcoded.loader.object.type", description = "Type of object we loading")
-  public String objectType;
-
   @Override
-  public boolean processObject(ProcessedObject procObject)
-  {
-    if (id != jsonObjects.size())
-    {
-      try
-      {
-        log.debug("setting local object of ProcessedObject to following::{}", jsonObjects.get(id));
-        procObject.setLocalObject(this.mapper.readTree(jsonObjects.get(id)));
-      }
-      catch (JsonProcessingException e)
-      {
-        log.error("error reading json object with position::{} inside hardcoded array", id);
-        return false;
-      }
-      procObject.setObjectType(objectType);
-      procObject.setOperation(INSERT);
-      id++;
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
-
-  @Override
-  public void reset()
-  {
-    this.id = 0;
-  }
+  public abstract boolean processObject(ProcessedObject procObject);
 }
