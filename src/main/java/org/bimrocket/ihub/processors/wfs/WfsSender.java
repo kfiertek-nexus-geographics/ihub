@@ -37,9 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import com.fasterxml.jackson.databind.JsonNode;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -119,7 +117,12 @@ public class WfsSender extends Sender
     boolean insert = procObject.isInsert();
     boolean update = procObject.isUpdate();
     boolean delete = procObject.isDelete();
-    JsonNode node = this.getNodeToSend(procObject);
+    JsonNode node = procObject.getLocalObject();
+
+    if (node == null)
+    {
+      return false;
+    }
 
     Directives dir = new Directives();
     dir.add("Transaction").attr("xmlns", "http://www.opengis.net/wfs")

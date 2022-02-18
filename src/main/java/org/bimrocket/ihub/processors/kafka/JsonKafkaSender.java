@@ -54,7 +54,7 @@ public class JsonKafkaSender extends KafkaSender
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    JsonNode toSend = this.getNodeToSend(procObject);
+    JsonNode toSend = procObject.getGlobalObject();
     if (toSend == null)
     {
       return false;

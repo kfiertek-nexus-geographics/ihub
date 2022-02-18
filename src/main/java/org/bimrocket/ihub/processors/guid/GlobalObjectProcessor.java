@@ -220,7 +220,7 @@ public class GlobalObjectProcessor extends Processor
   private IdPair searchIdPair(ProcessedObject proObject)
   {
     IdPair found = null;
-    Iterator<IdPair> ite = this.actualIdPairs.iterator();
+    Iterator<IdPair> ite = actualIdPairs.iterator();
     while (ite.hasNext() && found == null)
     {
       IdPair actual = ite.next();
@@ -235,8 +235,8 @@ public class GlobalObjectProcessor extends Processor
 
   private void setActualIdPairs()
   {
-    this.actualIdPairs = this.getConnector().getConnectorService()
-        .getIdPairRepository().findByInventoryAndObjectType(
-            this.getConnector().getInventory(), this.objectType);
+    actualIdPairs = getConnector().getConnectorService()
+      .getIdPairRepository().findByInventoryAndObjectType(
+         getConnector().getInventory(), objectType);
   }
 }

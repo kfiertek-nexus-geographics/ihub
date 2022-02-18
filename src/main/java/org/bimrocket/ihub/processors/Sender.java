@@ -30,15 +30,10 @@
  */
 package org.bimrocket.ihub.processors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
-import org.bimrocket.ihub.util.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  *
@@ -47,63 +42,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class Sender extends Processor
 {
-  private static final Logger log =
-    LoggerFactory.getLogger(Sender.class);
-  protected static final String GLOBAL_OBJECT = "global";
-  protected static final String LOCAL_OBJECT = "local";
-
   protected final ObjectMapper mapper = new ObjectMapper();
-
-  @ConfigProperty(name = "sender.object.to.send",
-    description = "Defines whenever send globalObject (already processed object probably with globalId defined) "
-    + "or localObject (can be raw or processed) from incoming ProcessedObject Class, Allowed values: global or local",
-    required = false,
-    defaultValue = GLOBAL_OBJECT)
-  public String objectToSend = GLOBAL_OBJECT;
 
   public Sender(Connector connector)
   {
     super(connector);
   }
 
-  protected JsonNode getNodeToSend(ProcessedObject procObject)
-  {
-    if (objectToSend.equals(GLOBAL_OBJECT)
-      && (procObject == null || procObject.getGlobalObject() == null
-      || procObject.getGlobalObject().isNull()))
-    {
-      log.error("trying to send empty global object"
-        + " with following ProcessedObject::{}", procObject.toString());
-      return null;
-    }
-    else if (objectToSend.equals(LOCAL_OBJECT)
-      && (procObject == null || procObject.getLocalObject() == null
-      || procObject.getLocalObject().isNull()))
-    {
-      log.error("trying to send empty local object "
-        + "with following ProcessedObject::{}", procObject.toString());
-      return null;
-    }
-
-    return objectToSend.equals(GLOBAL_OBJECT) ? procObject.getGlobalObject()
-      : procObject.getLocalObject();
-  }
-
   @Override
-  public void init()
-  {
-    super.init();
-    switch (objectToSend)
-    {
-      case GLOBAL_OBJECT:
-      case LOCAL_OBJECT:
-        return;
-      default:
-        log.error(
-          "config property (sender.object.to.send) is invalid. "
-          + "Allowed values: global, local. Current value : {}",
-          objectToSend);
-        return;
-    }
-  }
+  public abstract boolean processObject(ProcessedObject procObject);
 }
