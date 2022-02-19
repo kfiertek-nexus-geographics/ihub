@@ -31,8 +31,11 @@
 package org.bimrocket.ihub.processors.rhino;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 /**
  *
@@ -118,5 +121,32 @@ public class JsonNodeScriptable extends NativeJavaObject
       return valueNode.asText();
     }
     return null;
+  }
+
+  public static void main(String[] args) throws Exception
+  {
+    String code = "a = localObject.person";
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    JsonNode node = mapper.readTree("{\"person\": {\"name\": \"Ricard\"} }");
+
+    Context cx = Context.enter();
+    try
+    {
+      ScriptableObject scope = cx.initStandardObjects();
+      scope.put("localObject", scope, new JsonNodeScriptable(scope, node));
+
+      Object result = cx.evaluateString(scope, code, "<code>", 1, null);
+      System.out.println(result.getClass());
+
+      System.out.println(Context.toString(result));
+    }
+    finally
+    {
+      // Exit from the context.
+      Context.exit();
+    }
+
   }
 }

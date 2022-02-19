@@ -63,7 +63,8 @@
       </p:treeNode>
 
       <p:treeNode type="property" icon="pi pi-circle">
-        <h:outputText value="#{data.name}: " title="#{data.description}" />
+        <h:outputText value="#{data.name}: " title="#{data.description}"
+                      styleClass="prop_name" />
         <h:outputText value="#{connectorListBean.getPropertyValue(node)}" />
       </p:treeNode>
     </p:tree>

@@ -30,10 +30,9 @@
  */
 package org.bimrocket.ihub.processors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
+import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
@@ -41,12 +40,10 @@ import org.bimrocket.ihub.connector.Processor;
  */
 public abstract class Loader extends Processor
 {
-  protected final ObjectMapper mapper = new ObjectMapper();
-
-  public Loader(Connector connector)
-  {
-    super(connector);
-  }
+  @ConfigProperty(name = "objectType",
+    description = "The object type",
+    required = true)
+  public String objectType;
 
   @Override
   public abstract boolean processObject(ProcessedObject procObject);

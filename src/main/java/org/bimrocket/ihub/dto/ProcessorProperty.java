@@ -41,8 +41,9 @@ public class ProcessorProperty implements Serializable
   private String name;
   private String description;
   private boolean required;
+  private boolean secret;
+  private String contentType;
   private String type;
-  private String defaultValue;
 
   public String getName()
   {
@@ -74,6 +75,26 @@ public class ProcessorProperty implements Serializable
     this.required = required;
   }
 
+  public boolean isSecret()
+  {
+    return secret;
+  }
+
+  public void setSecret(boolean secret)
+  {
+    this.secret = secret;
+  }
+
+  public String getContentType()
+  {
+    return contentType;
+  }
+
+  public void setContentType(String contentType)
+  {
+    this.contentType = contentType;
+  }
+
   public String getType()
   {
     return type;
@@ -83,15 +104,4 @@ public class ProcessorProperty implements Serializable
   {
     this.type = type;
   }
-
-  public String getDefaultValue()
-  {
-    return defaultValue;
-  }
-
-  public void setDefaultValue(String defaultValue)
-  {
-    this.defaultValue = defaultValue;
-  }
-
 }

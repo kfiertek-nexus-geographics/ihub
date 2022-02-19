@@ -40,7 +40,7 @@ import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.service.ConnectorMapperService;
 import org.bimrocket.ihub.service.ConnectorService;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,10 +62,10 @@ public class ConnectorController
   ConnectorService connectorService;
 
   @Autowired
-  ConnectorMapperService connectorMapperService;
+  ProcessorService processorService;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ConnectorMapperService connectorMapperService;
 
   @GetMapping(path = "/connectors", produces = "application/json")
   public List<ConnectorExecution> getConnectors()
@@ -170,6 +170,6 @@ public class ConnectorController
       @RequestParam(name = "name", required = false) String className)
       throws Exception
   {
-    return processorTypeService.findProcessorTypes(className);
+    return processorService.findProcessorTypes(className);
   }
 }

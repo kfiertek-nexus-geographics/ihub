@@ -101,8 +101,6 @@ public class Connector implements Runnable
 
   protected Exception lastError;
 
-  protected ArrayList<ProcessedObject> processedObjects = new ArrayList<>();
-
   private final ProcessedObject procObject = new ProcessedObject();
 
   public Connector(ConnectorService service, String name)
@@ -204,96 +202,45 @@ public class Connector implements Runnable
     return processors.size();
   }
 
-  public <T extends Processor> T addProcessor(String className)
-    throws InvalidSetupException
+  public Connector addProcessor(Processor processor)
   {
-    T processor = createProcessor(className);
+    processor.setConnector(this);
     processors.add(processor);
 
-    return processor;
+    return this;
   }
 
-  public <T extends Processor> T addProcessor(Class<T> processorClass)
+  public Connector insertProcessor(int index, Processor processor)
     throws InvalidSetupException
   {
-    T processor = createProcessor(processorClass);
-    processors.add(processor);
-
-    return processor;
-  }
-
-  public <T extends Processor> T insertProcessor(String className, int index)
-    throws InvalidSetupException
-  {
-    T processor = createProcessor(className);
+    processor.setConnector(this);
     processors.add(index, processor);
 
-    return processor;
+    return this;
   }
 
-  public <T extends Processor> T insertProcessor(Class<T> processorClass,
-    int index) throws InvalidSetupException
-  {
-    T processor = createProcessor(processorClass);
-    processors.add(index, processor);
-
-    return processor;
-  }
-
-  public <T extends Processor> T setProcessor(String className, int index)
+  public Connector setProcessor(int index, Processor processor)
     throws InvalidSetupException
   {
-    T processor = createProcessor(className);
+    processor.setConnector(this);
+
     if (thread != null)
     {
       processor.end();
     }
     processors.set(index, processor);
 
-    return processor;
+    return this;
   }
 
-  public <T extends Processor> T setProcessor(Class<T> processorClass,
-    int index) throws InvalidSetupException
-  {
-    T processor = createProcessor(processorClass);
-    if (thread != null)
-    {
-      processor.end();
-    }
-    processors.set(index, processor);
-
-    return processor;
-  }
-
-  public void removeProcessor(int index)
+  public Connector removeProcessor(int index)
   {
     Processor processor = processors.remove(index);
     if (thread != null)
     {
       processor.end();
     }
-  }
 
-  public void removeProcessor(Processor processor)
-  {
-    if (processors.remove(processor))
-    {
-      if (thread != null)
-      {
-        processor.end();
-      }
-    }
-  }
-
-  public boolean isDebugEnabled()
-  {
-    return debugEnabled;
-  }
-
-  public Connector setDebugEnabled(boolean debugEnabled)
-  {
-    this.debugEnabled = debugEnabled;
     return this;
   }
 
@@ -322,11 +269,6 @@ public class Connector implements Runnable
   public String getStatus()
   {
     return status;
-  }
-
-  public ArrayList<ProcessedObject> getProcessedObjects()
-  {
-    return processedObjects;
   }
 
   @Override
@@ -384,8 +326,7 @@ public class Connector implements Runnable
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
-          captureObject(procObject);
-          // TODO: log processing
+          log.debug("object processed: {}", procObject);
         }
         else
         {
@@ -562,53 +503,5 @@ public class Connector implements Runnable
       default:
         ignored++;
     }
-  }
-
-  void captureObject(ProcessedObject procObject)
-  {
-    if (debugEnabled)
-    {
-      processedObjects.add(procObject.duplicate());
-    }
-  }
-
-  <T extends Processor> T createProcessor(Class<T> processorClass)
-    throws InvalidSetupException
-  {
-    try
-    {
-      return processorClass.getConstructor(Connector.class).newInstance(this);
-    }
-    catch (Exception ex)
-    {
-      throw new InvalidSetupException(320,
-        "Can not create processor class {%s}", processorClass);
-    }
-  }
-
-  <T extends Processor> T createProcessor(String className)
-    throws InvalidSetupException
-  {
-    try
-    {
-      className = completeClassName(className);
-      Class<T> processorClass = (Class<T>) Class.forName(className);
-      return createProcessor(processorClass);
-    }
-    catch (ClassNotFoundException ex)
-    {
-      throw new InvalidSetupException(330, "Invalid processor className {%s}",
-        className);
-    }
-  }
-
-  String completeClassName(String className)
-  {
-    if (className.contains("."))
-    {
-      return className;
-    }
-
-    return "org.bimrocket.ihub.processors." + className;
   }
 }

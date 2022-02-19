@@ -30,8 +30,6 @@
  */
 package org.bimrocket.ihub.processors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 
@@ -42,13 +40,6 @@ import org.bimrocket.ihub.connector.Processor;
  */
 public abstract class Sender extends Processor
 {
-  protected final ObjectMapper mapper = new ObjectMapper();
-
-  public Sender(Connector connector)
-  {
-    super(connector);
-  }
-
   @Override
   public abstract boolean processObject(ProcessedObject procObject);
 }

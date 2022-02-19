@@ -30,9 +30,7 @@
  */
 package org.bimrocket.ihub.processors.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bimrocket.ihub.connector.Connector;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.processors.Sender;
 import org.slf4j.Logger;
@@ -45,22 +43,15 @@ import org.slf4j.LoggerFactory;
 public class TestSender extends Sender
 {
   private static final Logger log =
-    LoggerFactory.getLogger(HardcodedLoader.class);
-
-  public TestSender(Connector connector)
-  {
-    super(connector);
-  }
+    LoggerFactory.getLogger(TestSender.class);
 
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    try
+    JsonNode localObject = procObject.getLocalObject();
+    if (localObject != null)
     {
-      log.info(mapper.writeValueAsString(procObject.getGlobalObject()));
-    }
-    catch (JsonProcessingException ex)
-    {
+      log.info(localObject.toPrettyString());
     }
     return true;
   }

@@ -20,7 +20,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <geotools.version>24-SNAPSHOT</geotools.version>
+    <geotools.version>26.2</geotools.version>
   </properties>
 
   <repositories>
@@ -182,14 +182,6 @@
       <version>${geotools.version}</version>
     </dependency>
     <!-- END GEOTOOLS -->
-    <!-- XML TO JSON AND JSON VALIDATION -->
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20160810</version>
-    </dependency>
-    <!-- END JSON -->
-
 
     <dependency>
       <groupId>javax.validation</groupId>

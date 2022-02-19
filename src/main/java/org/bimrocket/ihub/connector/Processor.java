@@ -37,14 +37,27 @@ package org.bimrocket.ihub.connector;
  */
 public abstract class Processor
 {
-  protected Connector connector;
+  private Connector connector;
   protected String description;
   protected boolean enabled;
 
-  public Processor(Connector connector)
+  public Processor()
   {
+  }
+
+  public final void setConnector(Connector connector)
+  {
+    if (this.connector != null)
+      throw new RuntimeException("Connector already set for this Processor");
+
     this.connector = connector;
   }
+
+  public final Connector getConnector()
+  {
+    return connector;
+  }
+
 
   public String getDescription()
   {
@@ -66,7 +79,7 @@ public abstract class Processor
     this.enabled = enabled;
   }
 
-  public void init()
+  public void init() throws Exception
   {
   }
 
@@ -74,11 +87,6 @@ public abstract class Processor
 
   public void end()
   {
-  }
-
-  public Connector getConnector()
-  {
-    return connector;
   }
 
   @Override

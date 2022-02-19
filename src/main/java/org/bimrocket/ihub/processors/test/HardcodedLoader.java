@@ -31,20 +31,18 @@
 package org.bimrocket.ihub.processors.test;
 
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
-
-import java.util.List;
-
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.util.ConfigProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
+import org.bimrocket.ihub.processors.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.bimrocket.ihub.processors.Loader;
-
 /**
  *
+ * @author kfiertek-nexus-geographics
  * @author realor
  */
 public class HardcodedLoader extends Loader
@@ -52,39 +50,45 @@ public class HardcodedLoader extends Loader
   private static final Logger log =
     LoggerFactory.getLogger(HardcodedLoader.class);
 
-  private int id = 0;
+  @ConfigProperty(name = "jsonData",
+    description = "Sample json object array to load",
+    contentType = "application/json")
+  public String jsonData;
 
-  public HardcodedLoader(Connector connector)
+  private JsonNode jsonArray;
+  private int index = 0;
+
+  @Override
+  public void init() throws InvalidSetupException
   {
-    super(connector);
+    try
+    {
+      ObjectMapper mapper = new ObjectMapper();
+      jsonArray = mapper.readTree(jsonData);
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidSetupException(400, "parse error");
+    }
+
+    if (!jsonArray.isArray())
+      throw new InvalidSetupException(401, "json data is not an array");
+
+    index = 0;
   }
-
-  @ConfigProperty(name = "hardcoded.loader.array.json.objects",
-    description = "Sample json object array to load")
-  public List<String> jsonObjects;
-
-  @ConfigProperty(name = "hardcoded.loader.object.type",
-    description = "Type of object we loading")
-  public String objectType;
 
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    if (id != jsonObjects.size())
+    if (index < jsonArray.size())
     {
-      try
-      {
-        log.debug("setting local object of ProcessedObject to following::{}", jsonObjects.get(id));
-        procObject.setLocalObject(mapper.readTree(jsonObjects.get(id)));
-      }
-      catch (JsonProcessingException e)
-      {
-        log.error("error reading json object with position::{} inside hardcoded array", id);
-        return false;
-      }
+      JsonNode node = jsonArray.get(index++);
+      procObject.setLocalObject(node);
       procObject.setObjectType(objectType);
       procObject.setOperation(INSERT);
-      id++;
+
+      log.debug("get object at index {}: {}", index, node.toString());
+
       return true;
     }
     else
@@ -94,8 +98,8 @@ public class HardcodedLoader extends Loader
   }
 
   @Override
-  public void init()
+  public void end()
   {
-    this.id = 0;
+    jsonArray = null;
   }
 }

@@ -33,10 +33,8 @@ package org.bimrocket.ihub.processors.kafka;
 import org.bimrocket.ihub.processors.*;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -47,21 +45,18 @@ import org.springframework.kafka.core.KafkaTemplate;
  */
 public abstract class KafkaSender extends Sender
 {
-  protected KafkaTemplate<String, String> template;
-
-  @ConfigProperty(name = "kafka.sender.topic.name", description = "Kafka topic name to which send String.")
+  @ConfigProperty(name = "topicName",
+    description = "Kafka topic name to which send String.")
   public String topicName;
 
-  @ConfigProperty(name = "kafka.sender.bootstrap.address", description = "Kafka bootstrap servers address")
+  @ConfigProperty(name = "bootstrapAddress",
+    description = "Kafka bootstrap servers address")
   public String bootstrapAddress;
 
-  public KafkaSender(Connector connector)
-  {
-    super(connector);
-  }
+  protected KafkaTemplate<String, String> template;
 
   @Override
-  public void init()
+  public void init() throws Exception
   {
     super.init();
     template = new KafkaTemplate<>(

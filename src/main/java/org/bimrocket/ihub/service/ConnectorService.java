@@ -35,18 +35,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.exceptions.InvalidNameException;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.bimrocket.ihub.repo.ConnectorSetupRepository;
 import org.bimrocket.ihub.repo.IdPairRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *

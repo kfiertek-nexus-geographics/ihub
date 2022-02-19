@@ -42,6 +42,7 @@ import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,6 +52,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class ConnectorMapperService
 {
+  @Autowired
+  ProcessorService processorService;
+
   public ConnectorSetup getConnectorSetup(Connector connector)
   {
     ConnectorSetup connSetup = new ConnectorSetup();
@@ -121,9 +125,11 @@ public class ConnectorMapperService
           if (className != null
             && !processor.getClass().getName().equals(className))
           {
+            // replace Processor
             try
             {
-              processor = connector.setProcessor(className, i);
+              processor = processorService.createProcessor(className);
+              connector.setProcessor(i, processor);
             }
             catch (InvalidSetupException ex)
             {
@@ -137,7 +143,7 @@ public class ConnectorMapperService
           }
           setProcessorSetup(processor, procSetup, ignoreErrors);
         }
-        else // must add a processor at i position
+        else // must add a new processor at i position
         {
           if (procSetup == null)
           {
@@ -159,7 +165,8 @@ public class ConnectorMapperService
 
           try
           {
-            Processor processor = connector.addProcessor(className);
+            Processor processor = processorService.createProcessor(className);
+            connector.addProcessor(processor);
             setProcessorSetup(processor, procSetup, ignoreErrors);
           }
           catch (InvalidSetupException ex)
@@ -185,24 +192,7 @@ public class ConnectorMapperService
     procSetup.setDescription(processor.getDescription());
     procSetup.setEnabled(processor.isEnabled());
 
-    Map<String, Object> properties = new HashMap<>();
-
-    Map<String, ConfigPropertyHandler> propHandlers =
-      ConfigPropertyHandler.findProperties(processor.getClass());
-    
-    for (ConfigPropertyHandler propHandler : propHandlers.values())
-    {
-      String propertyName = propHandler.getName();
-      try
-      {
-        properties.put(propertyName, propHandler.getValue(processor));
-      }
-      catch (Exception ex)
-      {
-        // ignore
-      }
-    }
-    procSetup.setProperties(properties);
+    procSetup.setProperties(getProcessorProperties(processor));
 
     return procSetup;
   }
@@ -230,16 +220,50 @@ public class ConnectorMapperService
     }
 
     Map<String, Object> properties = procSetup.getProperties();
-    if (properties == null) return;
+    if (properties != null)
+    {
+      setProcessorProperties(processor, properties, ignoreErrors);
+    }
+  }
 
-    Map<String, ConfigPropertyHandler> propHandlers =
+  public Map<String, Object> getProcessorProperties(Processor processor)
+  {
+    Map<String, Object> properties = new HashMap<>();
+
+    List<ConfigPropertyHandler> propHandlers =
       ConfigPropertyHandler.findProperties(processor.getClass());
+
+    for (ConfigPropertyHandler propHandler : propHandlers)
+    {
+      String propertyName = propHandler.getName();
+      try
+      {
+        properties.put(propertyName, propHandler.getValue(processor));
+      }
+      catch (Exception ex)
+      {
+        // ignore
+      }
+    }
+    return properties;
+  }
+
+  public void setProcessorProperties(Processor processor,
+    Map<String, Object> properties, boolean ignoreErrors)
+    throws InvalidSetupException
+  {
+    List<ConfigPropertyHandler> propHandlers =
+      ConfigPropertyHandler.findProperties(processor.getClass());
+
+    Map<String, ConfigPropertyHandler> propHandlerMap = new HashMap<>();
+    propHandlers.forEach(
+      propHandler -> propHandlerMap.put(propHandler.getName(), propHandler));
 
     for (Map.Entry<String, Object> entry : properties.entrySet())
     {
       String propertyName = entry.getKey();
       Object propertyValue = entry.getValue();
-      ConfigPropertyHandler propHandler = propHandlers.get(propertyName);
+      ConfigPropertyHandler propHandler = propHandlerMap.get(propertyName);
 
       if (propHandler == null)
       {

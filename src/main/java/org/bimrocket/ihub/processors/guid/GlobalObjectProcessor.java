@@ -32,11 +32,8 @@ package org.bimrocket.ihub.processors.guid;
 
 import java.util.Iterator;
 import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.IdPair;
@@ -61,24 +58,18 @@ public class GlobalObjectProcessor extends Processor
   private static final Logger log =
     LoggerFactory.getLogger(GlobalObjectProcessor.class);
 
-  protected final ObjectMapper mapper = new ObjectMapper();
-
-  private List<IdPair> actualIdPairs;
-
-  @ConfigProperty(name = "creator.object.type",
+  @ConfigProperty(name = "objectType",
     description = "The object type to treat Global Ids")
   public String objectType;
 
-  @ConfigProperty(name = "creator.object.path.local.id",
+  @ConfigProperty(name = "pathLocalId",
     description = "Path to local id in JsonNode object if empty means sender will set local id",
-    required = false,
-    defaultValue = "")
+    required = false)
   public String pathLocalId = "";
 
-  public GlobalObjectProcessor(Connector connector)
-  {
-    super(connector);
-  }
+  protected final ObjectMapper mapper = new ObjectMapper();
+
+  private List<IdPair> actualIdPairs;
 
   @Override
   public boolean processObject(ProcessedObject proObject)
@@ -161,11 +152,11 @@ public class GlobalObjectProcessor extends Processor
         // If processed object doesn't have globalId defined
         // new one is created.
         idPair = new IdPair();
-        idPair.setConnectorName(connector.getName());
+        idPair.setConnectorName(getConnector().getName());
         idPair.setGlobalId(proObject.getGlobalId() != null
             && !proObject.getGlobalId().isBlank() ? proObject.getGlobalId()
                 : GlobalIdGenerator.randomGlobalId());
-        idPair.setInventory(connector.getInventory());
+        idPair.setInventory(getConnector().getInventory());
         idPair.setLocalId(proObject.getLocalId());
         idPair.setObjectType(proObject.getObjectType());
         idPair.setLastUpdate(Calendar.getInstance().getTime());
@@ -211,7 +202,7 @@ public class GlobalObjectProcessor extends Processor
   }
 
   @Override
-  public void init()
+  public void init() throws Exception
   {
     super.init();
     this.setActualIdPairs();

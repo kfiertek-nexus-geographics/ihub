@@ -38,6 +38,7 @@ import java.util.Set;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.bimrocket.ihub.dto.ProcessorType;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
 import org.reflections.Reflections;
 import org.springframework.stereotype.Service;
@@ -47,15 +48,58 @@ import org.springframework.stereotype.Service;
  * @author realor
  */
 @Service
-public class ProcessorTypeService
+public class ProcessorService
 {
+  private static final String PROCESSOR_PACKAGE =
+    "org.bimrocket.ihub.processors";
+
+  public <T extends Processor> T createProcessor(Class<T> processorClass)
+    throws InvalidSetupException
+  {
+    try
+    {
+      return processorClass.getConstructor().newInstance();
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidSetupException(320,
+        "Can not create processor class {%s}", processorClass);
+    }
+  }
+
+  public <T extends Processor> T createProcessor(String className)
+    throws InvalidSetupException
+  {
+    Class<T> processorClass = getProcessorClass(className);
+
+    return createProcessor(processorClass);
+  }
+
+  public <T extends Processor> Class<T> getProcessorClass(String className)
+    throws InvalidSetupException
+  {
+    try
+    {
+      Class<T> processorClass = (Class<T>) Class.forName(className);
+
+      return processorClass;
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidSetupException(330, "Invalid processor className {%s}",
+        className);
+    }
+  }
+
   public List<ProcessorType> findProcessorTypes(String className)
   {
     List<ProcessorType> procTypes = new ArrayList<>();
 
-    Reflections reflections = new Reflections("org.bimrocket.ihub.processors");
-    Set<Class<? extends Processor>> classSet = reflections
-        .getSubTypesOf(Processor.class);
+    Reflections reflections = new Reflections(PROCESSOR_PACKAGE);
+
+    Set<Class<? extends Processor>> classSet =
+      reflections.getSubTypesOf(Processor.class);
+
     for (Class<? extends Processor> procClass : classSet)
     {
       if (Modifier.isAbstract(procClass.getModifiers()))
@@ -69,22 +113,32 @@ public class ProcessorTypeService
     return procTypes;
   }
 
+  public ProcessorType getProcessorType(String className)
+    throws InvalidSetupException
+  {
+    Class<Processor> processorClass = getProcessorClass(className);
+
+    return getProcessorType(processorClass);
+  }
+
   public ProcessorType getProcessorType(Class<? extends Processor> procClass)
   {
     ProcessorType procType = new ProcessorType();
     procType.setClassName(procClass.getName());
 
-    Map<String, ConfigPropertyHandler> propHandlers = ConfigPropertyHandler
-        .findProperties(procClass);
+    List<ConfigPropertyHandler> propHandlers =
+      ConfigPropertyHandler.findProperties(procClass);
 
-    for (ConfigPropertyHandler propHandler : propHandlers.values())
+    for (ConfigPropertyHandler propHandler : propHandlers)
     {
       ProcessorProperty property = new ProcessorProperty();
       property.setName(propHandler.getName());
       property.setDescription(propHandler.getDescription());
       property.setRequired(propHandler.isRequired());
+      property.setSecret(propHandler.isSecret());
+      property.setContentType(propHandler.getContentType());
       property.setType(propHandler.getType());
-      property.setDefaultValue(propHandler.getDefaultValue());
+
       procType.getProperties().add(property);
     }
     return procType;

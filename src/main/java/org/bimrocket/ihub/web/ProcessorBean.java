@@ -36,7 +36,7 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
 import org.bimrocket.ihub.dto.ProcessorSetup;
 import org.bimrocket.ihub.dto.ProcessorType;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.primefaces.PrimeFaces;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -53,7 +53,7 @@ public class ProcessorBean
   ConnectorListBean connectorListBean;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ProcessorService processorService;
 
   private ProcessorSetup procSetup = new ProcessorSetup();
   private boolean creation = true;
@@ -80,8 +80,11 @@ public class ProcessorBean
     if (processorTypeSelectItems == null)
     {
       List<ProcessorType> processorTypes =
-        processorTypeService.findProcessorTypes(null);
+        processorService.findProcessorTypes(null);
       processorTypeSelectItems = new ArrayList<>();
+
+      processorTypes.sort((a, b) -> 
+        a.getClassName().compareTo(b.getClassName()));
 
       processorTypes.forEach(processorType -> processorTypeSelectItems.add(
         new SelectItem(processorType.getClassName())));

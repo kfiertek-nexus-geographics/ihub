@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.repo.IdPairRepository;
@@ -54,19 +53,15 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class RhinoProcessor extends Processor
 {
-  @ConfigProperty(name ="rhino.script.code",
-    description = "The script that process the object")
+  @ConfigProperty(name ="scriptCode",
+    description = "The script that process the object",
+    contentType = "application/javascript")
   public String scriptCode = "";
 
   protected Script script;
   protected Context context;
   protected ScriptableObject scope;
-  protected ObjectMapper mapper;
-
-  public RhinoProcessor(Connector connector)
-  {
-    super(connector);
-  }
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   public void init()
@@ -75,12 +70,11 @@ public class RhinoProcessor extends Processor
     context = Context.enter();
     script = context.compileString(scriptCode, "converter", 0, null);
     scope = context.initStandardObjects();
-    mapper = new ObjectMapper();
 
-    scope.put("connector", scope, connector);
+    scope.put("connector", scope, getConnector());
 
-    IdPairRepository idPairRepository = connector.getConnectorService()
-        .getIdPairRepository();
+    IdPairRepository idPairRepository = getConnector().getConnectorService()
+      .getIdPairRepository();
     scope.put("idPairRepository", scope, idPairRepository);
   }
 
@@ -92,18 +86,17 @@ public class RhinoProcessor extends Processor
     scope.put("objectType", scope, procObject.getObjectType());
     scope.put("operation", scope, procObject.getOperation());
 
-
     JsonNode localObject = procObject.getLocalObject();
     if (localObject != null)
     {
       scope.put("localObject", scope,
-          new JsonNodeScriptable(scope, localObject));
+        new JsonNodeScriptable(scope, localObject));
     }
     JsonNode globalObject = procObject.getGlobalObject();
     if (globalObject != null)
     {
       scope.put("globalObject", scope,
-          new JsonNodeScriptable(scope, globalObject));
+        new JsonNodeScriptable(scope, globalObject));
     }
     boolean result = Context.toBoolean(script.exec(context, scope));
 

@@ -34,7 +34,6 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Iterator;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -46,14 +45,13 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.util.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.bimrocket.ihub.processors.FullScanLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -66,53 +64,50 @@ public class WfsLoader extends FullScanLoader
 
   private final String AUTH_BASIC = "Basic";
 
-  @ConfigProperty(name = "wfs.url",
+  @ConfigProperty(name = "url",
     description = "Geoserver wfs url")
-  String url;
+  public String url;
 
-  @ConfigProperty(name = "wfs.params",
+  @ConfigProperty(name = "parameters",
     description = "Geoserver url query params")
-  String urlParams;
+  public String urlParams;
 
-  @ConfigProperty(name = "wfs.username",
+  @ConfigProperty(name = "username",
     description = "User used for basic authentication")
-  String username;
+  public String username;
 
-  @ConfigProperty(name = "wfs.password",
-    description = "Password used for basic authentication")
-  String password;
+  @ConfigProperty(name = "password",
+    description = "Password used for basic authentication",
+    secret = true)
+  public String password;
 
-  @ConfigProperty(name = "wfs.layers",
+  @ConfigProperty(name = "layers",
     description = "Layers to load from geoserver can be multiple comma separeted like this: layers.01, layers.02...")
-  String layersLoad;
+  public String layersLoad;
 
-  @ConfigProperty(name = "wfs.format",
+  @ConfigProperty(name = "format",
     description = "Format of petition's body sent to geoserver")
-  String formatPetition;
+  public String formatPetition;
 
-  @ConfigProperty(name = "wfs.auth",
+  @ConfigProperty(name = "authentication",
     description = "Type of authentication currently only Basic is supported")
-  String auth;
+  public String auth = "Basic";
 
-  @ConfigProperty(name = "wfs.request.timeout",
-    description = "Timeout for uri request in seconds",
-    defaultValue = "60")
-  Integer timeoutS;
+  @ConfigProperty(name = "timeout",
+    description = "Timeout for uri request in seconds")
+  public Integer timeoutSec = 60;
 
-  public WfsLoader(Connector connector)
-  {
-    super(connector);
-  }
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   protected Iterator<JsonNode> fullScan()
   {
-    return loadResponse(timeoutS);
+    return loadResponse(timeoutSec);
   }
 
   private HttpClient buildHttpClient()
   {
-    int timeoutMs = timeoutS * 1000;
+    int timeoutMs = timeoutSec * 1000;
     RequestConfig.Builder requestBuilder = RequestConfig.custom();
     requestBuilder.setConnectTimeout(timeoutMs);
     requestBuilder.setConnectionRequestTimeout(timeoutMs);

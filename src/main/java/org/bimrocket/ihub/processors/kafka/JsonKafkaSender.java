@@ -30,11 +30,9 @@
  */
 package org.bimrocket.ihub.processors.kafka;
 
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -46,11 +44,6 @@ public class JsonKafkaSender extends KafkaSender
   private static final Logger log =
     LoggerFactory.getLogger(JsonKafkaSender.class);
 
-  public JsonKafkaSender(Connector connector)
-  {
-    super(connector);
-  }
-
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
@@ -60,19 +53,12 @@ public class JsonKafkaSender extends KafkaSender
       return false;
     }
 
-    try
-    {
-      var value = mapper.writeValueAsString(toSend);
-      log.debug("sending {} json object to topic {}", toSend.toPrettyString(),
-        this.topicName);
-      this.template.send(this.topicName, value);
-      return true;
-    }
-    catch (JsonProcessingException e)
-    {
-      log.error("error processing following json::{}, this should never happen",
-        toSend.toPrettyString());
-      return false;
-    }
+    var value = toSend.toString();
+    log.debug("sending {} json object to topic {}", toSend.toPrettyString(),
+      this.topicName);
+
+    this.template.send(this.topicName, value);
+
+    return true;
   }
 }

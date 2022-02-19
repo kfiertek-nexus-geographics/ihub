@@ -31,17 +31,13 @@
 package org.bimrocket.ihub.processors.gemweb;
 
 import org.bimrocket.ihub.processors.*;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -52,20 +48,17 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.util.ConfigProperty;
-import org.json.XML;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author kfiertek-nexus-geographics
+ * @author realor
  *
  */
 public class GemwebLoader extends FullScanLoader
@@ -73,105 +66,136 @@ public class GemwebLoader extends FullScanLoader
   private static final Logger log =
     LoggerFactory.getLogger(GemwebLoader.class);
 
-  private static final String AUTH_BEARER = "Bearer";
+  public static final String AUTH_BEARER = "Bearer";
 
-  @ConfigProperty(name = "gemweb.url",
-    description = "Gemweb url")
-  private String url;
+  @ConfigProperty(name = "url",
+    description = "Gemweb api url")
+  public String url = "https://api.gemweb.es";
 
-  @ConfigProperty(name = "gemweb.client.id",
+  @ConfigProperty(name = "clientId",
     description = "Used to obtain token")
-  private String clientId;
+  public String clientId;
 
-  @ConfigProperty(name = "gemweb.client.secret",
-    description = "Secret used for authentication")
-  private String clientSecret;
+  @ConfigProperty(name = "clientSecret",
+    description = "Secret used for authentication",
+    secret = true)
+  public String clientSecret;
 
-  @ConfigProperty(name = "gemweb.category",
+  @ConfigProperty(name = "category",
     description = "Category to load from gemweb")
-  private String category;
+  public String category = "subministraments";
 
-  @ConfigProperty(name = "gemweb.auth",
-    description = "Authentication used currently supported only Bearer",
-    required = false,
-    defaultValue = "Bearer")
-  private String auth = AUTH_BEARER;
+  @ConfigProperty(name = "authentication",
+    description = "Authentication used currently supported only Bearer")
+  public String auth = AUTH_BEARER;
 
-  @ConfigProperty(name = "gemweb.request.timeout",
-    description = "Timeout for uri request in seconds", defaultValue = "60")
-  private Integer timeoutS;
+  @ConfigProperty(name = "timeout",
+    description = "Timeout for uri request in seconds")
+  public Integer timeoutSec = 60;
 
-  @ConfigProperty(name = "gemweb.records.path",
+  @ConfigProperty(name = "recordsPath",
     description = "Path to records inside json response")
-  private String recordsPath;
-
-  public GemwebLoader(Connector connector)
-  {
-    super(connector);
-  }
+  public String recordsPath = "/subministrament";
 
   @Override
   protected Iterator<JsonNode> fullScan()
   {
-    return loadResponse(timeoutS);
-  }
+    log.debug("init with timeout '{}'", timeoutSec);
 
-  private HttpClient buildHttpClient()
-  {
-    int timeoutMs = timeoutS * 1000;
-    RequestConfig.Builder requestBuilder = RequestConfig.custom();
-    requestBuilder.setConnectTimeout(timeoutMs);
-    requestBuilder.setConnectionRequestTimeout(timeoutMs);
+    try
+    {
+      log.debug("execute httpClient built");
+      var httpPost = new HttpPost(url);
+      String accessToken = getAccessToken();
+      if (accessToken == null || accessToken.isBlank())
+      {
+        log.error("access token is empty {} returning empty iterator",
+          accessToken);
+        return Collections.emptyIterator();
+      }
+      String authHeader = this.getAuthHeader(accessToken);
+      List<NameValuePair> nvps = new ArrayList<>();
+      nvps.add(new BasicNameValuePair("request", "get_inventory"));
+      nvps.add(new BasicNameValuePair("access_token", accessToken));
+      nvps.add(new BasicNameValuePair("category", category));
 
-    HttpClientBuilder clientBuilder = HttpClients.custom();
-    clientBuilder.setDefaultRequestConfig(requestBuilder.build());
-    return clientBuilder.build();
+      httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+      httpPost.setHeader("Accept", "application/xml");
+      httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
+      httpPost.setHeader("Authorization", authHeader);
+      HttpResponse resp = buildHttpClient().execute(httpPost);
+
+      try (InputStream content = resp.getEntity().getContent())
+      {
+        XmlMapper xmlMapper = new XmlMapper();
+        JsonNode rootNode = xmlMapper.readTree(content);
+
+        JsonNode all = rootNode.at(recordsPath);
+        if (all.isArray())
+        {
+          return ((ArrayNode)all).iterator();
+        }
+        else
+        {
+          log.error("all is not a ArrayNode, all::{}", all.toPrettyString());
+          return Collections.emptyIterator();
+        }
+      }
+    }
+    catch (ConnectTimeoutException | SocketTimeoutException ex)
+    {
+      log.error("timeout while sending petition : ", ex);
+    }
+    catch (IOException ex)
+    {
+      log.error("exception while sending petition : ", ex);
+    }
+    return Collections.emptyIterator();
   }
 
   private String getAccessToken()
   {
-    HttpPost httpPost = new HttpPost(url);
-
-    List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-    nvps.add(new BasicNameValuePair("request", "get_token"));
-    nvps.add(new BasicNameValuePair("client_id", clientId));
-    nvps.add(new BasicNameValuePair("client_secret", clientSecret));
-    nvps.add(new BasicNameValuePair("grant_type", "client_credentials"));
     try
     {
-      httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+      var httpPost = new HttpPost(url);
+
+      List<NameValuePair> nvps = new ArrayList<>();
+      nvps.add(new BasicNameValuePair("request", "get_token"));
+      nvps.add(new BasicNameValuePair("client_id", clientId));
+      nvps.add(new BasicNameValuePair("client_secret", clientSecret));
+      nvps.add(new BasicNameValuePair("grant_type", "client_credentials"));
+
+      httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
       httpPost.setHeader("Accept", "application/xml");
       httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
 
       HttpResponse resp = buildHttpClient().execute(httpPost);
 
-      String ret = inputStreamResponseToString(resp.getEntity().getContent());
-
-      if (ret == null)
-      {
-        log.error("response entity stream is null or empty");
-        return null;
-      }
       XmlMapper xmlMapper = new XmlMapper();
-      JsonNode node;
 
-      node = xmlMapper.readTree(ret.getBytes(StandardCharsets.UTF_8));
-
-      String accessToken = "";
-
-      log.trace("response '{}'", ret);
-
-      if (node.get("error") != null)
+      try (InputStream content = resp.getEntity().getContent())
       {
-        log.error("error in authentication, error responded : {}",
-          node.get("resultat").get("error"));
+        JsonNode node = xmlMapper.readTree(content);
+
+        if (node.get("error") != null)
+        {
+          log.error("error in authentication, error responded : {}",
+            node.get("resultat").get("error"));
+        }
+        JsonNode token = node.get("access_token");
+        if (token == null || token.isNull())
+        {
+          log.error("no access token");
+
+          return null;
+        }
+
+        String accessToken = token.asText();
+
+        log.info("got access token: {}", accessToken);
+
+        return accessToken;
       }
-      JsonNode resultat = node.get("access_token");
-      if (resultat != null)
-      {
-        accessToken = resultat.asText();
-      }
-      return accessToken;
     }
     catch (IOException e)
     {
@@ -180,29 +204,16 @@ public class GemwebLoader extends FullScanLoader
     }
   }
 
-  private String inputStreamResponseToString(InputStream reader)
+  private HttpClient buildHttpClient()
   {
-    StringBuilder sb = new StringBuilder();
+    int timeoutMs = timeoutSec * 1000;
+    RequestConfig.Builder requestBuilder = RequestConfig.custom();
+    requestBuilder.setConnectTimeout(timeoutMs);
+    requestBuilder.setConnectionRequestTimeout(timeoutMs);
 
-    log.debug("reading response of petition stream");
-    try (InputStreamReader inputStreamReader = new InputStreamReader(reader))
-    {
-      BufferedReader br = new BufferedReader(inputStreamReader);
-      String readLine;
-      while (((readLine = br.readLine()) != null))
-      {
-        sb.append("\n").append(readLine);
-      }
-    }
-    catch (IOException e)
-    {
-      log.error("Error reading response", e);
-      return null;
-    }
-
-    String ret = sb.toString().replaceAll("\r\n", "").replaceAll("\t", "")
-      .replaceAll("\n", "");
-    return ret;
+    HttpClientBuilder clientBuilder = HttpClients.custom();
+    clientBuilder.setDefaultRequestConfig(requestBuilder.build());
+    return clientBuilder.build();
   }
 
   private String getAuthHeader(String accessToken)
@@ -213,74 +224,5 @@ public class GemwebLoader extends FullScanLoader
       authHeader = AUTH_BEARER + " " + accessToken;
     }
     return authHeader;
-  }
-
-  private Iterator<JsonNode> loadResponse(long timeout)
-  {
-    log.debug("init with timeout '{}'", timeout);
-
-    try
-    {
-      log.debug("execute httpClient built");
-      var httpPost = new HttpPost(url);
-      String accessToken = this.getAccessToken();
-      if (accessToken == null || accessToken.isBlank())
-      {
-        log.error("access token is empty {} returning empty iterator",
-          accessToken);
-        return Collections.emptyIterator();
-      }
-      String authHeader = this.getAuthHeader(accessToken);
-      List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-      nvps.add(new BasicNameValuePair("request", "get_inventory"));
-      nvps.add(new BasicNameValuePair("access_token", accessToken));
-      nvps.add(new BasicNameValuePair("category", category));
-
-      httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-      httpPost.setHeader("Accept", "application/xml");
-      httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
-      httpPost.setHeader("Authorization", authHeader);
-      HttpResponse resp = buildHttpClient().execute(httpPost);
-
-      String ret = inputStreamResponseToString(resp.getEntity().getContent());
-      String json = XML.toJSONObject(ret).toString();
-
-      try
-      {
-        String[] recordsPathSep = recordsPath.split("\\.");
-        JsonNode currentNode = mapper.readTree(json);
-        for (int i = 0; i < recordsPathSep.length; i++)
-        {
-          currentNode = currentNode.get(recordsPathSep[i]);
-        }
-        JsonNode all = currentNode;
-        if (all.isArray())
-        {
-          return ((ArrayNode) all).iterator();
-        }
-        else
-        {
-          log.error("all is not a ArrayNode, all::{}",
-            mapper.writeValueAsString(all));
-          return Collections.emptyIterator();
-        }
-      }
-      catch (Exception e)
-      {
-        log.error("exception while sending petition : ", e);
-      }
-      return Collections.emptyIterator();
-
-    }
-    catch (ConnectTimeoutException | SocketTimeoutException e)
-    {
-      log.error("timeout while sending petition : ", e);
-      return Collections.emptyIterator();
-    }
-    catch (Exception e)
-    {
-      log.error("exception while sending petition : ", e);
-      return Collections.emptyIterator();
-    }
   }
 }

@@ -44,7 +44,7 @@ import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.bimrocket.ihub.service.ConnectorMapperService;
 import org.bimrocket.ihub.service.ConnectorService;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.primefaces.event.NodeCollapseEvent;
 import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.DefaultTreeNode;
@@ -53,6 +53,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
 import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
+import org.bimrocket.ihub.connector.Processor;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
 
 /**
  *
@@ -66,10 +68,10 @@ public class ConnectorListBean
   ConnectorService connectorService;
 
   @Autowired
-  ConnectorMapperService connectorMapperService;
+  ProcessorService processorService;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ConnectorMapperService connectorMapperService;
 
   @Autowired
   ConnectorBean connectorBean;
@@ -374,6 +376,8 @@ public class ConnectorListBean
       TreeNode connNode = selectedNode;
       connSetup = (ConnectorSetup)connNode.getData();
 
+      setDefaultProperties(procSetup);
+
       connSetup.getProcessors().add(procSetup);
 
       createTreeNode(procSetup, selectedNode);
@@ -387,6 +391,8 @@ public class ConnectorListBean
       ProcessorSetup selProcSetup = (ProcessorSetup)selectedNode.getData();
 
       int index = connSetup.getProcessors().indexOf(selProcSetup);
+
+      setDefaultProperties(procSetup);
 
       connSetup.getProcessors().add(index, procSetup);
 
@@ -431,7 +437,20 @@ public class ConnectorListBean
     TreeNode procNode = propNode.getParent();
     ProcessorSetup procSetup = (ProcessorSetup)procNode.getData();
     ProcessorProperty property = (ProcessorProperty)propNode.getData();
-    return String.valueOf(procSetup.getProperties().get(property.getName()));
+
+    Object value = procSetup.getProperties().get(property.getName());
+    if (value == null) return "";
+
+    if (property.isSecret()) return "******";
+
+    String textValue = String.valueOf(value);
+
+    if (textValue.length() > 60)
+    {
+      textValue = textValue.substring(0, 50) + "...";
+    }
+
+    return textValue;
   }
 
   public void editProperty()
@@ -514,9 +533,8 @@ public class ConnectorListBean
 
     try
     {
-      Class cls = Class.forName(procSetup.getClassName());
       ProcessorType processorType =
-        processorTypeService.getProcessorType(cls);
+        processorService.getProcessorType(procSetup.getClassName());
 
       List<ProcessorProperty> properties = processorType.getProperties();
       properties.forEach(property ->
@@ -525,10 +543,26 @@ public class ConnectorListBean
           property, procNode);
       });
     }
-    catch (Exception ex)
+    catch (InvalidSetupException ex)
     {
       // ignore
     }
     return procNode;
+  }
+
+  private void setDefaultProperties(ProcessorSetup procSetup)
+  {
+    try
+    {
+      String className = procSetup.getClassName();
+      Processor processor = processorService.createProcessor(className);
+
+      procSetup.setProperties(
+        connectorMapperService.getProcessorProperties(processor));
+    }
+    catch (InvalidSetupException ex)
+    {
+      // ignore
+    }
   }
 }

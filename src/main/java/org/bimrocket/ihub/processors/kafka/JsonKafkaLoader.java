@@ -30,11 +30,11 @@
  */
 package org.bimrocket.ihub.processors.kafka;
 
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  *
@@ -45,16 +45,7 @@ public class JsonKafkaLoader extends KafkaLoader
   private static final Logger log =
     LoggerFactory.getLogger(JsonKafkaLoader.class);
 
-  public JsonKafkaLoader(Connector connector)
-  {
-    super(connector);
-  }
-
-  @Override
-  public void init()
-  {
-    super.init();
-  }
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   public boolean processObject(ProcessedObject procObject)

@@ -45,15 +45,14 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HTTP;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.processors.Sender;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.bimrocket.ihub.util.GeometryUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xembly.Directives;
 import org.xembly.Xembler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -61,50 +60,44 @@ import org.xembly.Xembler;
  */
 public class WfsSender extends Sender
 {
-  private static final Logger log =
-    LoggerFactory.getLogger(WfsSender.class);
+  private static final Logger log = LoggerFactory.getLogger(WfsSender.class);
 
-  // PARAMS
-  @ConfigProperty(name = "wfs.url",
+  @ConfigProperty(name = "url",
     description = "Url to wfs server")
-  String url;
+  public String url;
 
-  @ConfigProperty(name = "wfs.layer",
+  @ConfigProperty(name = "layer",
     description = "Layer to update")
-  String layer;
+  public String layer;
 
-  @ConfigProperty(name = "wfs.xmlns",
+  @ConfigProperty(name = "namespace",
     description = "XML Namespace to update")
-  String namespace;
+  public String namespace;
 
-  @ConfigProperty(name = "wfs.xmlns.url",
+  @ConfigProperty(name = "namespaceUrl",
     description = "XML URI Namespace to update")
-  String namespaceURL;
+  public String namespaceURL;
 
-  @ConfigProperty(name = "wfs.type.name",
+  @ConfigProperty(name = "typeName",
     description = "Wfs entity to update")
-  String typeName;
+  public String typeName;
 
-  @ConfigProperty(name = "wfs.auth",
+  @ConfigProperty(name = "authentication",
     description = "Authentication used currently supported only Basic")
-  String auth;
+  public String auth;
 
-  @ConfigProperty(name = "wfs.username",
+  @ConfigProperty(name = "username",
     description = "User used for basic authentication")
-  String username;
+  public String username;
 
-  @ConfigProperty(name = "wfs.password",
-    description = "Password used for basic authentication")
-  String password;
+  @ConfigProperty(name = "password",
+    description = "Password used for basic authentication",
+    secret = true)
+  public String password;
 
-  @ConfigProperty(name = "wfs.petition.timeout",
+  @ConfigProperty(name = "timeout",
     description = "Timeout used to sending to geoserver (if it exceeds timeout then it retries by number of retries set")
-  Integer timeout;
-
-  public WfsSender(Connector connector)
-  {
-    super(connector);
-  }
+  public Integer timeout;
 
   @Override
   public boolean processObject(ProcessedObject node)
@@ -294,8 +287,7 @@ public class WfsSender extends Sender
         {
           if (node.isObject())
           {
-            String text = mapper.writeValueAsString(node);
-            xml.set(text);
+            xml.set(node.toString());
           }
           else
           {

@@ -33,7 +33,6 @@ package org.bimrocket.ihub.processors.kafka;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.processors.Loader;
 import org.bimrocket.ihub.util.ConfigProperty;
 
@@ -43,50 +42,35 @@ import org.bimrocket.ihub.util.ConfigProperty;
  */
 public abstract class KafkaLoader extends Loader
 {
-  protected KafkaConsumerRunnable runnableKafka;
-  protected Thread threatRunner;
-
-  @ConfigProperty(name = "kafka.object.type",
-    description = "The object type")
-  public String objectType;
-
-  @ConfigProperty(name = "kafka.consumer.group.id",
-    description = "Number of the kafka group to which the loader belongs.")
-  public String groupId;
-
-  @ConfigProperty(name = "kafka.consumer.topic.name",
+  @ConfigProperty(name = "topicName",
     description = "Kafka topic name from which recover JsonObjects.")
   public String topicName;
 
-  @ConfigProperty(name = "kafka.consumer.bootstrap.address",
+  @ConfigProperty(name = "bootstrapAddress",
     description = "Kafka bootstrap servers address")
   public String bootstrapAddress;
 
-  @ConfigProperty(name = "kafka.consumer.offset.reset",
-    description = "On which offset start to load records [earliest,latest]",
-    required = false,
-    defaultValue = "earliest ")
+  @ConfigProperty(name = "groudId",
+    description = "Number of the kafka group to which the loader belongs.")
+  public String groupId;
+
+  @ConfigProperty(name = "offsetReset",
+    description = "On which offset start to load records [earliest,latest]")
   public String offsetReset = "latest";
 
-  @ConfigProperty(name = "kafka.consumer.auto.commit",
-    description = "Should group offset be commited to kafka db?",
-    required = false,
-    defaultValue = "true")
+  @ConfigProperty(name = "autoCommit",
+    description = "Should group offset be commited to kafka db?")
   public boolean autoCommit = true;
 
-  @ConfigProperty(name = "kafka.consumer.auto.commit.interval",
-    description = "Interval every x seconds to commit actual consumer group's offset consumed.",
-    required = false,
-    defaultValue = "true")
-  public int commitSeconds = 5;
+  @ConfigProperty(name = "commitInterval",
+    description = "Interval every x seconds to commit actual consumer group's offset consumed.")
+  public int commitInterval = 5;
 
-  public KafkaLoader(Connector connector)
-  {
-    super(connector);
-  }
+  protected KafkaConsumerRunnable runnableKafka;
+  protected Thread threatRunner;
 
   @Override
-  public void init()
+  public void init() throws Exception
   {
     super.init();
     var props = new Properties();
@@ -99,8 +83,8 @@ public abstract class KafkaLoader extends Loader
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetReset);
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, autoCommit);
     props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
-      commitSeconds * 1000);
-    runnableKafka = new KafkaConsumerRunnable(this.connector, topicName, props);
+      commitInterval * 1000);
+    runnableKafka = new KafkaConsumerRunnable(getConnector(), topicName, props);
     threatRunner = new Thread(runnableKafka);
     threatRunner.start();
   }

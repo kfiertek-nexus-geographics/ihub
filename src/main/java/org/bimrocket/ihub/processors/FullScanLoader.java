@@ -33,14 +33,13 @@ package org.bimrocket.ihub.processors;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *
@@ -51,6 +50,10 @@ public abstract class FullScanLoader extends Loader
   private static final Logger log =
     LoggerFactory.getLogger(FullScanLoader.class);
 
+  @ConfigProperty(name = "intervalPeriod",
+    description = "Period to perform incoming records scan in seconds")
+  public int intervalPeriod = 10 * 60;
+
   private static final String IDLE = "idle";
   private static final String UPDATE = "update";
   private static final String DELETE = "delete";
@@ -59,21 +62,6 @@ public abstract class FullScanLoader extends Loader
   private Iterator<IdPair> deleteIterator;
   private String phase = IDLE;
   private long updateStartTime;
-
-  @ConfigProperty(name = "scanner.object.type",
-    description = "The object type")
-  public String objectType;
-
-  @ConfigProperty(name = "scanner.interval.period",
-    description = "Period to perform incoming records scan in seconds",
-    required = false,
-    defaultValue = "10 * 60")
-  public int intervalPeriod = 10 * 60;
-
-  public FullScanLoader(Connector connector)
-  {
-    super(connector);
-  }
 
   @Override
   public void init()
@@ -154,7 +142,7 @@ public abstract class FullScanLoader extends Loader
     {
       IdPair idPair = deleteIterator.next();
       procObject.setLocalId(idPair.getLocalId());
-      procObject.setLocalObject(mapper.nullNode());
+      procObject.setLocalObject(null);
       procObject.setObjectType(objectType);
       procObject.setOperation(DELETE);
       return true;
@@ -171,12 +159,13 @@ public abstract class FullScanLoader extends Loader
   protected Iterator<IdPair> purge()
   {
     Date lastUpdateDate = new Date(updateStartTime);
-    IdPairRepository idPairRepository = connector.getConnectorService()
-      .getIdPairRepository();
+
+    IdPairRepository idPairRepository =
+      getConnector().getConnectorService().getIdPairRepository();
 
     List<IdPair> idPairs = idPairRepository
       .findByInventoryAndObjectTypeAndLastUpdateLessThan(
-        connector.getInventory(), objectType, lastUpdateDate);
+        getConnector().getInventory(), objectType, lastUpdateDate);
 
     return idPairs.iterator();
   }
