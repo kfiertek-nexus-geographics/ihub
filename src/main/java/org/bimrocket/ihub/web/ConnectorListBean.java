@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.faces.bean.ViewScoped;
 import javax.faces.event.FacesEvent;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.dto.ConnectorSetup;
@@ -50,18 +49,19 @@ import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
-import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
+import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
+import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class ConnectorListBean
 {
   @Autowired

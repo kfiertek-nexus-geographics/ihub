@@ -31,8 +31,9 @@
 package org.bimrocket.ihub.web;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import javax.faces.bean.ViewScoped;
+import java.util.Set;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -40,6 +41,8 @@ import javax.faces.convert.ConverterException;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.primefaces.PrimeFaces;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,15 +50,16 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class PropertyBean
 {
   @Autowired
-  ConnectorListBean connectorListBean;
+  ApplicationContext context;
 
   ProcessorProperty property;
   Object value;
   static final Map<String, Converter> converters = new HashMap<>();
+  static final Set<String> supportedContentTypes = new HashSet<>();
 
   static
   {
@@ -70,6 +74,10 @@ public class PropertyBean
     converters.put("long", converters.get("Long"));
     converters.put("float", converters.get("Float"));
     converters.put("double", converters.get("Double"));
+
+    supportedContentTypes.add("application/javascript");
+    supportedContentTypes.add("application/json");
+    supportedContentTypes.add("text/x-sql");
   }
 
   public ProcessorProperty getProperty()
@@ -96,6 +104,26 @@ public class PropertyBean
   {
     if (property == null) return null;
     return converters.get(property.getType());
+  }
+
+  public String getPropertyType()
+  {
+    if (property == null) return null;
+
+    if (isStructuredText())
+    {
+      return property.getContentType();
+    }
+    else
+    {
+      return property.getType();
+    }
+  }
+
+  public boolean isStructuredText()
+  {
+    if (property == null) return false;
+    return supportedContentTypes.contains(property.getContentType());
   }
 
   public boolean isNumericValue()
@@ -132,6 +160,9 @@ public class PropertyBean
   {
     try
     {
+      ConnectorListBean connectorListBean =
+        context.getBean(ConnectorListBean.class);
+
       connectorListBean.putProperty(value);
       PrimeFaces.current().executeScript("PF('property').hide()");
     }

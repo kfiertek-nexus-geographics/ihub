@@ -30,7 +30,7 @@
  */
 package org.bimrocket.ihub.web;
 
-import javax.faces.bean.ViewScoped;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class InventoryHubBean
 {
   String code;

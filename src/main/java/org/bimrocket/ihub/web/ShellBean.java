@@ -30,9 +30,9 @@
  */
 package org.bimrocket.ihub.web;
 
-import javax.faces.bean.ViewScoped;
 import org.bimrocket.ihub.service.ShellService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -40,15 +40,15 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class ShellBean
 {
+  @Autowired
+  ShellService shellService;
+
   private String code;
   private String output;
   private boolean error;
-
-  @Autowired
-  ShellService shellService;
 
   public String getCode()
   {

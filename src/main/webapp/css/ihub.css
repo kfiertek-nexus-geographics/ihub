@@ -17,7 +17,40 @@ body .ui-inputfield
 {
   --font-family: Montserrat, Arial;
   font-family: Montserrat, Arial;
-  font-size: 14px;
+  font-size: 11pt;
+}
+
+body .ui-dialog
+{
+  max-width: 95%;
+  max-height: 95%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+body .ui-dialog-content
+{
+  overflow-y: hidden !important;
+}
+
+body .ui-panel .ui-panel-content
+{
+  padding: 0.5rem;
+}
+
+body .ui-dialog .ui-dialog-titlebar
+{
+  padding: 1rem;
+}
+
+body .ui-dialog .ui-dialog-content
+{
+  padding: 0 1rem 2rem 1rem
+}
+
+body .ui-dialog .ui-dialog-footer
+{
+  padding: 0rem 1rem 1rem 1rem;
 }
 
 body .ui-toolbar
@@ -88,4 +121,32 @@ h1
 .prop_name
 {
   color: #708070;
+}
+
+div, ul
+{
+  scrollbar-width: thin;
+  scrollbar-color: #a0a0ff transparent;
+}
+
+::-webkit-scrollbar
+{
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track
+{
+  background-color: #d0d0ff;
+}
+
+::-webkit-scrollbar-thumb
+{
+  background: #a0a0ff;
+  border-radius: 0;
+}
+
+body .ui-dialog .CodeMirror
+{
+  height: 200px;
 }
