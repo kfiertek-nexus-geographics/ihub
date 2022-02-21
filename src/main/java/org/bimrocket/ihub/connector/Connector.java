@@ -336,7 +336,10 @@ public class Connector implements Runnable
           }
           else
           {
-            Thread.sleep(waitMillis);
+            synchronized (this)
+            {
+              wait(waitMillis);
+            }
           }
         }
       }
@@ -372,7 +375,7 @@ public class Connector implements Runnable
     if (thread != null)
     {
       end = true;
-      thread.interrupt();
+      notify();
       status = STOPPING_STATUS;
     }
     return this;
