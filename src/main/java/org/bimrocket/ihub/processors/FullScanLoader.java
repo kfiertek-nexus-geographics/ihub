@@ -50,6 +50,10 @@ public abstract class FullScanLoader extends Loader
   private static final Logger log =
     LoggerFactory.getLogger(FullScanLoader.class);
 
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
+  public String objectType;
+
   @ConfigProperty(name = "intervalPeriod",
     description = "Period to perform incoming records scan in seconds")
   public int intervalPeriod = 10 * 60;

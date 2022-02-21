@@ -32,7 +32,6 @@ package org.bimrocket.ihub.processors;
 
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
-import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
@@ -40,11 +39,6 @@ import org.bimrocket.ihub.util.ConfigProperty;
  */
 public abstract class Loader extends Processor
 {
-  @ConfigProperty(name = "objectType",
-    description = "The object type",
-    required = true)
-  public String objectType;
-
   @Override
   public abstract boolean processObject(ProcessedObject procObject);
 }

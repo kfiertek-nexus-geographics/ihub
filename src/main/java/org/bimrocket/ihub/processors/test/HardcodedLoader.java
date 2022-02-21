@@ -50,6 +50,10 @@ public class HardcodedLoader extends Loader
   private static final Logger log =
     LoggerFactory.getLogger(HardcodedLoader.class);
 
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
+  public String objectType;
+
   @ConfigProperty(name = "jsonData",
     description = "Sample json object array to load",
     contentType = "application/json")

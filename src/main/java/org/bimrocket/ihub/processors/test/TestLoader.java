@@ -48,6 +48,10 @@ import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
  */
 public class TestLoader extends Loader
 {
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
+  public String objectType;
+
   @ConfigProperty
   public List<String> objectFields = new ArrayList<>();
 
@@ -65,6 +69,9 @@ public class TestLoader extends Loader
 
   @ConfigProperty
   public Boolean active2 = false;
+
+  @ConfigProperty(contentType="text/x-sql")
+  public String sql = "";
 
   protected final ObjectMapper mapper = new ObjectMapper();
   private final LinkedList<Entry> entries = new LinkedList<>();

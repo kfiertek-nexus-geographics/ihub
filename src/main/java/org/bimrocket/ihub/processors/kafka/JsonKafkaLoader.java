@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
@@ -44,6 +45,10 @@ public class JsonKafkaLoader extends KafkaLoader
 {
   private static final Logger log =
     LoggerFactory.getLogger(JsonKafkaLoader.class);
+
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
+  public String objectType;
 
   protected final ObjectMapper mapper = new ObjectMapper();
 
