@@ -269,16 +269,21 @@ public class Connector implements Runnable
   @Override
   public void run()
   {
-    log.info("connector {} started", name);
+    log.info("Connector {} started", name);
+    startTime = new Date();
     status = RUNNING_STATUS;
-    init();
+    lastError = null;
+    end = false;
     resetStatistics();
 
     List<Processor> runningProcessors = getProcessors();
 
-    while (!end)
+    try
     {
-      try
+      initProcessors(runningProcessors);
+      log.debug("Entering loop");
+
+      while (!end)
       {
         procObject.reset();
 
@@ -287,7 +292,8 @@ public class Connector implements Runnable
         {
           if (processor.isEnabled())
           {
-            log.debug("running processor {}", processor.getClass().toString());
+            log.debug("Executing processor {}",
+              processor.getClass().getName());
 
             if (processor.processObject(procObject))
             {
@@ -301,7 +307,7 @@ public class Connector implements Runnable
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
-          log.debug("object processed, localId: {}, globalId: {}",
+          log.debug("Object processed, localId: {}, globalId: {}",
             procObject.getLocalId(), procObject.getGlobalId());
         }
 
@@ -323,23 +329,27 @@ public class Connector implements Runnable
           }
         }
       }
-      catch (Exception ex)
-      {
-        lastError = ex;
-        log.error("Exception has occurred ", ex);
-      }
     }
-    end();
-    log.info("connector {} stopped", name);
-    thread = null;
+    catch (Exception ex)
+    {
+      lastError = ex;
+      log.error("An error has ocurred: {}", ex.toString());
+    }
+    finally
+    {
+      endProcessors(runningProcessors);
+    }
     status = STOPPED_STATUS;
+    endTime = new Date();
+    log.info("Connector {} stopped", name);
+    thread = null;
   }
 
   public synchronized Connector start()
   {
     if (thread == null)
     {
-      thread = new Thread(this, "connector-" + name + ":" + inventory);
+      thread = new Thread(this, "c:" + name);
       thread.start();
       status = STARTING_STATUS;
     }
@@ -400,40 +410,47 @@ public class Connector implements Runnable
     return connSetup;
   }
 
-  protected void init()
+  protected void initProcessors(List<Processor> processors)
+    throws Exception
   {
-    end = false;
-
-    startTime = new Date();
-
-    processors.forEach(processor ->
+    int initialized = 0;
+    try
     {
-      try
+      for (var processor : processors)
       {
+        log.debug("Initializing processor #{}: {}", initialized,
+          processor.getClass().getName());
         processor.init();
-      }
-      catch (Exception ex)
+        initialized++;
+      };
+    }
+    finally
+    {
+      // remove from list not initialized processors
+      while (processors.size() > initialized)
       {
-        // log
+        processors.remove(processors.size() - 1); // remove last
       }
-    });
+    }
   }
 
-  public void end()
+  public void endProcessors(List<Processor> processors)
   {
-    processors.forEach(processor ->
+    int ended = 0;
+    for (var processor : processors)
     {
       try
       {
+        log.debug("Ending processor #{}: {}", ended,
+          processor.getClass().getName());
         processor.end();
+        ended++;
       }
       catch (Exception ex)
       {
-        // log
+        if (lastError == null) lastError = ex;
       }
-    });
-
-    endTime = new Date();
+    }
   }
 
   void updateIdPairRepository(ProcessedObject procObject)
