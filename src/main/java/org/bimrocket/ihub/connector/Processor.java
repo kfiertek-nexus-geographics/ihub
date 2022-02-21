@@ -45,19 +45,21 @@ public abstract class Processor
   {
   }
 
-  public final void setConnector(Connector connector)
-  {
-    if (this.connector != null)
-      throw new RuntimeException("Connector already set for this Processor");
-
-    this.connector = connector;
-  }
-
   public final Connector getConnector()
   {
     return connector;
   }
 
+  public final void setConnector(Connector connector)
+  {
+    if (connector == null)
+      throw new RuntimeException("Null connector not allowed");
+
+    if (this.connector != null && this.connector != connector)
+      throw new RuntimeException("Connector already set for this Processor");
+
+    this.connector = connector;
+  }
 
   public String getDescription()
   {
@@ -79,12 +81,32 @@ public abstract class Processor
     this.enabled = enabled;
   }
 
+
+  /**
+   * Initialize processor. This method is called every time a connector
+   * is started. The processor can obtain the resources required to perform
+   * the object processing.
+   *
+   * @throws Exception when init fails and object processing can not go on.
+   */
   public void init() throws Exception
   {
   }
 
+  /**
+   * Process an object.
+   *
+   * @param procObject, the object to process
+   * @return false if object processing must be interrupted, true otherwise.
+   */
   public abstract boolean processObject(ProcessedObject procObject);
 
+  /**
+   * Cleanup processor. This method is called every time a connector
+   * stops running. The processor can release the resources obtained in the
+   * init method.
+   *
+   */
   public void end()
   {
   }

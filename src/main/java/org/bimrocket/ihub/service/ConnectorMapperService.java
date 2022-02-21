@@ -105,11 +105,12 @@ public class ConnectorMapperService
     {
       connector.setWaitMillis(connSetup.getWaitMillis());
     }
-    List<Processor> processors = connector.getProcessors();
     List<ProcessorSetup> procSetups = connSetup.getProcessors();
 
     if (procSetups != null)
     {
+      List<Processor> processors = connector.getProcessors();
+
       for (int i = 0; i < procSetups.size(); i++)
       {
         ProcessorSetup procSetup = procSetups.get(i);
@@ -129,7 +130,7 @@ public class ConnectorMapperService
             try
             {
               processor = processorService.createProcessor(className);
-              connector.setProcessor(i, processor);
+              processors.set(i, processor);
             }
             catch (InvalidSetupException ex)
             {
@@ -166,7 +167,7 @@ public class ConnectorMapperService
           try
           {
             Processor processor = processorService.createProcessor(className);
-            connector.addProcessor(processor);
+            processors.add(processor);
             setProcessorSetup(processor, procSetup, ignoreErrors);
           }
           catch (InvalidSetupException ex)
@@ -178,10 +179,12 @@ public class ConnectorMapperService
         }
       }
       // remove remaining processors
-      while (connector.getProcessorCount() > procSetups.size())
+      while (processors.size() > procSetups.size())
       {
-        connector.removeProcessor(connector.getProcessorCount() - 1);
+        processors.remove(processors.size() - 1);
       }
+      // apply changes to connector
+      connector.setProcessors(processors);
     }
   }
 

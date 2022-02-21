@@ -31,14 +31,11 @@
 package org.bimrocket.ihub.connector;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.IdPair;
-import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.service.ConnectorService;
 import org.slf4j.Logger;
@@ -192,54 +189,26 @@ public class Connector implements Runnable
     return lastError;
   }
 
-  public List<Processor> getProcessors()
-  {
-    return Collections.unmodifiableList(processors);
-  }
-
-  public int getProcessorCount()
+  public synchronized int getProcessorCount()
   {
     return processors.size();
   }
 
-  public Connector addProcessor(Processor processor)
+  public synchronized List<Processor> getProcessors()
   {
-    processor.setConnector(this);
-    processors.add(processor);
+    // avoid concurrent modification exceptions iterating over processor list
 
-    return this;
+    return new ArrayList<>(processors);
   }
 
-  public Connector insertProcessor(int index, Processor processor)
-    throws InvalidSetupException
+  public synchronized Connector setProcessors(List<Processor> processors)
   {
-    processor.setConnector(this);
-    processors.add(index, processor);
+    // some changes will not take effect until connector restart
 
-    return this;
-  }
+    processors.forEach(processor -> processor.setConnector(this));
 
-  public Connector setProcessor(int index, Processor processor)
-    throws InvalidSetupException
-  {
-    processor.setConnector(this);
-
-    if (thread != null)
-    {
-      processor.end();
-    }
-    processors.set(index, processor);
-
-    return this;
-  }
-
-  public Connector removeProcessor(int index)
-  {
-    Processor processor = processors.remove(index);
-    if (thread != null)
-    {
-      processor.end();
-    }
+    this.processors.clear();
+    this.processors.addAll(processors);
 
     return this;
   }
@@ -305,30 +274,38 @@ public class Connector implements Runnable
     init();
     resetStatistics();
 
+    List<Processor> runningProcessors = getProcessors();
+
     while (!end)
     {
       try
       {
         procObject.reset();
 
-        boolean process = true;
-        Iterator<Processor> iter = processors.iterator();
-        while (iter.hasNext() && process)
+        int processorCount = 0;
+        for (var processor : runningProcessors)
         {
-          Processor processor = iter.next();
-          log.debug("running processor {}", processor.getClass().toString());
           if (processor.isEnabled())
           {
-            process = processor.processObject(procObject);
+            log.debug("running processor {}", processor.getClass().toString());
+
+            if (processor.processObject(procObject))
+            {
+              processorCount++;
+            }
+            else break;
           }
         }
+
         if (!procObject.isIgnore())
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
-          log.debug("object processed: {}", procObject);
+          log.debug("object processed, localId: {}, globalId: {}",
+            procObject.getLocalId(), procObject.getGlobalId());
         }
-        else
+
+        if (processorCount == 0)
         {
           if (singleRun)
           {
@@ -338,14 +315,13 @@ public class Connector implements Runnable
           {
             synchronized (this)
             {
-              wait(waitMillis);
+              if (!end)
+              {
+                wait(waitMillis);
+              }
             }
           }
         }
-      }
-      catch (InterruptedException ex)
-      {
-        log.debug("connector interrupted");
       }
       catch (Exception ex)
       {
