@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition template="/main.xhtml">
+
+    <ui:define name="body">
+     
+      <p:panel>
+        <div class="flex align-items-center flex-wrap card-container">
+          <h:outputLabel for="autoRefresh" value="Auto refresh:" 
+                          styleClass="flex align-items-center justify-content-center m-2" />
+          <p:toggleSwitch id="autoRefresh" value="#{logsBean.autoRefresh}" 
+                          styleClass="flex align-items-center justify-content-center m-2">
+            <p:ajax update="log_poll" />
+          </p:toggleSwitch>
+        </div>
+      </p:panel>
+      
+      <p:dataTable id="log_table"
+                   value="#{logsBean.events}" 
+                   var="event" 
+                   rowHover="true"
+                   showGridlines="true"
+                   resizableColumns="true" 
+                   scrollable="true" 
+                   touchable="true"
+                   style="margin-top:4px"
+                   scrollWidth="2000px"
+                   scrollHeight="60vh">
+        <p:column headerText="Timestamp" sortBy="#{event.timeStamp}" 
+                  style="width:100px">
+          <h:outputText value="#{logsBean.getDate(event)}">
+            <f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss.SSS" 
+                               timeZone="Europe/Berlin" />
+          </h:outputText>
+        </p:column>
+
+        <p:column headerText="Level" sortBy="#{logsBean.getDate(event)}"
+                  style="width:50px">
+          <h:outputText value="#{logsBean.getLevel(event)}" />
+        </p:column>        
+        
+        <p:column headerText="Thread" sortBy="#{event.threadName}"
+                  style="width:60px">
+          <h:outputText value="#{event.threadName}" />
+        </p:column>
+
+        <p:column headerText="Message" sortBy="#{event.formattedMessage}">
+          <h:outputText value="#{event.formattedMessage}" />          
+        </p:column>        
+        
+      </p:dataTable>
+
+      <p:poll id="log_poll" interval="3" update="log_table"              
+              stop="#{not logsBean.autoRefresh}" />      
+    </ui:define>
+  </ui:composition>
+
+</html>
