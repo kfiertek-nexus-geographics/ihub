@@ -17,15 +17,19 @@
       </p:messages>
 
       <p:panel id="search_panel">
-        <h:outputLabel for="filter" value="Filter:" />
-        <p:inputText id="filter" value="#{connectorListBean.connectorName}"
-                     style="margin-left:4px; width: 200px;" />
-        <p:commandButton value="Search"
-                         id="search_connectors"
-                         update="filter,connectors"
-                         icon="pi pi-search"
-                         style="margin-left:4px"
-                         action="#{connectorListBean.search}" />
+        <div class="flex align-items-center flex-wrap card-container">
+          <h:outputLabel for="filter" value="Filter:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="filter" value="#{connectorListBean.connectorName}"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       style="width:180px; max-width: 100%"/>
+          <p:commandButton value="Search"
+                           id="search_connectors"
+                           update="filter,connectors"
+                           icon="pi pi-search"
+                           styleClass="flex align-items-center justify-content-center m-1"
+                           action="#{connectorListBean.search}" />
+        </div>
       </p:panel>
 
       <p:defaultCommand target="search_connectors" scope="search_panel" />

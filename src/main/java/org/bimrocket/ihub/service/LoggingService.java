@@ -34,12 +34,18 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.filter.Filter;
+import ch.qos.logback.core.spi.FilterReply;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  *
@@ -50,8 +56,9 @@ public class LoggingService
 {
   private Level level = Level.DEBUG;
   private final LinkedList<ILoggingEvent> events = new LinkedList<>();
-  
-  private int maxEvents = 100;
+
+  @Value("${logging.max_events}")
+  private int maxEvents;
 
   @PostConstruct
   public void init()
@@ -86,9 +93,26 @@ public class LoggingService
     this.maxEvents = maxEvents;
   }
 
-  public List<ILoggingEvent> getEvents()
+  public List<ILoggingEvent> getEvents(ILoggingEventFilter filter,
+    int maxEvents)
   {
-    return events;
+    List<ILoggingEvent> filteredEvents = new ArrayList<>();
+
+    synchronized (events)
+    {
+      Iterator<ILoggingEvent> iter = events.descendingIterator();
+      while (iter.hasNext() && filteredEvents.size() < maxEvents)
+      {
+        ILoggingEvent event = iter.next();
+        if (filter.accepts(event))
+        {
+          filteredEvents.add(event);
+        }
+      }
+    }
+    Collections.reverse(filteredEvents);
+
+    return filteredEvents;
   }
 
   public class LogAppender extends AppenderBase<ILoggingEvent>
@@ -97,14 +121,22 @@ public class LoggingService
     protected void append(ILoggingEvent event)
     {
       Level eventLevel = event.getLevel();
-      if (eventLevel.isGreaterOrEqual(level))
+      synchronized (events)
       {
-        events.add(event);
-        if (events.size() > maxEvents)
+        if (eventLevel.isGreaterOrEqual(level))
         {
-          events.poll();
+          events.add(event);
+          if (events.size() > maxEvents)
+          {
+            events.poll();
+          }
         }
       }
     }
+  }
+
+  public static interface ILoggingEventFilter
+  {
+    boolean accepts(ILoggingEvent event);
   }
 }

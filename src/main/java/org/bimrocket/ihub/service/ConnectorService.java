@@ -175,9 +175,9 @@ public class ConnectorService
 	public void onApplicationEvent(ApplicationReadyEvent event)
   {
     log.info("idPairRepository: {} ",
-      idPairRepository.getClass().getName());
+      idPairRepository.toString());
     log.info("ConnectorSetupRepository: {}",
-      connectorSetupRepository.getClass().getName());
+      connectorSetupRepository.toString());
 
     try
     {

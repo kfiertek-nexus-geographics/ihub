@@ -11,15 +11,14 @@
 
     <ui:define name="body">
 
-      <div style="margin-top: 8pt">
-        <pe:codeMirror id="editor"
-                       mode="application/javascript"
-                       theme="default"
-                       gutter="true"
-                       value="#{shellBean.code}"
-                       lineNumbers="true"
-                       matchBrackets="true" />
-      </div>
+      <pe:codeMirror id="editor"
+                     mode="application/javascript"
+                     theme="default"
+                     gutter="true"
+                     value="#{shellBean.code}"
+                     lineNumbers="true"
+                     matchBrackets="true" />
+
       <div class="block">
         <p:commandButton value="Execute"
                          icon="pi pi-play"

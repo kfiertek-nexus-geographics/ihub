@@ -307,7 +307,9 @@ public class Connector implements Runnable
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
-          log.debug("Object processed, localId: {}, globalId: {}",
+          log.debug("Object processed, type: {}, operation: {}, "
+            + "localId: {}, globalId: {}",
+            procObject.getObjectType(), procObject.getOperation(),
             procObject.getLocalId(), procObject.getGlobalId());
         }
 

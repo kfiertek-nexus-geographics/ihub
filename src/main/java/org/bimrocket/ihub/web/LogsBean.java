@@ -30,10 +30,12 @@
  */
 package org.bimrocket.ihub.web;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import java.util.Date;
 import java.util.List;
 import org.bimrocket.ihub.service.LoggingService;
+import org.bimrocket.ihub.service.LoggingService.ILoggingEventFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -50,6 +52,7 @@ public class LogsBean
   LoggingService loggingService;
 
   private boolean autoRefresh;
+  private LogFilter filter = new LogFilter();
 
   public boolean isAutoRefresh()
   {
@@ -73,6 +76,70 @@ public class LogsBean
 
   public List<ILoggingEvent> getEvents()
   {
-    return loggingService.getEvents();
+    return loggingService.getEvents(filter, 50);
+  }
+
+  public LogFilter getFilter()
+  {
+    return filter;
+  }
+
+  public void setFilter(LogFilter filter)
+  {
+    this.filter = filter;
+  }
+
+  public static class LogFilter implements ILoggingEventFilter
+  {
+    String level;
+    String message;
+    String threadName;
+
+    public String getLevel()
+    {
+      return level;
+    }
+
+    public void setLevel(String level)
+    {
+      this.level = level;
+    }
+
+    public String getMessage()
+    {
+      return message;
+    }
+
+    public void setMessage(String message)
+    {
+      this.message = message;
+    }
+
+    public String getThreadName()
+    {
+      return threadName;
+    }
+
+    public void setThreadName(String threadName)
+    {
+      this.threadName = threadName;
+    }
+
+    @Override
+    public boolean accepts(ILoggingEvent event)
+    {
+      if (!event.getLevel().isGreaterOrEqual(Level.toLevel(level)))
+        return false;
+
+      if (threadName != null
+          && !event.getThreadName().contains(threadName.trim()))
+        return false;
+
+      if (message != null
+          && !event.getFormattedMessage().contains(message.trim()))
+        return false;
+
+      return true;
+    }
   }
 }

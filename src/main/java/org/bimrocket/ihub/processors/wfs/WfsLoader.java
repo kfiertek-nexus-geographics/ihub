@@ -85,6 +85,10 @@ public class WfsLoader extends FullScanLoader
     description = "Layers to load from geoserver can be multiple comma separeted like this: layers.01, layers.02...")
   public String layersLoad;
 
+  @ConfigProperty(name = "idPath",
+    description = "Path to the id field of the entity")
+  public String idPath = "/fid";
+
   @ConfigProperty(name = "format",
     description = "Format of petition's body sent to geoserver")
   public String formatPetition;
@@ -103,6 +107,12 @@ public class WfsLoader extends FullScanLoader
   protected Iterator<JsonNode> fullScan()
   {
     return loadResponse(timeoutSec);
+  }
+
+  @Override
+  public String getLocalId(JsonNode localObject)
+  {
+    return localObject.at(idPath).asText();
   }
 
   private HttpClient buildHttpClient()

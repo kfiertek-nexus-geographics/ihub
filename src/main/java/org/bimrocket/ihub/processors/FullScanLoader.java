@@ -71,6 +71,7 @@ public abstract class FullScanLoader extends Loader
   public void init()
   {
     phase = IDLE;
+    updateStartTime = 0;
   }
 
   @Override
@@ -132,7 +133,9 @@ public abstract class FullScanLoader extends Loader
   {
     if (updateIterator.hasNext())
     {
-      procObject.setLocalObject(updateIterator.next());
+      JsonNode localObject = updateIterator.next();
+      procObject.setLocalObject(localObject);
+      procObject.setLocalId(getLocalId(localObject));
       procObject.setObjectType(objectType);
       procObject.setOperation(UPDATE);
       return true;
@@ -175,5 +178,7 @@ public abstract class FullScanLoader extends Loader
   }
 
   protected abstract Iterator<JsonNode> fullScan();
+
+  protected abstract String getLocalId(JsonNode localObject);
 
 }

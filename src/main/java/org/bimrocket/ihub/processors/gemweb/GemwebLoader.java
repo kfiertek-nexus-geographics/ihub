@@ -153,6 +153,12 @@ public class GemwebLoader extends FullScanLoader
     return Collections.emptyIterator();
   }
 
+  @Override
+  protected String getLocalId(JsonNode localObject)
+  {
+    return localObject.get("id").asText();
+  }
+
   private String getAccessToken()
   {
     try
