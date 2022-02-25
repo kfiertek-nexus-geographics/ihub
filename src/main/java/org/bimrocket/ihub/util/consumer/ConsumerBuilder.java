@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-import org.bimrocket.ihub.processors.moba.consumer.MobaConsumer;
 import org.bimrocket.ihub.util.Functions;
 
 /**
@@ -72,13 +71,6 @@ public class ConsumerBuilder
 
     public IConsumer build() throws Exception
     {
-        if (this.consumerEnum == consumerEnum.MOBA)
-        {
-            URI request = Functions.buildURI(base, Optional.ofNullable(port),
-                    Optional.ofNullable(uri), Optional.ofNullable(queries));
-            return new MobaConsumer(request, this.body);
-        }
-
         throw new Exception("Unsuported consum configuration");
     }
 }
