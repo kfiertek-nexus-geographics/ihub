@@ -3,6 +3,8 @@ package org.bimrocket.ihub.processors.excel;
 import java.io.InputStream;
 import java.net.URI;
 
+import com.google.common.net.HttpHeaders;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
@@ -15,6 +17,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.bimrocket.ihub.util.consumer.IConsumer;
+import org.springframework.http.MediaType;
 
 public class ExcelHttpConsumer implements IConsumer
 {
@@ -36,7 +39,10 @@ public class ExcelHttpConsumer implements IConsumer
     {
         URIBuilder uriBuilder = new URIBuilder(request);
 
-        HttpGet request = new HttpGet(uriBuilder.build());
+        HttpGet get = new HttpGet(uriBuilder.build());
+
+        get.setHeader(HttpHeaders.ACCEPT,
+                MediaType.EXCE + ", " + MediaType.APPLICATION_XML_VALUE);
 
         CredentialsProvider provider = new BasicCredentialsProvider();
         provider.setCredentials(AuthScope.ANY,
@@ -44,7 +50,7 @@ public class ExcelHttpConsumer implements IConsumer
         CloseableHttpClient client = HttpClientBuilder.create()
                 .setDefaultCredentialsProvider(provider).build();
 
-        CloseableHttpResponse response = client.execute(request);
+        CloseableHttpResponse response = client.execute(get);
 
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
         {
