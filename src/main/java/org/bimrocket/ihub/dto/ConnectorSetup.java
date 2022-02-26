@@ -34,7 +34,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Entity;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -42,7 +41,7 @@ import javax.validation.constraints.Size;
 
 import org.springframework.data.annotation.Id;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  *
@@ -51,28 +50,37 @@ import io.swagger.annotations.ApiModelProperty;
 public class ConnectorSetup implements Serializable
 {
   @Id
-  @ApiModelProperty(notes = "Unique identifier of the connector.", example = "ConsumerGeoConnector", required = true, position = 0)
+  @Schema(description = "Unique identifier of the connector.",
+    example = "ConsumerGeoConnector", required = true)
   @NotBlank
   @Size(min = 5, max = 50)
   private String name;
 
-  @ApiModelProperty(notes = "Description of the connector.", example = "Put here connector description and usage guide.", required = true, position = 1)
+  @Schema(description = "Description of the connector.",
+    example = "Put here connector description and usage guide.",
+    required = true)
   @Size(min = 0, max = 4000)
   private String description;
 
-  @ApiModelProperty(notes = "Identifier of the inventory (multiple connectors can access the same inventory), it acts as identifier for objects that should be "
-      + "equal but can be from different sources.", example = "GeoObjectsInventory", required = true, position = 2)
+  @Schema(description = "Identifier of the inventory " +
+    "(multiple connectors can access the same inventory), " +
+    "it acts as identifier for objects that should be " +
+    "equal but can be from different sources.",
+    example = "GeoObjectsInventory", required = true)
   @NotBlank
   @Size(min = 5, max = 50)
   private String inventory;
 
-  @ApiModelProperty(notes = "Should connector be started after creation ?", example = "true/false", required = true, position = 3)
+  @Schema(description = "Should connector be started after creation ?",
+    example = "true/false", required = true)
   private Boolean autoStart;
 
-  @ApiModelProperty(notes = "Should connector run once after start ?", example = "true/false", required = true, position = 4)
+  @Schema(description = "Should connector run once after start ?",
+    example = "true/false", required = true)
   private Boolean singleRun;
 
-  @ApiModelProperty(notes = "How much to wait between runs ? (In miliseconds)", example = "1000", required = true, position = 5)
+  @Schema(description = "How much to wait between runs ? (In miliseconds)",
+    example = "1000", required = true)
   @Min(0)
   @Max(24 * 60 * 60 * 1000)
   private Long waitMillis;

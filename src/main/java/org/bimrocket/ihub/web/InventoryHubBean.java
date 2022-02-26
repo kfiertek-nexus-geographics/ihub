@@ -53,8 +53,10 @@ public class InventoryHubBean
         return 0;
       case "/logs.xhtml":
         return 1;
-      case "/shell.xhtml":
+      case "/idpair_repo.xhtml":
         return 2;
+      case "/shell.xhtml":
+        return 3;
     }
     return 0;
   }
