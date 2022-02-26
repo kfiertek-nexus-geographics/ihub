@@ -55,7 +55,10 @@
                     icon="connector">
           <h:outputText value="#{data.name}: #{data.inventory}"
                         styleClass="#{connectorListBean.isConnectorChanged(data) ?
-                        'changed' : 'unchanged'}" />
+                        'changed' : ''}" />
+          <h:outputText value=" (unsaved)"
+                        rendered="#{connectorListBean.isConnectorUnsaved(data)}"  
+                        styleClass="unsaved" />
           <p:toggleSwitch value="#{connectorListBean.connectorRunning}"
                           style="margin-left:8px; vertical-align: middle">
             <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
@@ -71,7 +74,8 @@
         <p:treeNode type="property" icon="pi pi-box">
           <h:outputText value="#{data.name}: " title="#{data.description}"
                         styleClass="prop_name" />
-          <h:outputText value="#{connectorListBean.getPropertyValue(node)}" />
+          <h:outputText value="#{connectorListBean.getPropertyValue(node)}" 
+                        styleClass="prop_value" />
         </p:treeNode>
       </p:tree>
 
@@ -102,6 +106,11 @@
                     action="#{connectorListBean.saveConnector}"
                     update="connectors"
                     icon="pi pi-save"/>
+        <p:menuitem value="Restore"
+                    action="#{connectorListBean.restoreConnector}"
+                    rendered="#{connectorListBean.connectorUnsaved}"
+                    update="connectors"
+                    icon="pi pi-database"/>
         <p:menuitem value="Delete"
                     action="#{connectorListBean.deleteConnector}"
                     update="connectors"

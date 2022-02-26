@@ -51,10 +51,10 @@ import org.primefaces.model.TreeNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
-import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
-import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
+import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
 
 /**
  *
@@ -87,6 +87,7 @@ public class ConnectorListBean
   String connectorName;
   String operation;
   Set<String> changed = new HashSet<>();
+
   boolean connectorRunning;
 
   public void search()
@@ -144,11 +145,46 @@ public class ConnectorListBean
     return changed.contains(connSetup.getName());
   }
 
+  public boolean isConnectorUnsaved()
+  {
+    if (selectedNode == null) return false;
+
+    Object data = selectedNode.getData();
+    if (data instanceof ConnectorSetup)
+    {
+      ConnectorSetup connSetup = (ConnectorSetup)data;
+      String connName = connSetup.getName();
+      try
+      {
+        return connectorService.getConnector(connName).isUnsaved();
+      }
+      catch (NotFoundException ex)
+      {
+      }
+    }
+    return false;
+  }
+
+  public boolean isConnectorUnsaved(ConnectorSetup connSetup)
+  {
+    if (connSetup == null) return false;
+    String connName = connSetup.getName();
+    try
+    {
+      return connectorService.getConnector(connName).isUnsaved();
+    }
+    catch (NotFoundException ex)
+    {
+    }
+    return false;
+  }
+
   // connector operations
 
   public void addConnector()
   {
     ConnectorSetup connSetup = new ConnectorSetup();
+    connSetup.setWaitMillis(10000L);
     connectorBean.setConnectorSetup(connSetup);
     operation = "add";
   }
@@ -170,14 +206,14 @@ public class ConnectorListBean
         connectorService.createConnector(connSetup.getName());
       connectorMapperService.setConnectorSetup(connector, connSetup);
       createTreeNode(connSetup, rootNode);
-      changed.remove(connSetup.getName());
     }
     else // edit
     {
       ConnectorSetup curConnSetup = (ConnectorSetup)selectedNode.getData();
       connSetup.copyTo(curConnSetup);
-      changed.add(connSetup.getName());
     }
+    String connName = connSetup.getName();
+    changed.add(connName);
   }
 
   public void applyConnectorChanges()
@@ -185,10 +221,11 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
-      Connector connector = connectorService.getConnector(connSetup.getName());
+      String connName = connSetup.getName();
+      Connector connector = connectorService.getConnector(connName);
 
       connectorMapperService.setConnectorSetup(connector, connSetup);
-      changed.remove(connSetup.getName());
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -201,7 +238,8 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
-      Connector connector = connectorService.getConnector(connSetup.getName());
+      String connName = connSetup.getName();
+      Connector connector = connectorService.getConnector(connName);
 
       connSetup = connectorMapperService.getConnectorSetup(connector);
 
@@ -211,7 +249,7 @@ public class ConnectorListBean
       int index = rootNode.getChildren().indexOf(selectedNode);
       rootNode.getChildren().set(index, connNode);
 
-      changed.remove(connSetup.getName());
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -224,10 +262,38 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
-      Connector connector = connectorService.getConnector(connSetup.getName());
+      String connName = connSetup.getName();
+      Connector connector = connectorService.getConnector(connName);
       connectorMapperService.setConnectorSetup(connector, connSetup);
       connector.save();
-      changed.remove(connSetup.getName());
+      changed.remove(connName);
+    }
+    catch (Exception ex)
+    {
+      FacesUtils.addErrorMessage(ex);
+    }
+  }
+
+  public void restoreConnector()
+  {
+    try
+    {
+      ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
+      String connName = connSetup.getName();
+
+      Connector connector = connectorService.getConnector(connName);
+      connector.restore();
+
+      connSetup =
+        connectorMapperService.getConnectorSetup(connector);
+
+      TreeNode connNode = createTreeNode(connSetup, null);
+      connNode.setExpanded(true);
+
+      int index = rootNode.getChildren().indexOf(selectedNode);
+      rootNode.getChildren().set(index, connNode);
+
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -240,12 +306,14 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
+      String connName = connSetup.getName();
 
-      connectorService.destroyConnector(connSetup.getName(), true);
+      connectorService.destroyConnector(connName, true);
 
       rootNode.getChildren().remove(selectedNode);
       selectedNode = null;
-      changed.remove(connSetup.getName());
+
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -407,7 +475,8 @@ public class ConnectorListBean
       TreeNode connNode = selectedNode.getParent();
       connSetup = (ConnectorSetup)connNode.getData();
     }
-    changed.add(connSetup.getName());
+    String connName = connSetup.getName();
+    changed.add(connName);
   }
 
   public void deleteProcessor()
@@ -422,7 +491,9 @@ public class ConnectorListBean
 
       connNode.getChildren().remove(selectedNode);
       selectedNode = null;
-      changed.add(connSetup.getName());
+
+      String connName = connSetup.getName();
+      changed.add(connName);
     }
     catch (Exception ex)
     {
@@ -473,7 +544,9 @@ public class ConnectorListBean
     procSetup.getProperties().put(property.getName(), value);
     TreeNode connNode = procNode.getParent();
     ConnectorSetup connSetup = (ConnectorSetup)connNode.getData();
-    changed.add(connSetup.getName());
+
+    String connName = connSetup.getName();
+    changed.add(connName);
   }
 
   // other methods

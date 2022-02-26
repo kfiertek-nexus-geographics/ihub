@@ -53,7 +53,7 @@
 
         <div class="field grid">
           <p:outputLabel value="Auto start:" for="auto_start"
-                         styleClass="col-fixed" style="width:100px" />
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
           <div class="col">
             <p:toggleSwitch id="auto_start"
                             value="#{connectorBean.connectorSetup.autoStart}" />
@@ -62,7 +62,7 @@
 
         <div class="field grid">
           <p:outputLabel value="Single run:" for="single_run"
-                         styleClass="col-fixed" style="width:100px" />
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
           <div class="col">
             <p:toggleSwitch id="single_run"
                             value="#{connectorBean.connectorSetup.singleRun}" />
@@ -71,8 +71,8 @@
 
         <div class="field grid">
           <p:outputLabel value="Wait millis:" for="wait_millis"
-                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
-          <div class="col-12 md:col-4">
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
+          <div class="col" style="max-width: 200px; min-width: 150px">
             <p:spinner id="wait_millis"
                        value="#{connectorBean.connectorSetup.waitMillis}" />
           </div>

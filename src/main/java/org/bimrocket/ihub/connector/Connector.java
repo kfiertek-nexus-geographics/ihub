@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
+import org.bimrocket.ihub.exceptions.NotFoundException;
 
 /**
  *
@@ -97,6 +98,8 @@ public class Connector implements Runnable
   protected int deleted;
 
   protected Exception lastError;
+
+  private boolean unsaved = false;
 
   private final ProcessedObject procObject = new ProcessedObject();
 
@@ -210,6 +213,8 @@ public class Connector implements Runnable
     this.processors.clear();
     this.processors.addAll(processors);
 
+    this.unsaved = true;
+
     return this;
   }
 
@@ -238,6 +243,16 @@ public class Connector implements Runnable
   public String getStatus()
   {
     return status;
+  }
+
+  public boolean isUnsaved()
+  {
+    return unsaved;
+  }
+
+  public void setUnsaved(boolean unsaved)
+  {
+    this.unsaved = unsaved;
   }
 
   @Override
@@ -385,6 +400,8 @@ public class Connector implements Runnable
 
     service.getConnectorSetupRepository().save(connSetup);
 
+    unsaved = false;
+
     return connSetup;
   }
 
@@ -399,17 +416,18 @@ public class Connector implements Runnable
 
   public ConnectorSetup restoreSetup() throws Exception
   {
-    ConnectorSetup connSetup = null;
-
     Optional<ConnectorSetup> optConnSetup = service
       .getConnectorSetupRepository().findById(name);
     if (optConnSetup.isPresent())
     {
-      connSetup = optConnSetup.get();
+      ConnectorSetup connSetup = optConnSetup.get();
       service.getConnectorMapperService().setConnectorSetup(this, connSetup,
         true);
+
+      unsaved = false;
+      return connSetup;
     }
-    return connSetup;
+    throw new NotFoundException(238, "Connector %s not found", name);
   }
 
   protected void initProcessors(List<Processor> processors)
