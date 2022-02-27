@@ -32,6 +32,7 @@ package org.bimrocket.ihub.web;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import org.bimrocket.ihub.service.LoggingService;
@@ -91,7 +92,7 @@ public class LogsBean
 
   public static class LogFilter implements ILoggingEventFilter
   {
-    String level;
+    String level = "DEBUG";
     String message;
     String threadName;
 

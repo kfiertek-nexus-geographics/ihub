@@ -179,6 +179,24 @@ public class ConnectorListBean
     return false;
   }
 
+  public String getConnectorError(ConnectorSetup connSetup)
+  {
+    String connName = connSetup.getName();
+    try
+    {
+      Exception lastError =
+        connectorService.getConnector(connName).getLastError();
+      if (lastError != null)
+      {
+        return lastError.getMessage();
+      }
+    }
+    catch (NotFoundException ex)
+    {
+    }
+    return null;
+  }
+
   // connector operations
 
   public void addConnector()

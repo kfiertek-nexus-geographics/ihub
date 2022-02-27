@@ -150,7 +150,8 @@ body .ui-treenode-label
 body .ui-treenode-label > span,
 body .ui-treenode-label > div
 {
-  vertical-align: middle;  
+  vertical-align: middle;
+  margin-right: 4pt;
 }
 
 /* specific styles */

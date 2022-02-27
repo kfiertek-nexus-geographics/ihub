@@ -44,6 +44,7 @@ import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
 import org.bimrocket.ihub.exceptions.NotFoundException;
+import org.bimrocket.ihub.exceptions.ProcessorInitException;
 
 /**
  *
@@ -59,6 +60,8 @@ public class Connector implements Runnable
   public static final String STARTING_STATUS = "STARTING";
   public static final String STOPPING_STATUS = "STOPPING";
 
+  private static final String THREAD_PREFIX = "c:";
+
   protected ConnectorService service;
 
   protected String name;
@@ -71,7 +74,7 @@ public class Connector implements Runnable
 
   protected boolean end;
 
-  protected long waitMillis = 1000;
+  protected long waitMillis = 10000;
 
   protected Thread thread;
 
@@ -284,7 +287,7 @@ public class Connector implements Runnable
   @Override
   public void run()
   {
-    log.info("Connector {} started", name);
+    log.info("Connector {} started.", name);
     startTime = new Date();
     status = RUNNING_STATUS;
     lastError = null;
@@ -295,8 +298,10 @@ public class Connector implements Runnable
 
     try
     {
-      initProcessors(runningProcessors);
-      log.debug("Entering loop");
+      if (!initProcessors(runningProcessors))
+        throw new ProcessorInitException(427,
+          "Failed to initialize processor %s: %s", name,
+          lastError.getMessage());
 
       while (!end)
       {
@@ -347,6 +352,11 @@ public class Connector implements Runnable
         }
       }
     }
+    catch (ProcessorInitException ex)
+    {
+      lastError = ex;
+      log.error(ex.getMessage());
+    }
     catch (Exception ex)
     {
       lastError = ex;
@@ -358,7 +368,7 @@ public class Connector implements Runnable
     }
     status = STOPPED_STATUS;
     endTime = new Date();
-    log.info("Connector {} stopped", name);
+    log.info("Connector {} stopped.", name);
     thread = null;
   }
 
@@ -366,7 +376,7 @@ public class Connector implements Runnable
   {
     if (thread == null)
     {
-      thread = new Thread(this, "c:" + name);
+      thread = new Thread(this, THREAD_PREFIX + name);
       thread.start();
       status = STARTING_STATUS;
     }
@@ -393,8 +403,6 @@ public class Connector implements Runnable
 
   public ConnectorSetup saveSetup()
   {
-    log.info("Saving connector {}", name);
-
     ConnectorSetup connSetup = service.getConnectorMapperService()
       .getConnectorSetup(this);
 
@@ -402,14 +410,16 @@ public class Connector implements Runnable
 
     unsaved = false;
 
+    log.info("Connector {} saved.", name);
+
     return connSetup;
   }
 
   public Connector restore() throws Exception
   {
-    log.info("Restoring connector {}", name);
-
     restoreSetup();
+
+    log.info("Connector {} restored.", name);
 
     return this;
   }
@@ -425,26 +435,35 @@ public class Connector implements Runnable
         true);
 
       unsaved = false;
+      lastError = null;
       return connSetup;
     }
     throw new NotFoundException(238, "Connector %s not found", name);
   }
 
-  protected void initProcessors(List<Processor> processors)
-    throws Exception
+  protected boolean initProcessors(List<Processor> processors)
   {
     int initialized = 0;
-    try
+    for (var processor : processors)
     {
-      for (var processor : processors)
+      try
       {
-        log.debug("Initializing processor #{}: {}", initialized,
-          processor.getClass().getName());
         processor.init();
+        log.debug("Processor #{}: {} initialized.", initialized,
+          processor.getClass().getName());
+
         initialized++;
-      };
+      }
+      catch (Exception ex)
+      {
+        log.debug("Failed to initialize processor #{}: {}: {}", initialized,
+          processor.getClass().getName(), ex.toString());
+        lastError = ex;
+        break;
+      }
     }
-    finally
+
+    if (lastError != null)
     {
       // remove from list not initialized processors
       while (processors.size() > initialized)
@@ -452,6 +471,8 @@ public class Connector implements Runnable
         processors.remove(processors.size() - 1); // remove last
       }
     }
+
+    return lastError == null;
   }
 
   public void endProcessors(List<Processor> processors)
@@ -461,13 +482,17 @@ public class Connector implements Runnable
     {
       try
       {
-        log.debug("Ending processor #{}: {}", ended,
-          processor.getClass().getName());
         processor.end();
+        log.debug("Processor #{}: {} ended.", ended,
+          processor.getClass().getName());
+
         ended++;
       }
       catch (Exception ex)
       {
+        log.debug("Failed to end processor #{}: {}: {}", ended,
+          processor.getClass().getName(), ex.toString());
+
         if (lastError == null) lastError = ex;
       }
     }
