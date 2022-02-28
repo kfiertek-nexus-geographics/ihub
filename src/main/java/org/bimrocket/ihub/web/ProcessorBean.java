@@ -32,13 +32,14 @@ package org.bimrocket.ihub.web;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
 import org.bimrocket.ihub.dto.ProcessorSetup;
 import org.bimrocket.ihub.dto.ProcessorType;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.primefaces.PrimeFaces;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -46,14 +47,14 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class ProcessorBean
 {
   @Autowired
-  ConnectorListBean connectorListBean;
+  ApplicationContext context;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ProcessorService processorService;
 
   private ProcessorSetup procSetup = new ProcessorSetup();
   private boolean creation = true;
@@ -80,8 +81,11 @@ public class ProcessorBean
     if (processorTypeSelectItems == null)
     {
       List<ProcessorType> processorTypes =
-        processorTypeService.findProcessorTypes(null);
+        processorService.findProcessorTypes(null);
       processorTypeSelectItems = new ArrayList<>();
+
+      processorTypes.sort((a, b) ->
+        a.getClassName().compareTo(b.getClassName()));
 
       processorTypes.forEach(processorType -> processorTypeSelectItems.add(
         new SelectItem(processorType.getClassName())));
@@ -93,6 +97,9 @@ public class ProcessorBean
   {
     try
     {
+      ConnectorListBean connectorListBean =
+        context.getBean(ConnectorListBean.class);
+
       connectorListBean.putProcessor(procSetup);
       PrimeFaces.current().executeScript("PF('processor').hide()");
     }

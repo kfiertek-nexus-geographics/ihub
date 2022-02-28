@@ -30,38 +30,16 @@
  */
 package org.bimrocket.ihub.processors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 
 /**
  *
- * @author realor
+ * @author kfiertek-nexus-geographics
+ *
  */
-public class TestSender extends Processor
+public abstract class Sender extends Processor
 {
-  private final ObjectMapper mapper = new ObjectMapper();
-
-  public TestSender(Connector connector)
-  {
-    super(connector);
-  }
-
   @Override
-  public boolean processObject(ProcessedObject procObject)
-  {
-    try
-    {
-      System.out
-          .println(mapper.writeValueAsString(procObject.getGlobalObject()));
-    }
-    catch (JsonProcessingException ex)
-    {
-
-    }
-    return true;
-  }
-
+  public abstract boolean processObject(ProcessedObject procObject);
 }

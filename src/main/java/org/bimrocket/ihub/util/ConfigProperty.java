@@ -21,5 +21,7 @@ public @interface ConfigProperty
 
   boolean required() default true;
 
-  String defaultValue() default "";
+  boolean secret() default false;
+
+  String contentType() default "";
 }

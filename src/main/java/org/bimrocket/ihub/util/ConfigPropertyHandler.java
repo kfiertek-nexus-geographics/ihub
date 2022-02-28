@@ -3,8 +3,10 @@ package org.bimrocket.ihub.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,20 +16,24 @@ import java.util.Map;
 public class ConfigPropertyHandler
 {
   private final String name;
-  private final boolean required;
   private final String description;
   private final Field field;
-  private final String defaultValue;
+  private final boolean required;
+  private final boolean secret;
+  private final String contentType;
 
   ConfigPropertyHandler(ConfigProperty property, Field field)
   {
     String propName = property.name();
     if (propName.length() == 0)
       propName = field.getName();
+
     this.name = propName;
-    this.required = property.required();
     this.description = property.description();
-    this.defaultValue = property.defaultValue();
+    this.required = property.required();
+    this.secret = property.secret();
+    this.contentType = property.contentType();
+
     this.field = field;
     this.field.setAccessible(true);
   }
@@ -37,14 +43,24 @@ public class ConfigPropertyHandler
     return name;
   }
 
+  public String getDescription()
+  {
+    return description;
+  }
+
   public boolean isRequired()
   {
     return required;
   }
 
-  public String getDescription()
+  public boolean isSecret()
   {
-    return description;
+    return secret;
+  }
+
+  public String getContentType()
+  {
+    return contentType;
   }
 
   public Field getField()
@@ -90,8 +106,7 @@ public class ConfigPropertyHandler
       Type[] typeArgs = paramType.getActualTypeArguments();
       for (int i = 0; i < typeArgs.length; i++)
       {
-        if (i > 0)
-          typeName += ", ";
+        if (i > 0) typeName += ", ";
         typeName += ((Class) typeArgs[i]).getSimpleName();
       }
       typeName += ">";
@@ -112,16 +127,16 @@ public class ConfigPropertyHandler
     return buffer.toString();
   }
 
-  public static Map<String, ConfigPropertyHandler> findProperties(Class cls)
+  public static List<ConfigPropertyHandler> findProperties(Class cls)
   {
     return findProperties(cls, null);
   }
 
-  public static Map<String, ConfigPropertyHandler> findProperties(Class cls,
-      Map<String, ConfigPropertyHandler> properties)
+  public static List<ConfigPropertyHandler> findProperties(Class cls,
+    List<ConfigPropertyHandler> properties)
   {
     if (properties == null)
-      properties = new HashMap<>();
+      properties = new ArrayList<>();
 
     Class superClass = cls.getSuperclass();
     if (superClass != null && superClass != Object.class)
@@ -135,18 +150,13 @@ public class ConfigPropertyHandler
       ConfigProperty property = field.getAnnotation(ConfigProperty.class);
       if (property != null)
       {
-        ConfigPropertyHandler propHandler = new ConfigPropertyHandler(property,
-            field);
-        properties.put(propHandler.getName(), propHandler);
+        ConfigPropertyHandler propHandler =
+          new ConfigPropertyHandler(property, field);
+        
+        properties.add(propHandler);
       }
     }
 
     return properties;
   }
-
-  public String getDefaultValue()
-  {
-    return defaultValue;
-  }
-
 }

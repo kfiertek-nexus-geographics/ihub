@@ -7,29 +7,32 @@
       xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-  <ui:composition>
+  <ui:composition template="/main.xhtml">
 
-    <link href="css/codemirror.css" type="text/css" rel="stylesheet" />
-    <pe:codeMirror id="editor"
-                   mode="application/javascript"
-                   theme="default"
-                   gutter="true"
-                   value="#{shellBean.code}"
-                   lineNumbers="true"
-                   matchBrackets="true" />
-    <div class="block">
-      <p:commandButton value="Execute"
-                       icon="pi pi-play"
-                       update="editor,output" action="#{shellBean.execute}" />
-      <p:commandButton value="Clear"
-                       icon="pi pi-times"
-                       update="editor,output" action="#{shellBean.clear}" />
-    </div>
-    <div class="block code">
-      <h:outputText id="output" value="#{shellBean.output}"
-                    styleClass="#{shellBean.error ? 'error' : ''}"/>
-    </div>
+    <ui:define name="body">
 
+      <pe:codeMirror id="editor"
+                     mode="application/javascript"
+                     theme="default"
+                     gutter="true"
+                     value="#{shellBean.code}"
+                     lineNumbers="true"
+                     matchBrackets="true" />
+
+      <div class="block">
+        <p:commandButton value="Execute"
+                         icon="pi pi-play"
+                         update="editor,output" action="#{shellBean.execute}" />
+        <p:commandButton value="Clear"
+                         icon="pi pi-times"
+                         update="editor,output" action="#{shellBean.clear}" />
+      </div>
+      <div class="block code">
+        <h:outputText id="output" value="#{shellBean.output}"
+                      styleClass="#{shellBean.error ? 'error' : ''}"/>
+      </div>
+
+    </ui:define>
   </ui:composition>
 
 </html>

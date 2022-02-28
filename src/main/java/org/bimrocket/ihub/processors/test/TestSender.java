@@ -28,24 +28,31 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.exceptions;
+package org.bimrocket.ihub.processors.test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import org.bimrocket.ihub.connector.ProcessedObject;
+import org.bimrocket.ihub.processors.Sender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author realor
  */
-public class InvalidProcessorInitException extends Exception
+public class TestSender extends Sender
 {
-  private final int errorCode;
+  private static final Logger log =
+    LoggerFactory.getLogger(TestSender.class);
 
-  public InvalidProcessorInitException(int errorCode, String message, Object... args)
+  @Override
+  public boolean processObject(ProcessedObject procObject)
   {
-    super(String.format(message, args));
-    this.errorCode = errorCode;
-  }
-
-  public int getErrorCode()
-  {
-    return errorCode;
+    JsonNode localObject = procObject.getLocalObject();
+    if (localObject != null)
+    {
+      log.info(localObject.toPrettyString());
+    }
+    return true;
   }
 }

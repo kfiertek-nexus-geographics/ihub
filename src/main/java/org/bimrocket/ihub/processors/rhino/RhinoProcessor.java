@@ -28,13 +28,12 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
+package org.bimrocket.ihub.processors.rhino;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.repo.IdPairRepository;
@@ -54,18 +53,15 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class RhinoProcessor extends Processor
 {
-  @ConfigProperty(description = "The script that makes the transformation")
+  @ConfigProperty(name ="scriptCode",
+    description = "The script that process the object",
+    contentType = "application/javascript")
   public String scriptCode = "";
 
   protected Script script;
   protected Context context;
   protected ScriptableObject scope;
-  protected ObjectMapper mapper;
-
-  public RhinoProcessor(Connector connector)
-  {
-    super(connector);
-  }
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   public void init()
@@ -74,12 +70,11 @@ public class RhinoProcessor extends Processor
     context = Context.enter();
     script = context.compileString(scriptCode, "converter", 0, null);
     scope = context.initStandardObjects();
-    mapper = new ObjectMapper();
 
-    scope.put("connector", scope, connector);
+    scope.put("connector", scope, getConnector());
 
-    IdPairRepository idPairRepository = connector.getConnectorService()
-        .getIdPairRepository();
+    IdPairRepository idPairRepository = getConnector().getConnectorService()
+      .getIdPairRepository();
     scope.put("idPairRepository", scope, idPairRepository);
   }
 
@@ -95,13 +90,13 @@ public class RhinoProcessor extends Processor
     if (localObject != null)
     {
       scope.put("localObject", scope,
-          new JsonNodeScriptable(scope, localObject));
+        new JsonNodeScriptable(scope, localObject));
     }
     JsonNode globalObject = procObject.getGlobalObject();
     if (globalObject != null)
     {
       scope.put("globalObject", scope,
-          new JsonNodeScriptable(scope, globalObject));
+        new JsonNodeScriptable(scope, globalObject));
     }
     boolean result = Context.toBoolean(script.exec(context, scope));
 
@@ -171,8 +166,8 @@ public class RhinoProcessor extends Processor
     }
     else if (scriptable instanceof JsonNodeScriptable)
     {
-      JsonNodeScriptable nodeScriptable = (JsonNodeScriptable) scriptable;
-      node = nodeScriptable.node;
+      JsonNodeScriptable nodeScriptable = (JsonNodeScriptable)scriptable;
+      node = nodeScriptable.getNode();
     }
     return node;
   }
@@ -270,84 +265,6 @@ public class RhinoProcessor extends Processor
       {
         node.add((Boolean) value);
       }
-    }
-  }
-
-  public class JsonNodeScriptable extends NativeJavaObject
-  {
-    private final JsonNode node;
-
-    public JsonNodeScriptable(Scriptable scope, JsonNode node)
-    {
-      super(scope, node, JsonNode.class);
-      this.node = node;
-    }
-
-    @Override
-    public String getClassName()
-    {
-      return "JsonNodeScriptable";
-    }
-
-    @Override
-    public Object get(String name, Scriptable scope)
-    {
-      if (node.has(name))
-      {
-        JsonNode valueNode = node.get(name);
-        if (valueNode.isArray() || valueNode.isObject())
-        {
-          return new JsonNodeScriptable(scope, valueNode);
-        }
-        else
-        {
-          return nodeToJava(valueNode);
-        }
-      }
-      return super.get(name, scope);
-    }
-
-    @Override
-    public Object get(int i, Scriptable scope)
-    {
-      if (i < node.size())
-      {
-        JsonNode valueNode = node.get(i);
-        if (valueNode.isArray() || valueNode.isObject())
-        {
-          return new JsonNodeScriptable(scope, valueNode);
-        }
-        else
-        {
-          return nodeToJava(valueNode);
-        }
-      }
-      return super.get(i, scope);
-    }
-
-    private Object nodeToJava(JsonNode valueNode)
-    {
-      if (valueNode.isInt())
-      {
-        return valueNode.asInt();
-      }
-      if (valueNode.isLong())
-      {
-        return valueNode.asInt();
-      }
-      if (valueNode.isNumber())
-      {
-        return valueNode.asDouble();
-      }
-      if (valueNode.isBoolean())
-      {
-        return valueNode.asBoolean();
-      }
-      if (valueNode.isTextual())
-      {
-        return valueNode.asText();
-      }
-      return null;
     }
   }
 }

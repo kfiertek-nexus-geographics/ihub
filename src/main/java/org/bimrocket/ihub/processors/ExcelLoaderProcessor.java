@@ -17,9 +17,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.bimrocket.ihub.util.ExcelEnum;
 import org.bimrocket.ihub.util.ExcelMapper;
@@ -38,7 +38,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
     private static final Logger log = LoggerFactory
             .getLogger(ExcelLoaderProcessor.class);
 
-    @ConfigProperty(name = "source.has.headers", description = "First row should be treated as headers?")
+    @ConfigProperty(name = "excel.headers", description = "First row should be treated as headers?")
     boolean hasHeaders = true;
 
     @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel. Protocols supported:  HTTP | FTP")
@@ -68,13 +68,11 @@ public class ExcelLoaderProcessor extends FullScanLoader
     @ConfigProperty(name = "source.url", description = "Complete path to target. Only supported for HTTP protocol", required = false)
     String addr;
 
-    @ConfigProperty(name = "source.extension", description = "Downloaded source extension expected. Supported extensions: xlsx | xlx", required = true)
+    @ConfigProperty(name = "excel.extension", description = "Downloaded source extension expected. Supported extensions: xlsx | xlx", required = true)
     String extension;
 
-    public ExcelLoaderProcessor(Connector connector)
-    {
-        super(connector);
-    }
+    @ConfigProperty(name = "excel.localId", description = "Field of json node that represents local id", required = true)
+    String localId;
 
     InputStream laodResponse() throws Exception
     {
@@ -139,6 +137,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
                 this.hasHeaders);
 
         List<JsonNode> scanned = new ArrayList<>();
+        final ObjectMapper mapper = new ObjectMapper();
 
         for (Map<String, String> dict : result)
         {
@@ -190,5 +189,11 @@ public class ExcelLoaderProcessor extends FullScanLoader
         }
 
         return Collections.emptyIterator();
+    }
+
+    @Override
+    protected String getLocalId(JsonNode localObject)
+    {
+        return localObject.get(localId).asText();
     }
 }

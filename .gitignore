@@ -8,4 +8,4 @@
 *.xlsx
 *.xls
 
-logs/
+/logs/

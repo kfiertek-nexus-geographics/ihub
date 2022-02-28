@@ -28,59 +28,58 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
+package org.bimrocket.ihub.processors.kafka;
 
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.util.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
  * @author kfiertek-nexus-geographics
  */
-public class KafkaJsonSenderProcessor extends KafkaSenderAbstract
+public class JsonKafkaLoader extends KafkaLoader
 {
+  private static final Logger log =
+    LoggerFactory.getLogger(JsonKafkaLoader.class);
 
-  private static final Logger log = LoggerFactory
-      .getLogger(KafkaJsonSenderProcessor.class);
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
+  public String objectType;
 
-  public KafkaJsonSenderProcessor(Connector connector)
-  {
-    super(connector);
-  }
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
+    String recordLoaded = getRecord();
 
-    JsonNode toSend = this.getNodeToSend(procObject);
-    if (toSend == null)
+    log.debug("getting record from kafka, record::{}", recordLoaded);
+    if (recordLoaded == null)
     {
+      procObject.setObjectType(objectType);
+      procObject.setOperation(ProcessedObject.IGNORE);
       return false;
     }
-
-    try
+    else
     {
-
-      var value = this.mapper.writeValueAsString(toSend);
-      log.debug(
-          "processObject@KafkaJsonSenderProcessor - Connector::{} sending {} json object to topic {}",
-          this.connector.getName(), toSend.toPrettyString(), this.topicName);
-      this.template.send(this.topicName, value);
+      procObject.setOperation(ProcessedObject.INSERT);
+      procObject.setObjectType(objectType);
+      try
+      {
+        procObject.setLocalObject(mapper.readTree(recordLoaded));
+      }
+      catch (JsonProcessingException e)
+      {
+        log.debug("record not a valid json, this should never happen incoming record::{}",
+          recordLoaded);
+        procObject.setOperation(ProcessedObject.IGNORE);
+        return false;
+      }
       return true;
     }
-    catch (JsonProcessingException e)
-    {
-      log.error(
-          "processObject@KafkaJsonSenderProcessor - Connector::{} error processing following json::{}, this should never happen",
-          this.connector.getName(), toSend.toPrettyString());
-      return false;
-    }
-
   }
 }

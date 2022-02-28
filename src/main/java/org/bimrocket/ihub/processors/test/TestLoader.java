@@ -28,17 +28,16 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.processors;
+package org.bimrocket.ihub.processors.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.util.ConfigProperty;
+import org.bimrocket.ihub.processors.Loader;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
@@ -47,36 +46,35 @@ import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
  *
  * @author realor
  */
-public class TestLoader extends Processor
+public class TestLoader extends Loader
 {
-  private final ObjectMapper mapper = new ObjectMapper();
-  private final LinkedList<Entry> entries = new LinkedList<>();
-
-  public TestLoader(Connector connector)
-  {
-    super(connector);
-  }
-
-  @ConfigProperty(description = "The returned object type", required = true)
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
   public String objectType;
 
   @ConfigProperty
   public List<String> objectFields = new ArrayList<>();
 
   @ConfigProperty
-  public int objectSize;
+  public int objectSize = 10;
 
   @ConfigProperty
-  public Double objectPrice;
+  public Double objectPrice = 50.8;
 
   @ConfigProperty
-  public float offset;
+  public float offset = 3.5f;
 
   @ConfigProperty
-  public boolean active;
+  public boolean active = true;
 
   @ConfigProperty
-  public Boolean active2;
+  public Boolean active2 = false;
+
+  @ConfigProperty(contentType="text/x-sql")
+  public String sql = "";
+
+  protected final ObjectMapper mapper = new ObjectMapper();
+  private final LinkedList<Entry> entries = new LinkedList<>();
 
   @Override
   public boolean processObject(ProcessedObject procObject)
