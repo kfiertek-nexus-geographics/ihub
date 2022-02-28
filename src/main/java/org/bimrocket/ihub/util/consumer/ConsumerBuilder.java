@@ -1,10 +1,10 @@
 package org.bimrocket.ihub.util.consumer;
 
-import java.net.URI;
+import java.net.InetAddress;
 import java.util.Map;
 import java.util.Optional;
 
-import org.bimrocket.ihub.util.Functions;
+import org.bimrocket.ihub.processors.excel.ExcelFtpConsumer;
 
 /**
  * 
@@ -21,6 +21,10 @@ public class ConsumerBuilder
     String base;
 
     String body;
+
+    String username;
+
+    String password;
 
     Map<String, String> queries;
 
@@ -69,8 +73,27 @@ public class ConsumerBuilder
         return this;
     }
 
+    public ConsumerBuilder username(String username)
+    {
+        this.username = username;
+        return this;
+    }
+
+    public ConsumerBuilder password(String password)
+    {
+        this.password = password;
+        return this;
+    }
+
     public IConsumer build() throws Exception
     {
-        throw new Exception("Unsuported consum configuration");
+        if (this.consumerEnum == ConsumerEnum.EXCEL_FTP)
+        {
+            return new ExcelFtpConsumer(InetAddress.getByName(this.base),
+                    Optional.ofNullable(this.port), uri, username, password);
+        }
+
+        throw new Exception(String.format("Unsuported %s consum configuration",
+                this.consumerEnum));
     }
 }
