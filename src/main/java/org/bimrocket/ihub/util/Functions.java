@@ -2,6 +2,7 @@ package org.bimrocket.ihub.util;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,23 @@ public class Functions
                     "deleteFile@InventoryUtils: could not delete file - {} - correclty -  exception",
                     path, e.getMessage());
         }
+    }
+
+    public static List<String> splitAndTrim(String target, String splitRegex)
+    {
+        List<String> result = new ArrayList<>();
+
+        if (target == null || splitRegex == null)
+            return result;
+
+        var split = target.split(splitRegex);
+
+        for (String item : split)
+        {
+            result.add(item.trim());
+        }
+
+        return result;
     }
 
 }
