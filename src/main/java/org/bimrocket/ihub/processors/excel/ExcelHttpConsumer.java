@@ -19,52 +19,52 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.bimrocket.ihub.util.consumer.IConsumer;
 import org.springframework.http.MediaType;
 
-public class ExcelHttpConsumer implements IConsumer
-{
-    URI request;
+// public class ExcelHttpConsumer implements IConsumer
+// {
+// URI request;
 
-    String username;
+// String username;
 
-    String password;
+// String password;
 
-    public ExcelHttpConsumer(URI request, String username, String password)
-    {
-        this.request = request;
-        this.username = username;
-        this.password = password;
-    }
+// public ExcelHttpConsumer(URI request, String username, String password)
+// {
+// this.request = request;
+// this.username = username;
+// this.password = password;
+// }
 
-    @Override
-    public InputStream consum() throws Exception
-    {
-        URIBuilder uriBuilder = new URIBuilder(request);
+// @Override
+// public InputStream consum() throws Exception
+// {
+// URIBuilder uriBuilder = new URIBuilder(request);
 
-        HttpGet get = new HttpGet(uriBuilder.build());
+// HttpGet get = new HttpGet(uriBuilder.build());
 
-        get.setHeader(HttpHeaders.ACCEPT,
-                MediaType.EXCE + ", " + MediaType.APPLICATION_XML_VALUE);
+// get.setHeader(HttpHeaders.ACCEPT,
+// MediaType.EXCE + ", " + MediaType.APPLICATION_XML_VALUE);
 
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(username, password));
-        CloseableHttpClient client = HttpClientBuilder.create()
-                .setDefaultCredentialsProvider(provider).build();
+// CredentialsProvider provider = new BasicCredentialsProvider();
+// provider.setCredentials(AuthScope.ANY,
+// new UsernamePasswordCredentials(username, password));
+// CloseableHttpClient client = HttpClientBuilder.create()
+// .setDefaultCredentialsProvider(provider).build();
 
-        CloseableHttpResponse response = client.execute(get);
+// CloseableHttpResponse response = client.execute(get);
 
-        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
-        {
-            String err = String.format(
-                    "Post request does not succed for request '%s'", request);
-            throw new Exception(err);
-        }
+// if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK)
+// {
+// String err = String.format(
+// "Post request does not succed for request '%s'", request);
+// throw new Exception(err);
+// }
 
-        HttpEntity entity = response.getEntity();
+// HttpEntity entity = response.getEntity();
 
-        response.close();
+// response.close();
 
-        InputStream stream = entity.getContent();
+// InputStream stream = entity.getContent();
 
-        return stream;
-    }
-}
+// return stream;
+// }
+// }
