@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -22,7 +21,7 @@ import org.apache.commons.compress.utils.Lists;
  * 
  * @author wilberquito
  */
-public class ExcelMapping
+public class ExcelMapper
 {
     /**
      * returns and empty list when there was a problem
@@ -31,28 +30,26 @@ public class ExcelMapping
      * @param hasHeader
      * @return
      */
-    public List<Map<String, String>> mapping(String pathf, boolean hasHeader)
+    public static List<Map<String, String>> mapping(File file,
+            ExcelEnum excelEnum, boolean hasHeader) throws Exception
     {
         List<Map<String, String>> result = new ArrayList<>();
         try
         {
-            String extension = FilenameUtils.getExtension(pathf);
             Workbook book = null;
 
-            if (extension.equalsIgnoreCase("xlsx"))
+            if (excelEnum == ExcelEnum.XLSX)
             {
-                File fis = new File(pathf);
-                book = new XSSFWorkbook(fis);
+                book = new XSSFWorkbook(file);
             }
-            else if (extension.equalsIgnoreCase("xls"))
+            else if (excelEnum == ExcelEnum.XLS)
             {
-                FileInputStream fis = new FileInputStream(pathf);
-                book = new HSSFWorkbook(fis);
+                book = new HSSFWorkbook(new FileInputStream(file));
             }
             else
             {
                 String err = String.format(
-                        "@mapping: unsuported extension - '{}'", extension);
+                        "@mapping: unsuported extension - '{}'", excelEnum);
                 throw new Exception(err);
             }
 
@@ -93,11 +90,18 @@ public class ExcelMapping
             Log.error(
                     "@mapping: problem mapping file content to data structure. Error: \n",
                     e.getMessage());
+            throw e;
         }
         return result;
     }
 
-    List<String> buildHeaders(Sheet sheet)
+    /**
+     * builds syntetic headers for mapping relation
+     * 
+     * @param sheet
+     * @return
+     */
+    static List<String> buildHeaders(Sheet sheet)
     {
         List<String> headers = new ArrayList<>();
         int rowIdx = sheet.getFirstRowNum();
@@ -118,7 +122,7 @@ public class ExcelMapping
         return headers;
     }
 
-    List<String> obteinHeaders(Sheet sheet)
+    static List<String> obteinHeaders(Sheet sheet)
     {
         List<String> headers = new ArrayList<>();
         int rowIdx = sheet.getFirstRowNum();
@@ -137,7 +141,7 @@ public class ExcelMapping
         return headers;
     }
 
-    String cellParser(Cell cell)
+    static String cellParser(Cell cell)
     {
         if (cell == null)
             return null;
@@ -168,7 +172,7 @@ public class ExcelMapping
      * @param dict
      * @return
      */
-    <T> Map<String, T> cleanMap(Map<String, T> dict)
+    static <T> Map<String, T> cleanMap(Map<String, T> dict)
     {
         if (dict == null)
             return null;

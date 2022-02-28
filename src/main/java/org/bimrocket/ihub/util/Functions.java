@@ -1,12 +1,16 @@
 package org.bimrocket.ihub.util;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Map.Entry;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +107,44 @@ public class Functions
         }
 
         return result;
+    }
+
+    /**
+     * builds and uri http request
+     * 
+     * @param host
+     * @param port
+     * @param uri
+     * @return
+     */
+    public static URI buildURI(String host, Optional<Integer> port,
+            Optional<String> uri, Optional<Map<String, String>> queries)
+            throws Exception
+    {
+        String request = host
+                + (port.isEmpty() ? "" : String.format(":%d", port.get()))
+                + (uri.isEmpty() ? "" : uri.get());
+
+        if (!request.startsWith("http://") && !request.startsWith("https://"))
+        {
+            request = "http://".concat(request);
+        }
+
+        URIBuilder builder = new URIBuilder(request);
+
+        if (queries.isPresent())
+        {
+            Map<String, String> M = queries.get();
+
+            for (Entry<String, String> query : M.entrySet())
+            {
+                builder.setParameter(query.getKey(), query.getValue());
+            }
+        }
+
+        var URIrequest = builder.build();
+
+        return URIrequest;
     }
 
 }

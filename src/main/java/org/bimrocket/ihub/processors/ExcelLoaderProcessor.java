@@ -5,26 +5,27 @@
  */
 package org.bimrocket.ihub.processors;
 
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.bimrocket.ihub.connector.Connector;
-import org.bimrocket.ihub.interfaces.BasicClientHandler;
 import org.bimrocket.ihub.util.ConfigProperty;
-import org.bimrocket.ihub.util.ExcelMapping;
+import org.bimrocket.ihub.util.ExcelEnum;
+import org.bimrocket.ihub.util.ExcelMapper;
 import org.bimrocket.ihub.util.Functions;
-import org.bimrocket.ihub.util.download.FTPDownload;
-import org.bimrocket.ihub.util.download.HTTPDownload;
-import org.python.jline.internal.Log;
+import org.bimrocket.ihub.util.consumer.ConsumerBuilder;
+import org.bimrocket.ihub.util.consumer.ConsumerEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,126 +38,157 @@ public class ExcelLoaderProcessor extends FullScanLoader
     private static final Logger log = LoggerFactory
             .getLogger(ExcelLoaderProcessor.class);
 
-    @ConfigProperty(name = "source.has.headers", description = "First row should be treated as headers?", required = true)
+    @ConfigProperty(name = "source.has.headers", description = "First row should be treated as headers?")
     boolean hasHeaders = true;
 
-    @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel { HTTP, FTP }", required = true)
+    @ConfigProperty(name = "source.protocol", description = "Source protocol to rescue excel. Protocols supported:  HTTP | FTP")
     String protocol;
 
-    @ConfigProperty(name = "source.auth", description = "Type of authentication currently only { BASIC } is supported and it's taken as default", defaultValue = "BASIC")
-    String auth;
+    @ConfigProperty(name = "source.username", description = "Source username ID")
+    String username;
 
-    @ConfigProperty(name = "source.user", description = "Source user ID", defaultValue = "admin")
-    String user;
-
-    @ConfigProperty(name = "source.password", description = "Source user password", defaultValue = "admin")
+    @ConfigProperty(name = "source.password", description = "Source username password")
     String password;
 
-    @ConfigProperty(name = "source.hostname", description = "IP or DNS", required = true)
-    String hostname;
+    @ConfigProperty(name = "source.host", description = "IP or DNS", required = false)
+    String host;
 
-    @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host")
+    @ConfigProperty(name = "source.port", description = "The port to connect to on the remote host", required = false)
     Integer port;
 
-    @ConfigProperty(name = "source.uri", description = "Remote target element")
+    @ConfigProperty(name = "source.uri", description = "Remote target element", required = false)
     String uri;
 
-    @ConfigProperty(name = "source.param.names", description = "Params name for http request separated by coma. Should has params value len")
-    String paramNames;
+    @ConfigProperty(name = "source.query.names", description = "Params name for http request separated by coma. Should has params value len", required = false)
+    String queryNames;
 
-    @ConfigProperty(name = "source.param.values", description = "Params value for http request separated by coma. Should has pramams names len")
-    String paramValues;
+    @ConfigProperty(name = "source.query.values", description = "Params value for http request separated by coma. Should has pramams names len", required = false)
+    String queryValues;
 
-    @ConfigProperty(name = "source.local", description = "Local source element identifcation", required = true)
-    String local;
+    @ConfigProperty(name = "source.url", description = "Complete path to target. Only supported for HTTP protocol", required = false)
+    String addr;
+
+    @ConfigProperty(name = "source.extension", description = "Downloaded source extension expected. Supported extensions: xlsx | xlx", required = true)
+    String extension;
 
     public ExcelLoaderProcessor(Connector connector)
     {
         super(connector);
     }
 
-    boolean loadFromClient()
+    InputStream laodResponse() throws Exception
     {
-        if ("BASIC".equals(auth.toUpperCase()) || auth == null)
+        List<String> names = queryNames == null ? new ArrayList<>()
+                : Functions.splitAndTrim(queryNames, ",");
+
+        List<String> values = queryValues == null ? new ArrayList<>()
+                : Functions.splitAndTrim(queryValues, ",");
+
+        Map<String, String> queries = Functions.toMap(names, values);
+
+        if ("FTP".equals(this.protocol.toUpperCase()))
         {
-            if ("HTTP".equals(protocol.toUpperCase()))
+            InputStream stream = ConsumerBuilder.create(ConsumerEnum.EXCEL_FTP)
+                    .base(this.host).port(this.port).uri(this.uri)
+                    .queries(queries).username(this.username)
+                    .password(this.password).build().consum();
+
+            return stream;
+        }
+        else if ("HTTP".equals(this.protocol.toUpperCase()))
+        {
+            InputStream stream;
+            if (this.addr != null)
             {
-                log.info("@loadFromClient: downloading content via HTTP");
-            }
-            else if ("FTP".equals(protocol.toUpperCase()))
-            {
-                log.info("@loadFromClient: downloading content via FTP");
+                stream = ConsumerBuilder.create(ConsumerEnum.EXCEL_HTTP)
+                        .url(this.addr).username(this.username)
+                        .password(this.password).build().consum();
             }
             else
             {
-                log.error("@loadFromClient: unsoported protocol");
-                return false;
+                stream = ConsumerBuilder.create(ConsumerEnum.EXCEL_HTTP)
+                        .base(this.host).port(this.port).uri(this.uri)
+                        .queries(queries).username(this.username)
+                        .password(this.password).build().consum();
             }
+            return stream;
+        }
+        throw new Exception("Unsupported protocol");
+    }
 
-            BasicClientHandler<?> handler = "FTP".equals(protocol.toUpperCase())
-                    ? new FTPDownload()
-                    : new HTTPDownload();
-            try
-            {
-                Optional<Map<String, String>> params = Optional.empty();
-                if (this.paramNames != null)
-                {
-                    params = Optional.ofNullable(Functions.toMap(
-                            paramNames == null ? new ArrayList<>()
-                                    : Arrays.asList(paramNames.split(",")),
-                            paramValues == null ? new ArrayList<>()
-                                    : Arrays.asList(paramValues.split(","))));
-                }
-                handler.stage(hostname, Optional.ofNullable(port), user,
-                        password, local, Optional.ofNullable(uri),
-                        Optional.empty(), params);
-                Boolean OK = handler.download();
-                return OK;
-            }
-            catch (Exception e)
-            {
-                log.error(
-                        "@loadFromClinet: problem dowloading content. Error: \n",
-                        e.getMessage());
-                return false;
-            }
-        }
-        else
+    /**
+     * maps remote input stream to iterator json array node
+     * 
+     * @param stream
+     * @return
+     * @throws Exception
+     */
+    Iterator<JsonNode> mapResponse(InputStream stream) throws Exception
+    {
+        ExcelEnum excelEnum = "xlsx".equals(this.extension.toLowerCase())
+                || ".xlsx".equals(this.extension.toLowerCase()) ? ExcelEnum.XLSX
+                        : ExcelEnum.XLS;
+
+        File file = new File(
+                excelEnum == ExcelEnum.XLS ? "excel-loader-result.xls"
+                        : "excel-loader-result.xlsx");
+
+        Files.copy(stream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        List<Map<String, String>> result = ExcelMapper.mapping(file, excelEnum,
+                this.hasHeaders);
+
+        List<JsonNode> scanned = new ArrayList<>();
+
+        for (Map<String, String> dict : result)
         {
-            log.error("@loadFromClient: unsuported auth - {} - mechanism",
-                    auth);
+            Set<String> keys = dict.keySet();
+            ObjectNode node = mapper.createObjectNode();
+            for (String key : keys)
+            {
+                node.put(key, dict.get(key));
+            }
+            scanned.add(node);
         }
-        return false;
+        return scanned.iterator();
     }
 
     @Override
     protected Iterator<JsonNode> fullScan()
     {
-        // saves temporal downloaded content in temporal folder
-        if (loadFromClient())
+        try
         {
-            Log.info(
-                    "@fullScan: remote data correctly saved in local temporally file");
-            ExcelMapping excelMapping = new ExcelMapping();
-            List<Map<String, String>> data = excelMapping.mapping(local,
-                    hasHeaders);
-
-            // once data is loaded I remove temporally file
-            Functions.deleteFile(local);
-
-            List<JsonNode> scanned = new ArrayList<>();
-            for (Map<String, String> dict : data)
+            if (!"xlsx".equals(this.extension.toLowerCase())
+                    && !".xlsx".equals(this.extension.toLowerCase())
+                    && !"xls".equals(this.extension.toLowerCase())
+                    && !".xls".equals(this.extension.toLowerCase()))
             {
-                Set<String> keys = dict.keySet();
-                ObjectNode node = mapper.createObjectNode();
-                for (String key : keys)
-                {
-                    node.put(key, dict.get(key));
-                }
-                scanned.add(node);
+                String err = String.format(
+                        "Unsupported extension format '%s'. Supported extensions are: xlsx & xls",
+                        this.extension);
+                log.error(err);
+                throw new Exception(err);
             }
-            return scanned.iterator();
+
+            log.info("@fullScan: about to load excel file");
+            InputStream stream = laodResponse();
+            log.info("@fullScan: excel file correctly loaded");
+
+            log.info("@fullScan: about to map excel data");
+            Iterator<JsonNode> it = mapResponse(stream);
+            log.info("@fullScan: excel data correctly mapped");
+
+            log.info("@fullScan: data has just been loaded from '{}'",
+                    this.addr == null ? this.host : this.addr);
+
+            return it;
         }
+        catch (Exception e)
+        {
+            log.error("Problem loading from - '{}'. Error:\n {}",
+                    this.host != null ? this.host : this.addr, e.getMessage());
+        }
+
         return Collections.emptyIterator();
     }
 }

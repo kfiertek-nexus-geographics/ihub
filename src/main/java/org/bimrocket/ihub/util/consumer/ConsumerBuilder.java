@@ -1,10 +1,14 @@
 package org.bimrocket.ihub.util.consumer;
 
 import java.net.InetAddress;
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.bimrocket.ihub.processors.excel.ExcelFtpConsumer;
+import org.bimrocket.ihub.processors.excel.ExcelHttpConsumer;
+import org.bimrocket.ihub.util.Functions;
 
 /**
  * 
@@ -25,6 +29,8 @@ public class ConsumerBuilder
     String username;
 
     String password;
+
+    Optional<String> url = Optional.empty();
 
     Map<String, String> queries;
 
@@ -85,12 +91,41 @@ public class ConsumerBuilder
         return this;
     }
 
+    /**
+     * complete url target
+     * 
+     * @param url
+     * @return
+     */
+    public ConsumerBuilder url(String url)
+    {
+        this.url = Optional.ofNullable(url);
+        return this;
+    }
+
     public IConsumer build() throws Exception
     {
         if (this.consumerEnum == ConsumerEnum.EXCEL_FTP)
         {
             return new ExcelFtpConsumer(InetAddress.getByName(this.base),
-                    Optional.ofNullable(this.port), uri, username, password);
+                    Optional.ofNullable(this.port), this.uri, this.username,
+                    this.password);
+        }
+        else if (this.consumerEnum == ConsumerEnum.EXCEL_HTTP)
+        {
+            URI request;
+            if (this.url.isPresent())
+            {
+                request = new URIBuilder(this.url.get()).build();
+            }
+            else
+            {
+                request = Functions.buildURI(this.base,
+                        Optional.ofNullable(this.port),
+                        Optional.ofNullable(this.uri),
+                        Optional.ofNullable(this.queries));
+            }
+            return new ExcelHttpConsumer(request, this.username, this.password);
         }
 
         throw new Exception(String.format("Unsuported %s consum configuration",
