@@ -1,8 +1,3 @@
-
-/**
- * 
- * @author wilberquito
- */
 package org.bimrocket.ihub.processors;
 
 import java.io.File;
