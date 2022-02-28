@@ -27,34 +27,34 @@ public class SQLSenderProcessor extends SenderAbstract
     private static final Logger log = LoggerFactory
             .getLogger(SQLLoaderProcessor.class);
 
-    @ConfigProperty(name = "db.url", description = "Database url", required = true)
+    @ConfigProperty(name = "source.url", description = "Database url", required = true)
     String url;
 
-    @ConfigProperty(name = "db.username", description = "User used for basic authentication", required = true)
+    @ConfigProperty(name = "source.username", description = "User used for basic authentication", required = true)
     String username;
 
-    @ConfigProperty(name = "db.password", description = "Password used for basic authentication", required = true)
+    @ConfigProperty(name = "source.password", description = "Password used for basic authentication", required = true)
     String password;
 
-    @ConfigProperty(name = "db.driver", description = "Password used for basic authentication", required = true)
+    @ConfigProperty(name = "source.driver", description = "Password used for basic authentication", required = true)
     String driver;
 
-    @ConfigProperty(name = "db.query.check", description = "SQL query to know if object exists already in database")
+    @ConfigProperty(name = "sql.query.check", description = "SQL query to know if object exists already in database")
     String queryCheck;
 
-    @ConfigProperty(name = "db.query.update", description = "SQL query to update object")
+    @ConfigProperty(name = "sql.query.update", description = "SQL query to update object")
     String queryUpdate;
 
-    @ConfigProperty(name = "db.query.insert", description = "SQL query to insert object", required = true)
+    @ConfigProperty(name = "sql.query.insert", description = "SQL query to insert object", required = true)
     String queryInsert;
 
-    @ConfigProperty(name = "db.query.requires", description = "Required fields separated by semicolumn", required = true)
+    @ConfigProperty(name = "sql.query.requires", description = "Required fields separated by semicolumn", required = true)
     String reqCols;
 
-    @ConfigProperty(name = "db.query.optionals", description = "Optional fields separated by semicolumn")
+    @ConfigProperty(name = "sql.query.optionals", description = "Optional fields separated by semicolumn")
     String optCols;
 
-    @ConfigProperty(name = "db.request.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
+    @ConfigProperty(name = "sql.timeout", description = "Timeout for uri request in seconds", defaultValue = "60")
     Integer timeout;
 
     NamedParameterJdbcTemplate jdbcTemplate;

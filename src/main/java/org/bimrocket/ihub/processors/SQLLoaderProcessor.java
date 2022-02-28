@@ -31,22 +31,22 @@ public class SQLLoaderProcessor extends FullScanLoader
     private static final Logger log = LoggerFactory
             .getLogger(SQLLoaderProcessor.class);
 
-    @ConfigProperty(name = "db.url", description = "Database url", required = true)
+    @ConfigProperty(name = "source.url", description = "Database url", required = true)
     String url;
 
-    @ConfigProperty(name = "db.username", description = "User used for basic authentication", required = true)
+    @ConfigProperty(name = "source.username", description = "User used for basic authentication", required = true)
     String username;
 
-    @ConfigProperty(name = "db.password", description = "Password used for basic authentication", required = true)
+    @ConfigProperty(name = "source.password", description = "Password used for basic authentication", required = true)
     String password;
 
-    @ConfigProperty(name = "db.driver", description = "Password used for basic authentication", required = true)
+    @ConfigProperty(name = "source.driver", description = "Password used for basic authentication", required = true)
     String driver;
 
-    @ConfigProperty(name = "db.query", description = "SQL query to rescue content from database", required = true)
+    @ConfigProperty(name = "sql.query", description = "SQL query to rescue content from database", required = true)
     String query;
 
-    @ConfigProperty(name = "db.request.timeout", description = "Timeout for database response query request", defaultValue = "60")
+    @ConfigProperty(name = "sql.timeout", description = "Timeout for database response query request", defaultValue = "60")
     Integer timeout;
 
     JdbcTemplate jdbcTemplate;
