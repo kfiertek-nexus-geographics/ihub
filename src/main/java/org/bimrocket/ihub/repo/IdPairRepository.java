@@ -34,6 +34,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.bimrocket.ihub.dto.IdPair;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  *
@@ -45,20 +47,24 @@ public interface IdPairRepository
   public IdPair save(IdPair idPair);
 
   public Optional<IdPair> findByInventoryAndObjectTypeAndLocalId(
-      String inventory, String objectType, String localId);
+    String inventory, String objectType, String localId);
 
-  public Optional<IdPair> findByInventoryAndGlobalId(String inventory,
-      String globalId);
+  public Optional<IdPair> findByInventoryAndGlobalId(
+    String inventory, String globalId);
 
   public List<IdPair> findByInventoryAndObjectTypeAndLastUpdateLessThan(
-      String inventory, String objectType, Date date);
+    String inventory, String objectType, Date date);
 
-  public List<IdPair> findByInventoryAndObjectType(String inventory,
-      String objectType);
+  public Page<IdPair> findByInventoryLikeAndObjectTypeLikeAndLocalIdLikeAndGlobalIdLike(
+    String inventory, String objectType, String localId, String globalId,
+      Pageable pageable);
 
-  public void deleteByInventoryAndObjectTypeAndLocalId(String inventory,
-      String objectType, String localId);
+  public List<IdPair> findByInventoryAndObjectType(
+    String inventory, String objectType);
 
-  public void deleteByInventoryAndGlobalId(String inventory, String objectType,
-      String globalId);
+  public void deleteByInventoryAndObjectTypeAndLocalId(
+      String inventory, String objectType, String localId);
+
+  public void deleteByInventoryAndGlobalId(
+      String inventory, String globalId);
 }

@@ -59,9 +59,9 @@
           <h:outputText value=" (unsaved)"
                         rendered="#{connectorListBean.isConnectorUnsaved(data)}"
                         styleClass="unsaved" />
-          <p:toggleSwitch value="#{connectorListBean.connectorRunning}">
-            <p:ajax listener="#{connectorListBean.connectorStatusChanged}"
-                    update="connectors" />
+          <p:toggleSwitch value="#{connectorListBean.connectorRunning}"
+                          ariaLabel="Start/Stop">
+            <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
           </p:toggleSwitch>
 
           <h:panelGroup rendered="#{connectorListBean.getConnectorError(data) != null}">

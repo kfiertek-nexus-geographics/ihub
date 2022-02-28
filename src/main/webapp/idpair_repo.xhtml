@@ -11,6 +11,96 @@
 
     <ui:define name="body">
 
+      <p:panel>
+        <div class="flex align-items-center flex-wrap card-container">
+
+          <p:outputLabel for="inventory_filter"
+                         value="Inventory:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="inventory_filter"
+                       style="width:150px"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       value="#{idPairRepoBean.inventory}">
+          </p:inputText>
+
+          <p:outputLabel for="object_type_filter"
+                         value="Object type:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="object_type_filter"
+                       style="width:150px"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       value="#{idPairRepoBean.objectType}">
+          </p:inputText>
+
+          <p:outputLabel for="localid_filter"
+                         value="LocalId:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="localid_filter"
+                       style="width:150px"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       value="#{idPairRepoBean.localId}">
+          </p:inputText>
+
+          <p:outputLabel for="globalid_filter"
+                         value="GlobalId:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="globalid_filter"
+                       style="width:150px"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       value="#{idPairRepoBean.globalId}">
+          </p:inputText>
+
+          <p:commandButton value="Search" update="idpair_table"
+                           icon="pi pi-search"
+                           action="#{idPairRepoBean.search}" />
+
+        </div>
+      </p:panel>
+
+      <p:dataTable id="idpair_table"
+                   value="#{idPairRepoBean.idPairs}"
+                   var="idPair"
+                   rowHover="true"
+                   showGridlines="true"
+                   touchable="true"
+                   paginator="true"
+                   rows="#{idPairRepoBean.rows}"
+                   paginatorPosition="bottom"
+                   paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                   currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                   rowsPerPageTemplate="5,10,20"
+                   styleClass="mt-2">
+
+        <p:column headerText="Inventory"
+                  style="width:40pt">
+          <h:outputText value="#{idPair.inventory}" />
+        </p:column>
+
+        <p:column headerText="Object type"
+                  style="width:40pt">
+          <h:outputText value="#{idPair.objectType}" />
+        </p:column>
+
+        <p:column headerText="LocalId"
+                  style="width:40pt">
+          <h:outputText value="#{idPair.localId}" />
+        </p:column>
+
+        <p:column headerText="GlobalId"
+                  style="width:40pt">
+          <h:outputText value="#{idPair.globalId}" />
+        </p:column>
+
+        <p:column headerText="Last update"
+                  style="width:40pt">
+          <h:outputText value="#{idPair.lastUpdate}">
+            <f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss.SSS"
+                               timeZone="Europe/Berlin" />
+          </h:outputText>
+        </p:column>
+
+      </p:dataTable>
+
     </ui:define>
   </ui:composition>
 
