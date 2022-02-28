@@ -30,8 +30,6 @@ public class ConsumerBuilder
 
     String password;
 
-    Optional<String> url = Optional.empty();
-
     Map<String, String> queries;
 
     private ConsumerBuilder()
@@ -91,18 +89,6 @@ public class ConsumerBuilder
         return this;
     }
 
-    /**
-     * complete url target
-     * 
-     * @param url
-     * @return
-     */
-    public ConsumerBuilder url(String url)
-    {
-        this.url = Optional.ofNullable(url);
-        return this;
-    }
-
     public IConsumer build() throws Exception
     {
         if (this.consumerEnum == ConsumerEnum.EXCEL_FTP)
@@ -113,18 +99,11 @@ public class ConsumerBuilder
         }
         else if (this.consumerEnum == ConsumerEnum.EXCEL_HTTP)
         {
-            URI request;
-            if (this.url.isPresent())
-            {
-                request = new URIBuilder(this.url.get()).build();
-            }
-            else
-            {
-                request = Functions.buildURI(this.base,
-                        Optional.ofNullable(this.port),
-                        Optional.ofNullable(this.uri),
-                        Optional.ofNullable(this.queries));
-            }
+            URI request = Functions.buildURI(this.base,
+                    Optional.ofNullable(this.port),
+                    Optional.ofNullable(this.uri),
+                    Optional.ofNullable(this.queries));
+
             return new ExcelHttpConsumer(request, this.username, this.password);
         }
 

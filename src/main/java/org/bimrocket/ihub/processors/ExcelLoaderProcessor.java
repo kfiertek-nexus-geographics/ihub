@@ -101,7 +101,7 @@ public class ExcelLoaderProcessor extends FullScanLoader
             if (this.addr != null)
             {
                 stream = ConsumerBuilder.create(ConsumerEnum.EXCEL_HTTP)
-                        .url(this.addr).username(this.username)
+                        .base(this.addr).username(this.username)
                         .password(this.password).build().consum();
             }
             else
