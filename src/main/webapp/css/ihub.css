@@ -154,6 +154,16 @@ body .ui-treenode-label > div
   margin-right: 4pt;
 }
 
+body .ui-datepicker .ui-datepicker-calendar td
+{
+  padding: 0;
+}
+
+body th .p-datepicker > input
+{
+  width: 100%;
+}
+
 /* specific styles */
 
 div.block
@@ -203,6 +213,17 @@ span.error
 .prop_value
 {
   color: #202020;
+}
+
+body table .ui-button.ui-button-icon-only .ui-button-text
+{
+  padding: 0;
+}
+
+body table .ui-button.ui-button-icon-only
+{
+  width: 24px;
+  height: 24px;
 }
 
 .level_DEBUG > td

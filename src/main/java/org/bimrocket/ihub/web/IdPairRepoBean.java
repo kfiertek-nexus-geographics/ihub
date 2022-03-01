@@ -31,6 +31,7 @@
 package org.bimrocket.ihub.web;
 
 import java.util.AbstractList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,9 +59,11 @@ public class IdPairRepoBean
   private String objectType;
   private String localId;
   private String globalId;
+  private Date lastUpdate;
 
   private final IdPairList idPairList = new IdPairList();
   private int rows = 10;
+  private int firstRow = 0;
 
   public String getInventory()
   {
@@ -102,6 +105,16 @@ public class IdPairRepoBean
     this.globalId = globalId;
   }
 
+  public Date getLastUpdate()
+  {
+    return lastUpdate;
+  }
+
+  public void setLastUpdate(Date lastUpdate)
+  {
+    this.lastUpdate = lastUpdate;
+  }
+
   public List<IdPair> getIdPairs()
   {
     return idPairList;
@@ -117,14 +130,42 @@ public class IdPairRepoBean
     this.rows = rows;
   }
 
+  public int getFirstRow()
+  {
+    return firstRow;
+  }
+
+  public void setFirstRow(int firstRow)
+  {
+    this.firstRow = firstRow;
+  }
+
   public void search()
   {
-    idPairList.reset();
+    firstRow = 0;
+    idPairList.refresh();
+  }
+
+  public void clearFilter()
+  {
+    inventory = null;
+    objectType = null;
+    localId = null;
+    globalId = null;
+    lastUpdate = null;
+    firstRow = 0;
+    idPairList.refresh();
+  }
+
+  public void deleteIdPair(IdPair idPair)
+  {
+    idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(
+      idPair.getInventory(), idPair.getObjectType(), idPair.getLocalId());
+    idPairList.refresh();
   }
 
   public class IdPairList extends AbstractList<IdPair>
   {
-    int size = -1;
     int pageSize = 20;
     Map<Integer, Page<IdPair>> pages = new HashMap<>();
 
@@ -142,18 +183,12 @@ public class IdPairRepoBean
     @Override
     public int size()
     {
-      if (size == -1)
-      {
-        var page = loadPage(0);
-
-        size = (int)page.getTotalElements();
-      }
-      return size;
+      var page = loadPage(0);
+      return (int)page.getTotalElements();
     }
 
-    void reset()
+    void refresh()
     {
-      size = -1;
       pages.clear();
     }
 
@@ -172,12 +207,6 @@ public class IdPairRepoBean
             blankNull(inventory), blankNull(objectType),
             blankNull(localId), blankNull(globalId), pageable);
 
-        int newSize = (int)page.getTotalElements();
-        if (size != newSize)
-        {
-          pages.clear();
-          size = newSize;
-        }
         pages.put(pageNumber, page);
       }
       return page;

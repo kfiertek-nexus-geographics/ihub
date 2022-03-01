@@ -18,7 +18,7 @@
 
       <p:panel id="search_panel">
         <div class="flex align-items-center flex-wrap card-container">
-          <h:outputLabel for="filter" value="Filter:"
+          <h:outputLabel for="filter" value="Connector:"
                          styleClass="flex align-items-center justify-content-center m-1" />
           <p:inputText id="filter" value="#{connectorListBean.connectorName}"
                        styleClass="flex align-items-center justify-content-center m-1"
@@ -69,8 +69,11 @@
                    severity="danger"
                    value="Error"
                    icon="pi pi-exclamation-triangle" />
-            <p:tooltip for="conn_error" at="bottom"
-                       value="#{connectorListBean.getConnectorError(data)}" />
+            <p:tooltip for="conn_error" position="right">
+              <div style="width:300px">
+                <h:outputText value="#{connectorListBean.getConnectorError(data)}" />
+              </div>
+            </p:tooltip>
           </h:panelGroup>
 
         </p:treeNode>
