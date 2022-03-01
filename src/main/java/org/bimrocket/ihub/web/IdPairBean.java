@@ -28,41 +28,51 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.repo;
+package org.bimrocket.ihub.web;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import javax.faces.context.FacesContext;
 import org.bimrocket.ihub.dto.IdPair;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.bimrocket.ihub.exceptions.InvalidNameException;
+import org.primefaces.PrimeFaces;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author realor
  */
-
-public interface IdPairRepository
+@Component
+@Scope("session")
+public class IdPairBean
 {
-  public IdPair save(IdPair idPair);
+  @Autowired
+  ApplicationContext context;
 
-  public void delete(IdPair idPair);
+  private IdPair idPair = new IdPair();
 
-  public void deleteById(String id);
+  public IdPair getIdPair()
+  {
+    return idPair;
+  }
 
-  public Optional<IdPair> findByInventoryAndObjectTypeAndLocalId(
-    String inventory, String objectType, String localId);
+  public void setIdPair(IdPair idPair)
+  {
+    this.idPair = idPair;
+  }
 
-  public Optional<IdPair> findByInventoryAndGlobalId(
-    String inventory, String globalId);
-
-  public List<IdPair> findByInventoryAndObjectTypeAndLastUpdateLessThan(
-    String inventory, String objectType, Date date);
-
-  public Page<IdPair> findByInventoryLikeAndObjectTypeLikeAndLocalIdLikeAndGlobalIdLike(
-    String inventory, String objectType, String localId, String globalId,
-      Pageable pageable);
-
-  public List<IdPair> findByInventoryAndObjectType(
-    String inventory, String objectType);
+  public void accept()
+  {
+    try
+    {
+      IdPairRepoBean idPairRepoBean = context.getBean(IdPairRepoBean.class);
+      idPairRepoBean.saveIdPair(idPair);
+    }
+    catch (Exception ex)
+    {
+      FacesUtils.addErrorMessage(ex);
+    }
+    PrimeFaces.current().executeScript("PF('idpair').hide()");
+  }
 }

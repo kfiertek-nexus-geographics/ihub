@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,10 +158,17 @@ public class IdPairRepoBean
     idPairList.refresh();
   }
 
+  public void saveIdPair(IdPair idPair)
+  {
+    idPairRepository.save(idPair);
+
+    idPairList.refresh();
+  }
+
   public void deleteIdPair(IdPair idPair)
   {
-    idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(
-      idPair.getInventory(), idPair.getObjectType(), idPair.getLocalId());
+    idPairRepository.delete(idPair);
+
     idPairList.refresh();
   }
 

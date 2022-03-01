@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition>
+
+    <p:dialog id="idpair_dialog"
+              header="Id pair" widgetVar="idpair"
+              resizable="false" width="700"
+              modal="true" height="430"
+              responsive="true"
+              class="modal-dialog">
+
+      <f:facet name="header">
+        <span class="ui-icon pi pi-database"></span> Id pair
+      </f:facet>
+
+      <p:messages>
+         <p:autoUpdate />
+      </p:messages>
+
+      <p:panel id="idpair_panel" class="ui-fluid">
+        <div class="field grid">
+          <p:outputLabel value="Inventory:" for="idpair_inventory"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="idpair_inventory"
+                         value="#{idPairBean.idPair.inventory}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Object type:" for="idpair_object_type"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="idpair_object_type"
+                         value="#{idPairBean.idPair.objectType}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="LocalId:" for="idpair_localid"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="idpair_localid"
+                         value="#{idPairBean.idPair.localId}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="GlobalId:" for="idpair_globalid"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="idpair_globalid"
+                         value="#{idPairBean.idPair.globalId}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Last update:" for="idpair_last_update"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="idpair_last_update"
+                         value="#{idPairBean.idPair.lastUpdate}">
+              <f:convertDateTime type="date"
+                                 pattern="dd-MM-yyyy HH:mm:ss.SSS"
+                                 timeZone="Europe/Berlin" />
+            </p:inputText>
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Connector:" for="idpair_connector_name"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="idpair_connector_name"
+                         value="#{idPairBean.idPair.connectorName}" />
+          </div>
+        </div>
+
+      </p:panel>
+
+      <f:facet name="footer">
+        <p:commandButton value="Accept"
+                         id="accept_idpair"
+                         action="#{idPairBean.accept()}"
+                         icon="pi pi-check"
+                         update="idpair_table" />
+        <p:commandButton value="Cancel"
+                         immediate="true"
+                         icon="pi pi-times"
+                         oncomplete="PF('idpair').hide()">
+          <p:ajax update="idpair_panel" resetValues="true" />
+        </p:commandButton>
+      </f:facet>
+
+      <p:defaultCommand target="accept_idpair" scope="idpair_panel" />
+      <p:ajax event="close" update="idpair_panel" resetValues="true" />
+
+    </p:dialog>
+
+  </ui:composition>
+
+</html>

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
@@ -502,12 +503,31 @@ public class Connector implements Runnable
   {
     IdPairRepository idPairRepository = service.getIdPairRepository();
 
-    idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(inventory,
-      procObject.getObjectType(), procObject.getLocalId());
+    Optional<IdPair> result = idPairRepository.
+      findByInventoryAndObjectTypeAndLocalId(inventory,
+        procObject.getObjectType(), procObject.getLocalId());
 
-    if (procObject.isInsert() || procObject.isUpdate())
+    if (procObject.isDelete())
     {
-      IdPair idPair = new IdPair();
+      if (result.isPresent())
+      {
+        IdPair idPair = result.get();
+        idPairRepository.delete(idPair);
+      }
+    }
+    else // insert or update
+    {
+      IdPair idPair;
+      if (result.isPresent())
+      {
+        idPair = result.get();
+      }
+      else
+      {
+        idPair = new IdPair();
+        idPair.setId(UUID.randomUUID().toString());
+      }
+
       idPair.setInventory(inventory);
       idPair.setObjectType(procObject.getObjectType());
       idPair.setLocalId(procObject.getLocalId());
