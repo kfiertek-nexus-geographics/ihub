@@ -33,7 +33,6 @@ package org.bimrocket.ihub.controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.dto.ConnectorSetup;
@@ -41,7 +40,7 @@ import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.service.ConnectorMapperService;
 import org.bimrocket.ihub.service.ConnectorService;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,10 +62,10 @@ public class ConnectorController
   ConnectorService connectorService;
 
   @Autowired
-  ConnectorMapperService connectorMapperService;
+  ProcessorService processorService;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ConnectorMapperService connectorMapperService;
 
   @GetMapping(path = "/connectors", produces = "application/json")
   public List<ConnectorExecution> getConnectors()
@@ -80,7 +79,8 @@ public class ConnectorController
     return response;
   }
 
-  @GetMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}",
+    produces = "application/json")
   public ConnectorSetup getConnector(@PathVariable String connectorName)
       throws Exception
   {
@@ -107,7 +107,8 @@ public class ConnectorController
     return connSetup;
   }
 
-  @PutMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  @PutMapping(path = "/connectors/{connectorName}",
+    produces = "application/json")
   public ConnectorSetup updateConnector(@PathVariable String connectorName,
       @RequestBody ConnectorSetup connSetup) throws Exception
   {
@@ -119,14 +120,16 @@ public class ConnectorController
     return connSetup;
   }
 
-  @DeleteMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  @DeleteMapping(path = "/connectors/{connectorName}",
+    produces = "application/json")
   public boolean destroyConnector(@PathVariable String connectorName)
       throws Exception
   {
     return connectorService.destroyConnector(connectorName, true);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/status", produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}/status",
+    produces = "application/json")
   public ConnectorExecution getConnectorStatus(
       @PathVariable String connectorName) throws Exception
   {
@@ -134,7 +137,8 @@ public class ConnectorController
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/start", produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}/start",
+    produces = "application/json")
   public ConnectorExecution startConnector(@PathVariable String connectorName)
       throws Exception
   {
@@ -143,7 +147,8 @@ public class ConnectorController
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/stop", produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}/stop",
+    produces = "application/json")
   public ConnectorExecution stopConnector(@PathVariable String connectorName)
       throws Exception
   {
@@ -152,7 +157,8 @@ public class ConnectorController
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/executions", produces = "application/json")
+  @GetMapping(path = "/connectors/{connectorName}/executions",
+    produces = "application/json")
   public List<ConnectorExecution> getConnectorExecutions(
       @PathVariable String connectorName) throws Exception
   {
@@ -164,7 +170,6 @@ public class ConnectorController
       @RequestParam(name = "name", required = false) String className)
       throws Exception
   {
-    return processorTypeService.findProcessorTypes(className);
+    return processorService.findProcessorTypes(className);
   }
-
 }

@@ -42,6 +42,7 @@ import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.util.ConfigPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,6 +52,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class ConnectorMapperService
 {
+  @Autowired
+  ProcessorService processorService;
+
   public ConnectorSetup getConnectorSetup(Connector connector)
   {
     ConnectorSetup connSetup = new ConnectorSetup();
@@ -73,13 +77,13 @@ public class ConnectorMapperService
   }
 
   public void setConnectorSetup(Connector connector, ConnectorSetup connSetup)
-      throws Exception
+    throws Exception
   {
     setConnectorSetup(connector, connSetup, false);
   }
 
   public void setConnectorSetup(Connector connector, ConnectorSetup connSetup,
-      boolean ignoreErrors) throws Exception
+    boolean ignoreErrors) throws Exception
   {
     if (connSetup.getDescription() != null)
     {
@@ -101,82 +105,86 @@ public class ConnectorMapperService
     {
       connector.setWaitMillis(connSetup.getWaitMillis());
     }
-    List<Processor> processors = connector.getProcessors();
     List<ProcessorSetup> procSetups = connSetup.getProcessors();
 
     if (procSetups != null)
     {
+      List<Processor> processors = connector.getProcessors();
+
       for (int i = 0; i < procSetups.size(); i++)
       {
         ProcessorSetup procSetup = procSetups.get(i);
 
         if (i < processors.size()) // already exists a processor at i position
         {
-          if (procSetup == null)
-            continue;
+          if (procSetup == null) continue;
 
           Processor processor = processors.get(i);
 
           String className = procSetup.getClassName();
 
           if (className != null
-              && !processor.getClass().getName().equals(className))
+            && !processor.getClass().getName().equals(className))
           {
+            // replace Processor
             try
             {
-              processor = connector.setProcessor(className, i);
+              processor = processorService.createProcessor(className);
+              processors.set(i, processor);
             }
             catch (InvalidSetupException ex)
             {
               if (ignoreErrors)
+              {
                 continue;
+              }
 
               throw ex;
             }
           }
           setProcessorSetup(processor, procSetup, ignoreErrors);
         }
-        else // must add a processor at i position
+        else // must add a new processor at i position
         {
           if (procSetup == null)
           {
-            if (ignoreErrors)
-              continue;
+            if (ignoreErrors) continue;
 
             throw new InvalidSetupException(340,
-                "null processor at position {%d}", i);
+              "null processor at position {%d}", i);
           }
 
           String className = procSetup.getClassName();
 
           if (className == null)
           {
-            if (ignoreErrors)
-              continue;
+            if (ignoreErrors) continue;
 
             throw new InvalidSetupException(350,
-                "processor className not set at position {%d}", i);
+              "processor className not set at position {%d}", i);
           }
 
           try
           {
-            Processor processor = connector.addProcessor(className);
+            Processor processor = processorService.createProcessor(className);
+            processors.add(processor);
             setProcessorSetup(processor, procSetup, ignoreErrors);
           }
           catch (InvalidSetupException ex)
           {
-            if (ignoreErrors)
-              continue;
+            if (ignoreErrors) continue;
 
             throw ex;
           }
         }
       }
       // remove remaining processors
-      while (connector.getProcessorCount() > procSetups.size())
+      while (processors.size() > procSetups.size())
       {
-        connector.removeProcessor(connector.getProcessorCount() - 1);
+        processors.remove(processors.size() - 1);
       }
+      // apply changes to connector
+      connector.setProcessors(processors);
     }
   }
 
@@ -187,35 +195,19 @@ public class ConnectorMapperService
     procSetup.setDescription(processor.getDescription());
     procSetup.setEnabled(processor.isEnabled());
 
-    Map<String, Object> properties = new HashMap<>();
-
-    Map<String, ConfigPropertyHandler> propHandlers = ConfigPropertyHandler
-        .findProperties(processor.getClass());
-    for (ConfigPropertyHandler propHandler : propHandlers.values())
-    {
-      String propertyName = propHandler.getName();
-      try
-      {
-        properties.put(propertyName, propHandler.getValue(processor));
-      }
-      catch (Exception ex)
-      {
-        // ignore
-      }
-    }
-    procSetup.setProperties(properties);
+    procSetup.setProperties(getProcessorProperties(processor));
 
     return procSetup;
   }
 
   public void setProcessorSetup(Processor processor, ProcessorSetup procSetup)
-      throws InvalidSetupException
+    throws InvalidSetupException
   {
     setProcessorSetup(processor, procSetup, false);
   }
 
   public void setProcessorSetup(Processor processor, ProcessorSetup procSetup,
-      boolean ignoreErrors) throws InvalidSetupException
+    boolean ignoreErrors) throws InvalidSetupException
   {
     if (procSetup.getDescription() != null)
     {
@@ -231,24 +223,57 @@ public class ConnectorMapperService
     }
 
     Map<String, Object> properties = procSetup.getProperties();
-    if (properties == null)
-      return;
+    if (properties != null)
+    {
+      setProcessorProperties(processor, properties, ignoreErrors);
+    }
+  }
 
-    Map<String, ConfigPropertyHandler> propHandlers = ConfigPropertyHandler
-        .findProperties(processor.getClass());
+  public Map<String, Object> getProcessorProperties(Processor processor)
+  {
+    Map<String, Object> properties = new HashMap<>();
+
+    List<ConfigPropertyHandler> propHandlers =
+      ConfigPropertyHandler.findProperties(processor.getClass());
+
+    for (ConfigPropertyHandler propHandler : propHandlers)
+    {
+      String propertyName = propHandler.getName();
+      try
+      {
+        properties.put(propertyName, propHandler.getValue(processor));
+      }
+      catch (Exception ex)
+      {
+        // ignore
+      }
+    }
+    return properties;
+  }
+
+  public void setProcessorProperties(Processor processor,
+    Map<String, Object> properties, boolean ignoreErrors)
+    throws InvalidSetupException
+  {
+    List<ConfigPropertyHandler> propHandlers =
+      ConfigPropertyHandler.findProperties(processor.getClass());
+
+    Map<String, ConfigPropertyHandler> propHandlerMap = new HashMap<>();
+    propHandlers.forEach(
+      propHandler -> propHandlerMap.put(propHandler.getName(), propHandler));
+
     for (Map.Entry<String, Object> entry : properties.entrySet())
     {
       String propertyName = entry.getKey();
       Object propertyValue = entry.getValue();
-      ConfigPropertyHandler propHandler = propHandlers.get(propertyName);
+      ConfigPropertyHandler propHandler = propHandlerMap.get(propertyName);
 
       if (propHandler == null)
       {
-        if (ignoreErrors)
-          continue;
+        if (ignoreErrors) continue;
 
         throw new InvalidSetupException(360, "Unsupported config property {%s}",
-            propertyName);
+          propertyName);
       }
 
       try
@@ -257,12 +282,11 @@ public class ConnectorMapperService
       }
       catch (Exception ex)
       {
-        if (ignoreErrors)
-          continue;
+        if (ignoreErrors) continue;
 
         throw new InvalidSetupException(360,
-            "Can not set value {%s} to config property {%s}", propertyValue,
-            propertyName);
+          "Can not set value {%s} to config property {%s}", propertyValue,
+          propertyName);
       }
     }
   }

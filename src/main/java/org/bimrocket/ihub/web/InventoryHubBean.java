@@ -30,7 +30,8 @@
  */
 package org.bimrocket.ihub.web;
 
-import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,13 +39,23 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class InventoryHubBean
 {
-  String code;
-
-  public String getMessage()
+  public int getActiveTabIndex()
   {
-    return "BIMROCKET-IHUB";
+    FacesContext ctx = FacesContext.getCurrentInstance();
+    String viewId = ctx.getViewRoot().getViewId();
+
+    switch (viewId)
+    {
+      case "/connector_list.xhtml":
+        return 0;
+      case "/logs.xhtml":
+        return 1;
+      case "/shell.xhtml":
+        return 2;
+    }
+    return 0;
   }
 }

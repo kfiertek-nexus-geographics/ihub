@@ -31,7 +31,6 @@
 package org.bimrocket.ihub.controllers;
 
 import org.bimrocket.ihub.service.ShellService;
-import org.mozilla.javascript.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

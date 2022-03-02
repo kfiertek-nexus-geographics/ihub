@@ -30,12 +30,13 @@
  */
 package org.bimrocket.ihub.web;
 
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.exceptions.InvalidNameException;
 import org.primefaces.PrimeFaces;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,11 +44,11 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class ConnectorBean
 {
   @Autowired
-  ConnectorListBean connectorListBean;
+  ApplicationContext context;
 
   ConnectorSetup connSetup = new ConnectorSetup();
   boolean nameDisabled = false;
@@ -72,6 +73,9 @@ public class ConnectorBean
   {
     try
     {
+      ConnectorListBean connectorListBean =
+        context.getBean(ConnectorListBean.class);
+
       connectorListBean.putConnector(connSetup);
       PrimeFaces.current().executeScript("PF('connector').hide()");
     }

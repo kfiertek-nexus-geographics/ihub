@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition template="/main.xhtml">
+
+    <ui:define name="body">
+
+      <script>
+        function updateTableHeight()
+        {
+          var elems = document.getElementsByClassName("ui-datatable-scrollable-body");
+          for (var elem of elems)
+          {
+            var rect = elem.getBoundingClientRect();
+            var dif = window.innerHeight - (rect.top + elem.clientHeight);
+            elem.style.height = (elem.clientHeight + dif - 50) + "px";
+          }
+        }
+
+        window.addEventListener("resize", () => updateTableHeight());
+
+      </script>
+
+      <p:panel>
+        <div class="flex align-items-center flex-wrap card-container">
+
+          <p:outputLabel for="thread_filter"
+                         value="Thread:"
+
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="thread_filter"
+                       style="width:150px"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       value="#{logsBean.filter.threadName}">
+            <p:ajax event="change" update="log_table" />
+          </p:inputText>
+
+          <p:outputLabel for="message_filter"
+                         value="Message:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:inputText id="message_filter"
+                       style="width:150px"
+                       styleClass="flex align-items-center justify-content-center m-1"
+                       value="#{logsBean.filter.message}">
+            <p:ajax event="change" update="log_table" />
+          </p:inputText>
+
+          <p:outputLabel for="level_selector"
+                         value="Level:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:selectOneMenu id="level_selector"
+                           value="#{logsBean.filter.level}"
+                           styleClass="flex align-items-center justify-content-center m-1">
+            <f:selectItem itemValue="ERROR" itemLabel="ERROR" />
+            <f:selectItem itemValue="WARN" itemLabel="WARN" />
+            <f:selectItem itemValue="INFO" itemLabel="INFO" />
+            <f:selectItem itemValue="DEBUG" itemLabel="DEBUG" />
+            <p:ajax event="change" update="log_table" />
+          </p:selectOneMenu>
+
+          <p:outputLabel for="auto_refresh"
+                         value="Auto refresh:"
+                         styleClass="flex align-items-center justify-content-center m-1" />
+          <p:toggleSwitch id="auto_refresh"
+                          value="#{logsBean.autoRefresh}"
+                          styleClass="flex align-items-center justify-content-center m-1">
+            <p:ajax update="log_poll" />
+          </p:toggleSwitch>
+
+        </div>
+      </p:panel>
+
+      <p:dataTable id="log_table"
+                   value="#{logsBean.events}"
+                   var="event"
+                   rowHover="true"
+                   showGridlines="true"
+                   touchable="true"
+                   scrollable="true"
+                   styleClass="mt-2"
+                   rowStyleClass="level_#{logsBean.getLevel(event)}">
+        <p:column headerText="Timestamp"
+                  style="width:150pt">
+          <h:outputText value="#{logsBean.getDate(event)}">
+            <f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss.SSS"
+                               timeZone="Europe/Berlin" />
+          </h:outputText>
+        </p:column>
+
+        <p:column headerText="Level"
+                  style="width:50pt">
+          <h:outputText value="#{logsBean.getLevel(event)}" />
+        </p:column>
+
+        <p:column headerText="Thread"
+                  style="width:100pt">
+          <h:outputText value="#{event.threadName}" />
+        </p:column>
+
+        <p:column headerText="Message"
+                  style="width:1700pt">
+          <h:outputText value="#{event.formattedMessage}" />
+        </p:column>
+
+        <f:facet name="footer">
+          <script>
+            updateTableHeight();
+          </script>
+        </f:facet>
+
+      </p:dataTable>
+
+      <p:poll id="log_poll" interval="3" update="log_table"
+              stop="#{not logsBean.autoRefresh}" />
+
+    </ui:define>
+  </ui:composition>
+
+</html>

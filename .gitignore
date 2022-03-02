@@ -6,4 +6,4 @@
 .vscode/
 .idea/
 
-logs/
+/logs/

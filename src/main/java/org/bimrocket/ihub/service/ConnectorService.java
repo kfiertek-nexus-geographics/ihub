@@ -1,4 +1,4 @@
-/**
+/*
  * BIMROCKET
  *
  * Copyright (C) 2022, Ajuntament de Sant Feliu de Llobregat
@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.exceptions.InvalidNameException;
 import org.bimrocket.ihub.exceptions.NotFoundException;
@@ -45,6 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -54,6 +55,9 @@ import org.springframework.stereotype.Service;
 public class ConnectorService
   implements ApplicationListener<ApplicationReadyEvent>
 {
+  private static final Logger log =
+    LoggerFactory.getLogger(ConnectorService.class);
+
   private final Map<String, Connector> connectors =
     Collections.synchronizedMap(new HashMap<>());
 
@@ -157,7 +161,6 @@ public class ConnectorService
     {
       try
       {
-        System.out.println("Restoring " + connSetup.getName());
         Connector connector = createConnector(connSetup.getName()).restore();
         if (connector.isAutoStart()) connector.start();
       }
@@ -171,9 +174,10 @@ public class ConnectorService
   @Override
 	public void onApplicationEvent(ApplicationReadyEvent event)
   {
-    System.out.println("INIT");
-    System.out.println("idPairRepository: " + idPairRepository);
-    System.out.println("ConnectorSetupRepository: " + connectorSetupRepository);
+    log.info("idPairRepository: {} ",
+      idPairRepository.toString());
+    log.info("ConnectorSetupRepository: {}",
+      connectorSetupRepository.toString());
 
     try
     {

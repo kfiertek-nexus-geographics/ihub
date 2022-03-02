@@ -31,24 +31,33 @@
 
 package org.bimrocket.ihub.connector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  *
  * @author realor
  */
 public abstract class Processor
 {
-  protected static final String IDLE = "IDLE";
-  protected static final String CONSUMING = "CONSUMING";
-  protected static final String SHUTDOWN = "SHUTDOWN";
-  protected final ObjectMapper mapper = new ObjectMapper();
-  protected Connector connector;
+  private Connector connector;
   protected String description;
   protected boolean enabled;
 
-  public Processor(Connector connector)
+  public Processor()
   {
+  }
+
+  public final Connector getConnector()
+  {
+    return connector;
+  }
+
+  public final void setConnector(Connector connector)
+  {
+    if (connector == null)
+      throw new RuntimeException("Null connector not allowed");
+
+    if (this.connector != null && this.connector != connector)
+      throw new RuntimeException("Connector already set for this Processor");
+
     this.connector = connector;
   }
 
@@ -72,24 +81,35 @@ public abstract class Processor
     this.enabled = enabled;
   }
 
-  public void init()
+  /**
+   * Initialize processor. This method is called every time a connector is
+   * started. The processor can obtain the resources required to perform the
+   * object processing.
+   *
+   * @throws Exception
+   *           when init fails and object processing can not go on.
+   */
+  public void init() throws Exception
   {
   }
 
+  /**
+   * Process an object.
+   *
+   * @param procObject,
+   *          the object to process
+   * @return false if object processing must be interrupted, true otherwise.
+   */
   public abstract boolean processObject(ProcessedObject procObject);
 
+  /**
+   * Cleanup processor. This method is called every time a connector stops
+   * running. The processor can release the resources obtained in the init
+   * method.
+   *
+   */
   public void end()
   {
-  }
-
-  public void reset()
-  {
-
-  }
-
-  public Connector getConnector()
-  {
-    return connector;
   }
 
   @Override
