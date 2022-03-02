@@ -25,7 +25,7 @@
           <img src="css/images/bimrocket.svg" height="40px" title="BIMROCKET" />
           <span>IHUB</span>
         </h1>
-        
+
         <p:tabMenu activeIndex="#{inventoryHubBean.activeTabIndex}"
                    styleClass="mb-2">
 
@@ -38,6 +38,11 @@
                       value="Logs"
                       title="Logs"
                       icon="logs" />
+
+          <p:menuitem action="idpair_repo.xhtml?faces-redirect=true"
+                      value="Id Repo"
+                      title="Id Repo"
+                      icon="pi pi-database" />
 
           <p:menuitem action="shell.xhtml?faces-redirect=true"
                       value="Shell"

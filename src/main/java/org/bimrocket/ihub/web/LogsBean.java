@@ -91,7 +91,7 @@ public class LogsBean
 
   public static class LogFilter implements ILoggingEventFilter
   {
-    String level;
+    String level = "DEBUG";
     String message;
     String threadName;
 

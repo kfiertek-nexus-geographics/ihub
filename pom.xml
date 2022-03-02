@@ -7,7 +7,7 @@
   <artifactId>ihub</artifactId>
   <description>Inventory Hub</description>
   <version>1.0</version>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
@@ -49,12 +49,6 @@
   </repositories>
 
   <dependencies>
-    <!-- XML TREATING -->
-    <dependency>
-      <groupId>com.jcabi.incubator</groupId>
-      <artifactId>xembly</artifactId>
-      <version>0.22</version>
-    </dependency>
     <!-- SPRING -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -102,7 +96,6 @@
       <artifactId>primefaces-extensions</artifactId>
       <version>11.0.0</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-kafka -->
     <dependency>
       <groupId>org.springframework.integration</groupId>
       <artifactId>spring-integration-kafka</artifactId>
@@ -112,6 +105,12 @@
       <artifactId>reflections</artifactId>
       <version>0.10.2</version>
     </dependency>
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+    </dependency>
+
+    <!-- SCRIPTING -->
     <dependency>
       <groupId>org.mozilla</groupId>
       <artifactId>rhino</artifactId>
@@ -123,15 +122,12 @@
       <version>2.7.2</version>
     </dependency>
 
-    <!-- INIT DATASTORES -->
+    <!-- DEVTOOLS -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
+      <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
+      <optional>true</optional>
     </dependency>
 
 		<!-- START APACHE COMMONS -->
@@ -167,38 +163,34 @@
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
 		</dependency>
+    <!-- DATASTORES -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-mongodb</artifactId>
     </dependency>
-    <!-- END DATASTORES -->
-    <!-- INIT DEVTOOLS -->
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
       <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
-    <!-- END DEVTOOLS -->
 
-    <!-- INIT SWAGGER & SPRINGFOX -->
+    <!-- SWAGGER & SPRINGDOC -->
     <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger2</artifactId>
-      <version>3.0.0</version>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>1.6.6</version>
     </dependency>
     <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger-ui</artifactId>
-      <version>3.0.0</version>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>2.1.12</version>
     </dependency>
-    <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-bean-validators</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-    <!-- END SWAGGER & SPRINGFOX -->
-    <!-- INIT GEOTOOLS -->
+
+    <!-- GEOTOOLS -->
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-shapefile</artifactId>
@@ -206,22 +198,21 @@
     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
-      <artifactId>gt-swing</artifactId>
-      <version>${geotools.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
       <artifactId>gt-geojson</artifactId>
       <version>${geotools.version}</version>
     </dependency>
-    <!-- END GEOTOOLS -->
 
+    <!-- XML TREATING -->
+    <dependency>
+      <groupId>com.jcabi.incubator</groupId>
+      <artifactId>xembly</artifactId>
+      <version>0.22</version>
+    </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+    <!-- HTTP -->
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.13</version>
     </dependency>
   </dependencies>
 
