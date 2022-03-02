@@ -142,6 +142,28 @@ body .ui-datatable .ui-datatable-data > tr > td
   padding: 0.5rem 0.5rem;
 }
 
+body .ui-treenode-label
+{
+  vertical-align: middle;
+}
+
+body .ui-treenode-label > span,
+body .ui-treenode-label > div
+{
+  vertical-align: middle;
+  margin-right: 4pt;
+}
+
+body .ui-datepicker .ui-datepicker-calendar td
+{
+  padding: 0;
+}
+
+body th .p-datepicker > input
+{
+  width: 100%;
+}
+
 /* specific styles */
 
 div.block
@@ -168,11 +190,9 @@ span.error
   color: blue;
 }
 
-.unchanged
+.unsaved
 {
-  vertical-align: middle;
-  font-style: normal;
-  color: black;
+  color: #908000;
 }
 
 .enabled
@@ -188,6 +208,22 @@ span.error
 .prop_name
 {
   color: #708070;
+}
+
+.prop_value
+{
+  color: #202020;
+}
+
+body table .ui-button.ui-button-icon-only .ui-button-text
+{
+  padding: 0;
+}
+
+body table .ui-button.ui-button-icon-only
+{
+  width: 24px;
+  height: 24px;
 }
 
 .level_DEBUG > td

@@ -86,7 +86,7 @@
                    styleClass="mt-2"
                    rowStyleClass="level_#{logsBean.getLevel(event)}">
         <p:column headerText="Timestamp"
-                  style="width:150pt">
+                  style="width:140pt">
           <h:outputText value="#{logsBean.getDate(event)}">
             <f:convertDateTime type="date" pattern="dd-MM-yyyy HH:mm:ss.SSS"
                                timeZone="Europe/Berlin" />
@@ -94,17 +94,17 @@
         </p:column>
 
         <p:column headerText="Level"
-                  style="width:50pt">
+                  style="width:40pt">
           <h:outputText value="#{logsBean.getLevel(event)}" />
         </p:column>
 
         <p:column headerText="Thread"
-                  style="width:100pt">
+                  style="width:140pt">
           <h:outputText value="#{event.threadName}" />
         </p:column>
 
         <p:column headerText="Message"
-                  style="width:1700pt">
+                  style="width:1500pt">
           <h:outputText value="#{event.formattedMessage}" />
         </p:column>
 

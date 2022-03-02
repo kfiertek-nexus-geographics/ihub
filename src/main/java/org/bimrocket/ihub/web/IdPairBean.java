@@ -28,39 +28,51 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.config;
+package org.bimrocket.ihub.web;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import javax.faces.context.FacesContext;
+import org.bimrocket.ihub.dto.IdPair;
+import org.bimrocket.ihub.exceptions.InvalidNameException;
+import org.primefaces.PrimeFaces;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
- * Swagger configuration class
  *
- * @author kfiertek-nexus-geographics
- *
+ * @author realor
  */
-@EnableSwagger2
-@Configuration
-@Import(BeanValidatorPluginsConfiguration.class)
-public class SwaggerConfig
+@Component
+@Scope("session")
+public class IdPairBean
 {
-  @Bean
-  public Docket swaggerEmployeeApi()
+  @Autowired
+  ApplicationContext context;
+
+  private IdPair idPair = new IdPair();
+
+  public IdPair getIdPair()
   {
-    return new Docket(DocumentationType.SWAGGER_2).select()
-      .apis(RequestHandlerSelectors
-        .basePackage("org.bimrocket.ihub.controllers"))
-      .paths(PathSelectors.any()).build()
-      .apiInfo(new ApiInfoBuilder().version("1.0").title("IHUB REST API")
-        .description("Auto-generated documentation of ihub project")
-        .build());
+    return idPair;
+  }
+
+  public void setIdPair(IdPair idPair)
+  {
+    this.idPair = idPair;
+  }
+
+  public void accept()
+  {
+    try
+    {
+      IdPairRepoBean idPairRepoBean = context.getBean(IdPairRepoBean.class);
+      idPairRepoBean.saveIdPair(idPair);
+    }
+    catch (Exception ex)
+    {
+      FacesUtils.addErrorMessage(ex);
+    }
+    PrimeFaces.current().executeScript("PF('idpair').hide()");
   }
 }

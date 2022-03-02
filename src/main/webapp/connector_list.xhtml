@@ -18,7 +18,7 @@
 
       <p:panel id="search_panel">
         <div class="flex align-items-center flex-wrap card-container">
-          <h:outputLabel for="filter" value="Filter:"
+          <h:outputLabel for="filter" value="Connector:"
                          styleClass="flex align-items-center justify-content-center m-1" />
           <p:inputText id="filter" value="#{connectorListBean.connectorName}"
                        styleClass="flex align-items-center justify-content-center m-1"
@@ -55,11 +55,27 @@
                     icon="connector">
           <h:outputText value="#{data.name}: #{data.inventory}"
                         styleClass="#{connectorListBean.isConnectorChanged(data) ?
-                        'changed' : 'unchanged'}" />
+                        'changed' : ''}" />
+          <h:outputText value=" (unsaved)"
+                        rendered="#{connectorListBean.isConnectorUnsaved(data)}"
+                        styleClass="unsaved" />
           <p:toggleSwitch value="#{connectorListBean.connectorRunning}"
-                          style="margin-left:8px; vertical-align: middle">
+                          ariaLabel="Start/Stop">
             <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
           </p:toggleSwitch>
+
+          <h:panelGroup rendered="#{connectorListBean.getConnectorError(data) != null}">
+            <p:tag id="conn_error"
+                   severity="danger"
+                   value="Error"
+                   icon="pi pi-exclamation-triangle" />
+            <p:tooltip for="conn_error" position="right">
+              <div style="width:300px">
+                <h:outputText value="#{connectorListBean.getConnectorError(data)}" />
+              </div>
+            </p:tooltip>
+          </h:panelGroup>
+
         </p:treeNode>
 
         <p:treeNode type="processor" icon="pi pi-cog">
@@ -71,7 +87,8 @@
         <p:treeNode type="property" icon="pi pi-box">
           <h:outputText value="#{data.name}: " title="#{data.description}"
                         styleClass="prop_name" />
-          <h:outputText value="#{connectorListBean.getPropertyValue(node)}" />
+          <h:outputText value="#{connectorListBean.getPropertyValue(node)}"
+                        styleClass="prop_value" />
         </p:treeNode>
       </p:tree>
 
@@ -102,6 +119,11 @@
                     action="#{connectorListBean.saveConnector}"
                     update="connectors"
                     icon="pi pi-save"/>
+        <p:menuitem value="Restore"
+                    action="#{connectorListBean.restoreConnector}"
+                    rendered="#{connectorListBean.connectorUnsaved}"
+                    update="connectors"
+                    icon="pi pi-database"/>
         <p:menuitem value="Delete"
                     action="#{connectorListBean.deleteConnector}"
                     update="connectors"

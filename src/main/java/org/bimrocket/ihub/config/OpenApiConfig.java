@@ -28,36 +28,27 @@
  * and
  * https://www.gnu.org/licenses/lgpl.txt
  */
-package org.bimrocket.ihub.web;
+package org.bimrocket.ihub.config;
 
-import javax.faces.context.FacesContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  *
  * @author realor
  */
-@Component
-@Scope("session")
-public class InventoryHubBean
+ @Configuration
+public class OpenApiConfig
 {
-  public int getActiveTabIndex()
-  {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-    String viewId = ctx.getViewRoot().getViewId();
-
-    switch (viewId)
-    {
-      case "/connector_list.xhtml":
-        return 0;
-      case "/logs.xhtml":
-        return 1;
-      case "/idpair_repo.xhtml":
-        return 2;
-      case "/shell.xhtml":
-        return 3;
-    }
-    return 0;
-  }
+   @Bean
+   public OpenAPI customOpenAPI()
+   {
+     return new OpenAPI()
+       .components(new Components())
+       .info(new Info().title("IHUB API")
+         .description("Inventory HUB API"));
+   }
 }

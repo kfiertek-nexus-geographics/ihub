@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.bimrocket.ihub.dto.ConnectorSetup;
 import org.bimrocket.ihub.dto.IdPair;
 import org.bimrocket.ihub.repo.IdPairRepository;
@@ -43,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
+import org.bimrocket.ihub.exceptions.NotFoundException;
+import org.bimrocket.ihub.exceptions.ProcessorInitException;
 
 /**
  *
@@ -50,12 +53,15 @@ import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
  */
 public class Connector implements Runnable
 {
-  private static final Logger log = LoggerFactory.getLogger(Connector.class);
+  private static final Logger log =
+    LoggerFactory.getLogger(Connector.class);
 
   public static final String RUNNING_STATUS = "RUNNING";
   public static final String STOPPED_STATUS = "STOPPED";
   public static final String STARTING_STATUS = "STARTING";
   public static final String STOPPING_STATUS = "STOPPING";
+
+  private static final String THREAD_PREFIX = "c:";
 
   protected ConnectorService service;
 
@@ -69,7 +75,7 @@ public class Connector implements Runnable
 
   protected boolean end;
 
-  protected long waitMillis = 1000;
+  protected long waitMillis = 10000;
 
   protected Thread thread;
 
@@ -96,6 +102,8 @@ public class Connector implements Runnable
   protected int deleted;
 
   protected Exception lastError;
+
+  private boolean unsaved = false;
 
   private final ProcessedObject procObject = new ProcessedObject();
 
@@ -209,6 +217,8 @@ public class Connector implements Runnable
     this.processors.clear();
     this.processors.addAll(processors);
 
+    this.unsaved = true;
+
     return this;
   }
 
@@ -239,25 +249,46 @@ public class Connector implements Runnable
     return status;
   }
 
+  public boolean isUnsaved()
+  {
+    return unsaved;
+  }
+
+  public void setUnsaved(boolean unsaved)
+  {
+    this.unsaved = unsaved;
+  }
+
   @Override
   public String toString()
   {
     StringBuilder buffer = new StringBuilder();
 
-    return buffer.append("Connector").append("{ name: \"").append(name)
-        .append("\", description: \"")
-        .append(description == null ? "" : description)
-        .append("\", inventory: \"").append(inventory).append("\", status: ")
-        .append(getStatus()).append(", autoStart: ").append(autoStart)
-        .append(", singleRun: ").append(singleRun).append(", debug: ")
-        .append(debugEnabled).append(", processors: ").append(processors)
-        .append(" }").toString();
+    return buffer.append("Connector")
+      .append("{ name: \"")
+      .append(name)
+      .append("\", description: \"")
+      .append(description == null ? "" : description)
+      .append("\", inventory: \"")
+      .append(inventory)
+      .append("\", status: ")
+      .append(getStatus())
+      .append(", autoStart: ")
+      .append(autoStart)
+      .append(", singleRun: ")
+      .append(singleRun)
+      .append(", debug: ")
+      .append(debugEnabled)
+      .append(", processors: ")
+      .append(processors)
+      .append(" }")
+      .toString();
   }
 
   @Override
   public void run()
   {
-    log.info("Connector {} started", name);
+    log.info("Connector {} started.", name);
     startTime = new Date();
     status = RUNNING_STATUS;
     lastError = null;
@@ -268,8 +299,10 @@ public class Connector implements Runnable
 
     try
     {
-      initProcessors(runningProcessors);
-      log.debug("Entering loop");
+      if (!initProcessors(runningProcessors))
+        throw new ProcessorInitException(427,
+          "Failed to initialize processor %s: %s", name,
+          lastError.getMessage());
 
       while (!end)
       {
@@ -280,14 +313,14 @@ public class Connector implements Runnable
         {
           if (processor.isEnabled())
           {
-            log.debug("Executing processor {}", processor.getClass().getName());
+            log.debug("Executing processor {}",
+              processor.getClass().getName());
 
             if (processor.processObject(procObject))
             {
               processorCount++;
             }
-            else
-              break;
+            else break;
           }
         }
 
@@ -295,11 +328,10 @@ public class Connector implements Runnable
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
-          log.debug(
-              "Object processed, type: {}, operation: {}, "
-                  + "localId: {}, globalId: {}",
-              procObject.getObjectType(), procObject.getOperation(),
-              procObject.getLocalId(), procObject.getGlobalId());
+          log.debug("Object processed, type: {}, operation: {}, "
+            + "localId: {}, globalId: {}",
+            procObject.getObjectType(), procObject.getOperation(),
+            procObject.getLocalId(), procObject.getGlobalId());
         }
 
         if (processorCount == 0)
@@ -321,6 +353,11 @@ public class Connector implements Runnable
         }
       }
     }
+    catch (ProcessorInitException ex)
+    {
+      lastError = ex;
+      log.error(ex.getMessage());
+    }
     catch (Exception ex)
     {
       lastError = ex;
@@ -332,7 +369,7 @@ public class Connector implements Runnable
     }
     status = STOPPED_STATUS;
     endTime = new Date();
-    log.info("Connector {} stopped", name);
+    log.info("Connector {} stopped.", name);
     thread = null;
   }
 
@@ -340,7 +377,7 @@ public class Connector implements Runnable
   {
     if (thread == null)
     {
-      thread = new Thread(this, "c:" + name);
+      thread = new Thread(this, THREAD_PREFIX + name);
       thread.start();
       status = STARTING_STATUS;
     }
@@ -367,55 +404,67 @@ public class Connector implements Runnable
 
   public ConnectorSetup saveSetup()
   {
-    log.info("Saving connector {}", name);
-
     ConnectorSetup connSetup = service.getConnectorMapperService()
-        .getConnectorSetup(this);
+      .getConnectorSetup(this);
 
     service.getConnectorSetupRepository().save(connSetup);
+
+    unsaved = false;
+
+    log.info("Connector {} saved.", name);
 
     return connSetup;
   }
 
   public Connector restore() throws Exception
   {
-    log.info("Restoring connector {}", name);
-
     restoreSetup();
+
+    log.info("Connector {} restored.", name);
 
     return this;
   }
 
   public ConnectorSetup restoreSetup() throws Exception
   {
-    ConnectorSetup connSetup = null;
-
     Optional<ConnectorSetup> optConnSetup = service
-        .getConnectorSetupRepository().findById(name);
+      .getConnectorSetupRepository().findById(name);
     if (optConnSetup.isPresent())
     {
-      connSetup = optConnSetup.get();
+      ConnectorSetup connSetup = optConnSetup.get();
       service.getConnectorMapperService().setConnectorSetup(this, connSetup,
-          true);
+        true);
+
+      unsaved = false;
+      lastError = null;
+      return connSetup;
     }
-    return connSetup;
+    throw new NotFoundException(238, "Connector %s not found", name);
   }
 
-  protected void initProcessors(List<Processor> processors) throws Exception
+  protected boolean initProcessors(List<Processor> processors)
   {
     int initialized = 0;
-    try
+    for (var processor : processors)
     {
-      for (var processor : processors)
+      try
       {
-        log.debug("Initializing processor #{}: {}", initialized,
-            processor.getClass().getName());
         processor.init();
+        log.debug("Processor #{}: {} initialized.", initialized,
+          processor.getClass().getName());
+
         initialized++;
       }
-      ;
+      catch (Exception ex)
+      {
+        log.debug("Failed to initialize processor #{}: {}: {}", initialized,
+          processor.getClass().getName(), ex.toString());
+        lastError = ex;
+        break;
+      }
     }
-    finally
+
+    if (lastError != null)
     {
       // remove from list not initialized processors
       while (processors.size() > initialized)
@@ -423,6 +472,8 @@ public class Connector implements Runnable
         processors.remove(processors.size() - 1); // remove last
       }
     }
+
+    return lastError == null;
   }
 
   public void endProcessors(List<Processor> processors)
@@ -432,15 +483,18 @@ public class Connector implements Runnable
     {
       try
       {
-        log.debug("Ending processor #{}: {}", ended,
-            processor.getClass().getName());
         processor.end();
+        log.debug("Processor #{}: {} ended.", ended,
+          processor.getClass().getName());
+
         ended++;
       }
       catch (Exception ex)
       {
-        if (lastError == null)
-          lastError = ex;
+        log.debug("Failed to end processor #{}: {}: {}", ended,
+          processor.getClass().getName(), ex.toString());
+
+        if (lastError == null) lastError = ex;
       }
     }
   }
@@ -449,12 +503,31 @@ public class Connector implements Runnable
   {
     IdPairRepository idPairRepository = service.getIdPairRepository();
 
-    idPairRepository.deleteByInventoryAndObjectTypeAndLocalId(inventory,
+    Optional<IdPair> result = idPairRepository.
+      findByInventoryAndObjectTypeAndLocalId(inventory,
         procObject.getObjectType(), procObject.getLocalId());
 
-    if (procObject.isInsert() || procObject.isUpdate())
+    if (procObject.isDelete())
     {
-      IdPair idPair = new IdPair();
+      if (result.isPresent())
+      {
+        IdPair idPair = result.get();
+        idPairRepository.delete(idPair);
+      }
+    }
+    else // insert or update
+    {
+      IdPair idPair;
+      if (result.isPresent())
+      {
+        idPair = result.get();
+      }
+      else
+      {
+        idPair = new IdPair();
+        idPair.setId(UUID.randomUUID().toString());
+      }
+
       idPair.setInventory(inventory);
       idPair.setObjectType(procObject.getObjectType());
       idPair.setLocalId(procObject.getLocalId());
@@ -479,17 +552,17 @@ public class Connector implements Runnable
     processed++;
     switch (procObject.getOperation())
     {
-    case INSERT:
-      inserted++;
-      break;
-    case UPDATE:
-      updated++;
-      break;
-    case DELETE:
-      deleted++;
-      break;
-    default:
-      ignored++;
+      case INSERT:
+        inserted++;
+        break;
+      case UPDATE:
+        updated++;
+        break;
+      case DELETE:
+        deleted++;
+        break;
+      default:
+        ignored++;
     }
   }
 }

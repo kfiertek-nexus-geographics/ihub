@@ -32,6 +32,7 @@ package org.bimrocket.ihub.dto;
 
 import java.io.Serializable;
 import java.util.Date;
+import org.springframework.data.annotation.Id;
 
 /**
  *
@@ -39,12 +40,24 @@ import java.util.Date;
  */
 public class IdPair implements Serializable
 {
+  @Id
+  private String id;
   private String inventory;
   private String objectType;
   private String localId;
   private String globalId;
   private Date lastUpdate;
   private String connectorName;
+
+  public String getId()
+  {
+    return id;
+  }
+
+  public void setId(String id)
+  {
+    this.id = id;
+  }
 
   public String getInventory()
   {

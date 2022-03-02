@@ -5,5 +5,7 @@
 
 .vscode/
 .idea/
+*.xlsx
+*.xls
 
 /logs/
