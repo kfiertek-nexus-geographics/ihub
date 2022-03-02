@@ -33,8 +33,10 @@ package org.bimrocket.ihub.processors.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.bimrocket.ihub.processors.Loader;
@@ -54,6 +56,9 @@ public class TestLoader extends Loader
 
   @ConfigProperty
   public List<String> objectFields = new ArrayList<>();
+
+  @ConfigProperty
+  public Map<String, Object> keyTable = new HashMap<>();
 
   @ConfigProperty
   public int objectSize = 10;
