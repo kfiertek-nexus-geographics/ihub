@@ -62,8 +62,7 @@ public class RepositoryConfig
     {
       return context.getBean(MongoConnectorSetupRepository.class);
     }
-    else
-      return null;
+    return null;
   }
 
   @Bean
@@ -74,7 +73,6 @@ public class RepositoryConfig
     {
       return context.getBean(MongoIdPairRepository.class);
     }
-    else
-      return null;
+    return null;
   }
 }

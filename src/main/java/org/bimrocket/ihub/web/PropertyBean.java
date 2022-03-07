@@ -30,9 +30,12 @@
  */
 package org.bimrocket.ihub.web;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import javax.faces.bean.ViewScoped;
+import java.util.Set;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -40,6 +43,8 @@ import javax.faces.convert.ConverterException;
 import org.bimrocket.ihub.dto.ProcessorProperty;
 import org.primefaces.PrimeFaces;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -47,15 +52,19 @@ import org.springframework.stereotype.Component;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class PropertyBean
 {
   @Autowired
-  ConnectorListBean connectorListBean;
+  ApplicationContext context;
 
   ProcessorProperty property;
   Object value;
+  ObjectMapper mapper = new ObjectMapper();
+  Exception jsonError;
+
   static final Map<String, Converter> converters = new HashMap<>();
+  static final Set<String> supportedContentTypes = new HashSet<>();
 
   static
   {
@@ -70,6 +79,10 @@ public class PropertyBean
     converters.put("long", converters.get("Long"));
     converters.put("float", converters.get("Float"));
     converters.put("double", converters.get("Double"));
+
+    supportedContentTypes.add("application/javascript");
+    supportedContentTypes.add("application/json");
+    supportedContentTypes.add("text/x-sql");
   }
 
   public ProcessorProperty getProperty()
@@ -98,6 +111,26 @@ public class PropertyBean
     return converters.get(property.getType());
   }
 
+  public String getPropertyType()
+  {
+    if (property == null) return null;
+
+    if (isStructuredText())
+    {
+      return property.getContentType();
+    }
+    else
+    {
+      return property.getType();
+    }
+  }
+
+  public boolean isStructuredText()
+  {
+    if (property == null) return false;
+    return supportedContentTypes.contains(property.getContentType());
+  }
+
   public boolean isNumericValue()
   {
     if (property == null) return false;
@@ -122,22 +155,63 @@ public class PropertyBean
     return "boolean Boolean".contains(property.getType());
   }
 
-  public boolean isScriptValue()
+  public boolean isGenericValue()
   {
     if (property == null) return false;
-    return "String".equals(property.getType());
+
+    String propType = property.getType();
+
+    return !"String".equals(propType)
+           && !"boolean Boolean".contains(propType)
+           && !converters.containsKey(propType);
+  }
+
+  public String getJsonValue()
+  {
+    try
+    {
+      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value);
+    }
+    catch (Exception ex)
+    {
+      return null;
+    }
+  }
+
+  public void setJsonValue(String json)
+  {
+    try
+    {
+      jsonError = null;
+      this.value = mapper.readValue(json, Object.class);
+    }
+    catch (Exception ex)
+    {
+      jsonError = ex;
+    }
   }
 
   public void accept()
   {
-    try
+    if (jsonError != null)
     {
-      connectorListBean.putProperty(value);
-      PrimeFaces.current().executeScript("PF('property').hide()");
+      FacesContext.getCurrentInstance().addMessage("json_editor",
+        FacesUtils.createErrorMessage(jsonError));
     }
-    catch (Exception ex)
+    else
     {
-      FacesUtils.addErrorMessage(ex);
+      try
+      {
+        ConnectorListBean connectorListBean =
+          context.getBean(ConnectorListBean.class);
+
+       connectorListBean.putProperty(value);
+        PrimeFaces.current().executeScript("PF('property').hide()");
+      }
+      catch (Exception ex)
+      {
+        FacesUtils.addErrorMessage(ex);
+      }
     }
   }
 

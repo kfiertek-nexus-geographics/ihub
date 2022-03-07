@@ -11,13 +11,13 @@
 
     <p:dialog id="property_dialog"
               header="Property" widgetVar="property"
-              resizable="true" width="700"
-              modal="true" height="300"
-              style="max-width:90%; max-height: 90%"
+              resizable="false" width="700"
+              position="center center"
+              modal="true" height="auto"
               class="modal-dialog">
 
       <f:facet name="header">
-        <span class="ui-icon pi pi-circle"></span> Property
+        <span class="ui-icon pi pi-box"></span> Property
       </f:facet>
 
       <p:messages>
@@ -28,15 +28,17 @@
 
         <div class="field">
           <div class="col">
-            <h:outputText value="#{propertyBean.property.name} (#{propertyBean.property.type}):"/>
+            <h:outputText value="#{propertyBean.property.name} (#{propertyBean.propertyType}):"
+                          styleClass="prop_name"/>
           </div>
           <div class="col">
-            <h:outputText value="#{propertyBean.property.description}"/>
+            <h:outputText value="#{propertyBean.property.description}" />
           </div>
 
           <div class="col">
             <p:inputTextarea value="#{propertyBean.value}"
-                             rendered="#{propertyBean.isStringValue()}" />
+                             rendered="#{propertyBean.isStringValue()
+                                         and not propertyBean.isStructuredText()}" />
 
             <p:inputNumber value="#{propertyBean.value}"
                            decimalPlaces="#{propertyBean.isDecimalValue() ? 2 : 0}"
@@ -45,6 +47,25 @@
 
             <p:toggleSwitch value="#{propertyBean.value}"
                             rendered="#{propertyBean.isBooleanValue()}" />
+
+            <pe:codeMirror id="content_editor"
+                           value="#{propertyBean.value}"
+                           mode="#{propertyBean.property.contentType}"
+                           theme="default"
+                           gutter="true"
+                           lineNumbers="true"
+                           matchBrackets="true"
+                           rendered="#{propertyBean.isStringValue()
+                                       and propertyBean.isStructuredText()}" />
+
+            <pe:codeMirror id="json_editor"
+                           value="#{propertyBean.jsonValue}"
+                           mode="application/json"
+                           theme="default"
+                           gutter="true"
+                           lineNumbers="true"
+                           matchBrackets="true"
+                           rendered="#{propertyBean.genericValue}" />
           </div>
         </div>
       </p:panel>
@@ -65,7 +86,7 @@
         </p:commandButton>
       </f:facet>
 
-      <p:defaultCommand target="accept_property" scope="property_panel" />
+      <p:defaultCommand target="property_panel" scope="property_panel" />
       <p:ajax event="close" update="property_panel" resetValues="true" />
 
     </p:dialog>

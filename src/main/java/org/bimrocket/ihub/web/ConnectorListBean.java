@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.faces.bean.ViewScoped;
 import javax.faces.event.FacesEvent;
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.dto.ConnectorSetup;
@@ -44,12 +43,15 @@ import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.bimrocket.ihub.service.ConnectorMapperService;
 import org.bimrocket.ihub.service.ConnectorService;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.primefaces.event.NodeCollapseEvent;
 import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.bimrocket.ihub.connector.Processor;
+import org.bimrocket.ihub.exceptions.InvalidSetupException;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import static org.bimrocket.ihub.connector.Connector.RUNNING_STATUS;
 import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
@@ -59,17 +61,17 @@ import static org.bimrocket.ihub.connector.Connector.STARTING_STATUS;
  * @author realor
  */
 @Component
-@ViewScoped
+@Scope("session")
 public class ConnectorListBean
 {
   @Autowired
   ConnectorService connectorService;
 
   @Autowired
-  ConnectorMapperService connectorMapperService;
+  ProcessorService processorService;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ConnectorMapperService connectorMapperService;
 
   @Autowired
   ConnectorBean connectorBean;
@@ -85,6 +87,7 @@ public class ConnectorListBean
   String connectorName;
   String operation;
   Set<String> changed = new HashSet<>();
+
   boolean connectorRunning;
 
   public void search()
@@ -142,11 +145,64 @@ public class ConnectorListBean
     return changed.contains(connSetup.getName());
   }
 
+  public boolean isConnectorUnsaved()
+  {
+    if (selectedNode == null) return false;
+
+    Object data = selectedNode.getData();
+    if (data instanceof ConnectorSetup)
+    {
+      ConnectorSetup connSetup = (ConnectorSetup)data;
+      String connName = connSetup.getName();
+      try
+      {
+        return connectorService.getConnector(connName).isUnsaved();
+      }
+      catch (NotFoundException ex)
+      {
+      }
+    }
+    return false;
+  }
+
+  public boolean isConnectorUnsaved(ConnectorSetup connSetup)
+  {
+    if (connSetup == null) return false;
+    String connName = connSetup.getName();
+    try
+    {
+      return connectorService.getConnector(connName).isUnsaved();
+    }
+    catch (NotFoundException ex)
+    {
+    }
+    return false;
+  }
+
+  public String getConnectorError(ConnectorSetup connSetup)
+  {
+    String connName = connSetup.getName();
+    try
+    {
+      Exception lastError =
+        connectorService.getConnector(connName).getLastError();
+      if (lastError != null)
+      {
+        return lastError.getMessage();
+      }
+    }
+    catch (NotFoundException ex)
+    {
+    }
+    return null;
+  }
+
   // connector operations
 
   public void addConnector()
   {
     ConnectorSetup connSetup = new ConnectorSetup();
+    connSetup.setWaitMillis(10000L);
     connectorBean.setConnectorSetup(connSetup);
     operation = "add";
   }
@@ -168,14 +224,14 @@ public class ConnectorListBean
         connectorService.createConnector(connSetup.getName());
       connectorMapperService.setConnectorSetup(connector, connSetup);
       createTreeNode(connSetup, rootNode);
-      changed.remove(connSetup.getName());
     }
     else // edit
     {
       ConnectorSetup curConnSetup = (ConnectorSetup)selectedNode.getData();
       connSetup.copyTo(curConnSetup);
-      changed.add(connSetup.getName());
     }
+    String connName = connSetup.getName();
+    changed.add(connName);
   }
 
   public void applyConnectorChanges()
@@ -183,10 +239,11 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
-      Connector connector = connectorService.getConnector(connSetup.getName());
+      String connName = connSetup.getName();
+      Connector connector = connectorService.getConnector(connName);
 
       connectorMapperService.setConnectorSetup(connector, connSetup);
-      changed.remove(connSetup.getName());
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -199,7 +256,8 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
-      Connector connector = connectorService.getConnector(connSetup.getName());
+      String connName = connSetup.getName();
+      Connector connector = connectorService.getConnector(connName);
 
       connSetup = connectorMapperService.getConnectorSetup(connector);
 
@@ -209,7 +267,7 @@ public class ConnectorListBean
       int index = rootNode.getChildren().indexOf(selectedNode);
       rootNode.getChildren().set(index, connNode);
 
-      changed.remove(connSetup.getName());
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -222,10 +280,38 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
-      Connector connector = connectorService.getConnector(connSetup.getName());
+      String connName = connSetup.getName();
+      Connector connector = connectorService.getConnector(connName);
       connectorMapperService.setConnectorSetup(connector, connSetup);
       connector.save();
-      changed.remove(connSetup.getName());
+      changed.remove(connName);
+    }
+    catch (Exception ex)
+    {
+      FacesUtils.addErrorMessage(ex);
+    }
+  }
+
+  public void restoreConnector()
+  {
+    try
+    {
+      ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
+      String connName = connSetup.getName();
+
+      Connector connector = connectorService.getConnector(connName);
+      connector.restore();
+
+      connSetup =
+        connectorMapperService.getConnectorSetup(connector);
+
+      TreeNode connNode = createTreeNode(connSetup, null);
+      connNode.setExpanded(true);
+
+      int index = rootNode.getChildren().indexOf(selectedNode);
+      rootNode.getChildren().set(index, connNode);
+
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -238,12 +324,14 @@ public class ConnectorListBean
     try
     {
       ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
+      String connName = connSetup.getName();
 
-      connectorService.destroyConnector(connSetup.getName(), true);
+      connectorService.destroyConnector(connName, true);
 
       rootNode.getChildren().remove(selectedNode);
       selectedNode = null;
-      changed.remove(connSetup.getName());
+
+      changed.remove(connName);
     }
     catch (Exception ex)
     {
@@ -374,6 +462,8 @@ public class ConnectorListBean
       TreeNode connNode = selectedNode;
       connSetup = (ConnectorSetup)connNode.getData();
 
+      setDefaultProperties(procSetup);
+
       connSetup.getProcessors().add(procSetup);
 
       createTreeNode(procSetup, selectedNode);
@@ -388,6 +478,8 @@ public class ConnectorListBean
 
       int index = connSetup.getProcessors().indexOf(selProcSetup);
 
+      setDefaultProperties(procSetup);
+
       connSetup.getProcessors().add(index, procSetup);
 
       TreeNode procNode = createTreeNode(procSetup, null);
@@ -401,7 +493,8 @@ public class ConnectorListBean
       TreeNode connNode = selectedNode.getParent();
       connSetup = (ConnectorSetup)connNode.getData();
     }
-    changed.add(connSetup.getName());
+    String connName = connSetup.getName();
+    changed.add(connName);
   }
 
   public void deleteProcessor()
@@ -416,7 +509,9 @@ public class ConnectorListBean
 
       connNode.getChildren().remove(selectedNode);
       selectedNode = null;
-      changed.add(connSetup.getName());
+
+      String connName = connSetup.getName();
+      changed.add(connName);
     }
     catch (Exception ex)
     {
@@ -431,7 +526,20 @@ public class ConnectorListBean
     TreeNode procNode = propNode.getParent();
     ProcessorSetup procSetup = (ProcessorSetup)procNode.getData();
     ProcessorProperty property = (ProcessorProperty)propNode.getData();
-    return String.valueOf(procSetup.getProperties().get(property.getName()));
+
+    Object value = procSetup.getProperties().get(property.getName());
+    if (value == null) return "";
+
+    if (property.isSecret()) return "******";
+
+    String textValue = String.valueOf(value);
+
+    if (textValue.length() > 60)
+    {
+      textValue = textValue.substring(0, 50) + "...";
+    }
+
+    return textValue;
   }
 
   public void editProperty()
@@ -454,7 +562,9 @@ public class ConnectorListBean
     procSetup.getProperties().put(property.getName(), value);
     TreeNode connNode = procNode.getParent();
     ConnectorSetup connSetup = (ConnectorSetup)connNode.getData();
-    changed.add(connSetup.getName());
+
+    String connName = connSetup.getName();
+    changed.add(connName);
   }
 
   // other methods
@@ -514,9 +624,8 @@ public class ConnectorListBean
 
     try
     {
-      Class cls = Class.forName(procSetup.getClassName());
       ProcessorType processorType =
-        processorTypeService.getProcessorType(cls);
+        processorService.getProcessorType(procSetup.getClassName());
 
       List<ProcessorProperty> properties = processorType.getProperties();
       properties.forEach(property ->
@@ -525,10 +634,26 @@ public class ConnectorListBean
           property, procNode);
       });
     }
-    catch (Exception ex)
+    catch (InvalidSetupException ex)
     {
       // ignore
     }
     return procNode;
+  }
+
+  private void setDefaultProperties(ProcessorSetup procSetup)
+  {
+    try
+    {
+      String className = procSetup.getClassName();
+      Processor processor = processorService.createProcessor(className);
+
+      procSetup.setProperties(
+        connectorMapperService.getProcessorProperties(processor));
+    }
+    catch (InvalidSetupException ex)
+    {
+      // ignore
+    }
   }
 }

@@ -30,8 +30,9 @@
  */
 package org.bimrocket.ihub.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.bimrocket.ihub.service.ShellService;
-import org.mozilla.javascript.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,13 +43,15 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author realor
  */
+@Tag(name = "shell", description = "Shell API")
 @RestController
 public class ShellController
 {
   @Autowired
   ShellService shellService;
 
-  @PostMapping("/webshell")
+  @Operation(summary = "Execute a command")
+  @PostMapping("/shell")
   public ResponseEntity<String> execute(@RequestBody String command)
   {
     ResponseEntity<String> response;

@@ -30,10 +30,13 @@
  */
 package org.bimrocket.ihub.controllers;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.dto.ConnectorExecution;
 import org.bimrocket.ihub.dto.ConnectorSetup;
@@ -41,7 +44,7 @@ import org.bimrocket.ihub.dto.ProcessorType;
 import org.bimrocket.ihub.exceptions.InvalidSetupException;
 import org.bimrocket.ihub.service.ConnectorMapperService;
 import org.bimrocket.ihub.service.ConnectorService;
-import org.bimrocket.ihub.service.ProcessorTypeService;
+import org.bimrocket.ihub.service.ProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +59,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author realor
  */
+@Tag(name = "connectors", description = "Connectors API")
 @RestController
 public class ConnectorController
 {
@@ -63,11 +67,12 @@ public class ConnectorController
   ConnectorService connectorService;
 
   @Autowired
-  ConnectorMapperService connectorMapperService;
+  ProcessorService processorService;
 
   @Autowired
-  ProcessorTypeService processorTypeService;
+  ConnectorMapperService connectorMapperService;
 
+  @Operation(summary = "Get connectors")
   @GetMapping(path = "/connectors", produces = "application/json")
   public List<ConnectorExecution> getConnectors()
   {
@@ -80,7 +85,9 @@ public class ConnectorController
     return response;
   }
 
-  @GetMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  @Operation(summary = "Get a connector by name")
+  @GetMapping(path = "/connectors/{connectorName}",
+    produces = "application/json")
   public ConnectorSetup getConnector(@PathVariable String connectorName)
       throws Exception
   {
@@ -88,6 +95,7 @@ public class ConnectorController
     return connectorMapperService.getConnectorSetup(connector);
   }
 
+  @Operation(summary = "Create a connector")
   @PostMapping(path = "/connectors", produces = "application/json")
   public ConnectorSetup createConnector(@RequestBody ConnectorSetup connSetup)
       throws Exception
@@ -107,7 +115,9 @@ public class ConnectorController
     return connSetup;
   }
 
-  @PutMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  @Operation(summary = "Update a connector")
+  @PutMapping(path = "/connectors/{connectorName}",
+    produces = "application/json")
   public ConnectorSetup updateConnector(@PathVariable String connectorName,
       @RequestBody ConnectorSetup connSetup) throws Exception
   {
@@ -119,14 +129,18 @@ public class ConnectorController
     return connSetup;
   }
 
-  @DeleteMapping(path = "/connectors/{connectorName}", produces = "application/json")
+  @Operation(summary = "Delete a connector")
+  @DeleteMapping(path = "/connectors/{connectorName}",
+    produces = "application/json")
   public boolean destroyConnector(@PathVariable String connectorName)
       throws Exception
   {
     return connectorService.destroyConnector(connectorName, true);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/status", produces = "application/json")
+  @Operation(summary = "Get connector status")
+  @GetMapping(path = "/connectors/{connectorName}/status",
+    produces = "application/json")
   public ConnectorExecution getConnectorStatus(
       @PathVariable String connectorName) throws Exception
   {
@@ -134,7 +148,9 @@ public class ConnectorController
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/start", produces = "application/json")
+  @Operation(summary = "Start a connector")
+  @GetMapping(path = "/connectors/{connectorName}/start",
+    produces = "application/json")
   public ConnectorExecution startConnector(@PathVariable String connectorName)
       throws Exception
   {
@@ -143,7 +159,9 @@ public class ConnectorController
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/stop", produces = "application/json")
+  @Operation(summary = "Stop a connector")
+  @GetMapping(path = "/connectors/{connectorName}/stop",
+    produces = "application/json")
   public ConnectorExecution stopConnector(@PathVariable String connectorName)
       throws Exception
   {
@@ -152,19 +170,21 @@ public class ConnectorController
     return connectorMapperService.getConnectorExecution(connector);
   }
 
-  @GetMapping(path = "/connectors/{connectorName}/executions", produces = "application/json")
+  @Operation(summary = "Get connector executions")
+  @GetMapping(path = "/connectors/{connectorName}/executions",
+    produces = "application/json")
   public List<ConnectorExecution> getConnectorExecutions(
       @PathVariable String connectorName) throws Exception
   {
     return Collections.EMPTY_LIST;
   }
 
+  @Operation(summary = "Get processor types")
   @GetMapping(path = "/processors", produces = "application/json")
   public List<ProcessorType> getProcessors(
       @RequestParam(name = "name", required = false) String className)
       throws Exception
   {
-    return processorTypeService.findProcessorTypes(className);
+    return processorService.findProcessorTypes(className);
   }
-
 }

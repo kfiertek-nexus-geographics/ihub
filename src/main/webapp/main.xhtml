@@ -8,27 +8,53 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
   <h:head>
     <title>IHUB</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no,
+          minimum-scale=1.0, maximum-scale=1.0" />
     <link href="css/ihub.css" type="text/css" rel="stylesheet" />
     <link href="css/primeflex.css" type="text/css" rel="stylesheet" />
+    <link href="css/codemirror.css" type="text/css" rel="stylesheet" />
   </h:head>
 
   <h:body>
     <h:form id="main">
 
-      <h1>BIMROCKET - IHUB</h1>
-      <p:tabView id="tabs">
-        <p:tab title="Connectors">
-          <ui:include src="connector_list.xhtml" />
-        </p:tab>
+      <div class="main_header">
 
-        <p:tab title="Shell">
-          <ui:include src="shell.xhtml" />
-        </p:tab>
+        <h1>
+          <img src="css/images/bimrocket.svg" height="40px" title="BIMROCKET" />
+          <span>IHUB</span>
+        </h1>
 
-        <p:tab title="Logs">
+        <p:tabMenu activeIndex="#{inventoryHubBean.activeTabIndex}"
+                   styleClass="mb-2">
 
-        </p:tab>
-      </p:tabView>
+          <p:menuitem action="connector_list.xhtml?faces-redirect=true"
+                      value="Connectors"
+                      title="Connectors"
+                      icon="connector" />
+
+          <p:menuitem action="logs.xhtml?faces-redirect=true"
+                      value="Logs"
+                      title="Logs"
+                      icon="logs" />
+
+          <p:menuitem action="idpair_repo.xhtml?faces-redirect=true"
+                      value="Id Repo"
+                      title="Id Repo"
+                      icon="pi pi-database" />
+
+          <p:menuitem action="shell.xhtml?faces-redirect=true"
+                      value="Shell"
+                      title="Shell"
+                      icon="shell" />
+
+        </p:tabMenu>
+      </div>
+
+      <div class="main_body">
+        <ui:insert name="body"></ui:insert>
+      </div>
 
     </h:form>
   </h:body>
