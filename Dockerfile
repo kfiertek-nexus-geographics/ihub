@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-oracle
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+FROM tomcat:latest
+COPY target/*.war /usr/local/tomcat/webapps/ihub.war
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
