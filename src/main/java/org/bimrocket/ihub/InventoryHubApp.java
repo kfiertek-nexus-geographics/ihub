@@ -33,6 +33,7 @@ package org.bimrocket.ihub;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 /**
  *
@@ -40,7 +41,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  */
 @SpringBootApplication
 @EnableAsync
-public class InventoryHubApp
+public class InventoryHubApp extends SpringBootServletInitializer
 {
   public static void main(String[] args)
   {
