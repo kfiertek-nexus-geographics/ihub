@@ -98,12 +98,12 @@
         <p:menuitem value="Add processor"
                     action="#{connectorListBean.addProcessor}"
                     update="processor_dialog"
-                    oncomplete="PF('processor').show()"
+                    oncomplete="PF('processor').show();PF('processor').initPosition();"
                     icon="pi pi-plus-circle"/>
         <p:menuitem value="Edit"
                     action="#{connectorListBean.editConnector}"
                     update="connector_dialog"
-                    oncomplete="PF('connector').show()"
+                    oncomplete="PF('connector').show();PF('connector').initPosition();"
                     icon="pi pi-pencil"/>
         <p:menuitem value="Apply changes"
                     action="#{connectorListBean.applyConnectorChanges}"
@@ -139,12 +139,12 @@
         <p:menuitem value="Insert processor"
                     action="#{connectorListBean.insertProcessor}"
                     update="processor_dialog"
-                    oncomplete="PF('processor').show()"
+                    oncomplete="PF('processor').show();PF('processor').initPosition();"
                     icon="pi pi-plus-circle"/>
         <p:menuitem value="Edit"
                     action="#{connectorListBean.editProcessor}"
                     update="processor_dialog"
-                    oncomplete="PF('processor').show()"
+                    oncomplete="PF('processor').show();PF('processor').initPosition();"
                     icon="pi pi-pencil"/>
         <p:menuitem value="Delete"
                     action="#{connectorListBean.deleteProcessor}"
@@ -158,7 +158,7 @@
         <p:menuitem value="Edit"
                     action="#{connectorListBean.editProperty}"
                     update="property_dialog"
-                    oncomplete="PF('property').show()"
+                    oncomplete="PF('property').show();PF('property').initPosition();"
                     icon="pi pi-pencil"/>
       </p:contextMenu>
 
@@ -167,7 +167,7 @@
                        icon="pi pi-plus-circle"
                        value="Add connector"
                        style="margin-top: 4px"
-                       oncomplete="PF('connector').show()" />
+                       oncomplete="PF('connector').show();PF('connector').initPosition();" />
 
       <p:confirmDialog id="confirm_dialog" global="true"
                        responsive="true" width="350">

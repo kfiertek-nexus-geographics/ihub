@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  ihub:
+    image: nexus4kfiertek/image-nexus-test:latest
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_USERNAME: mongo
+      MONGODB_PASSWORD: mongo
+      MONGODB_DATABASE: ihub
+
+  mongodb:
+    image: mongo:4.0.27
+    hostname: mongodb
+    command: --auth
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo

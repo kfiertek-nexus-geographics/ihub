@@ -30,6 +30,8 @@
  */
 package org.bimrocket.ihub.web;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -58,6 +60,9 @@ public class PropertyBean
 
   ProcessorProperty property;
   Object value;
+  ObjectMapper mapper = new ObjectMapper();
+  Exception jsonError;
+
   static final Map<String, Converter> converters = new HashMap<>();
   static final Set<String> supportedContentTypes = new HashSet<>();
 
@@ -150,25 +155,63 @@ public class PropertyBean
     return "boolean Boolean".contains(property.getType());
   }
 
-  public boolean isScriptValue()
+  public boolean isGenericValue()
   {
     if (property == null) return false;
-    return "String".equals(property.getType());
+
+    String propType = property.getType();
+
+    return !"String".equals(propType)
+           && !"boolean Boolean".contains(propType)
+           && !converters.containsKey(propType);
+  }
+
+  public String getJsonValue()
+  {
+    try
+    {
+      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value);
+    }
+    catch (Exception ex)
+    {
+      return null;
+    }
+  }
+
+  public void setJsonValue(String json)
+  {
+    try
+    {
+      jsonError = null;
+      this.value = mapper.readValue(json, Object.class);
+    }
+    catch (Exception ex)
+    {
+      jsonError = ex;
+    }
   }
 
   public void accept()
   {
-    try
+    if (jsonError != null)
     {
-      ConnectorListBean connectorListBean =
-        context.getBean(ConnectorListBean.class);
-
-      connectorListBean.putProperty(value);
-      PrimeFaces.current().executeScript("PF('property').hide()");
+      FacesContext.getCurrentInstance().addMessage("json_editor",
+        FacesUtils.createErrorMessage(jsonError));
     }
-    catch (Exception ex)
+    else
     {
-      FacesUtils.addErrorMessage(ex);
+      try
+      {
+        ConnectorListBean connectorListBean =
+          context.getBean(ConnectorListBean.class);
+
+       connectorListBean.putProperty(value);
+        PrimeFaces.current().executeScript("PF('property').hide()");
+      }
+      catch (Exception ex)
+      {
+        FacesUtils.addErrorMessage(ex);
+      }
     }
   }
 

@@ -46,4 +46,5 @@ public class InventoryHubApp
   {
     SpringApplication.run(InventoryHubApp.class, args);
   }
+  
 }
